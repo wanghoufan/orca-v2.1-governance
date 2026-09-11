@@ -27,6 +27,9 @@
 - 修订（P1-7改A轮，用户定）：Contract拷入包根（diff仅多分发注记，已修正一处转录差），L26改随包分发；待复检后连P1P2轮改动一次push。
 - 修订（B源修轮，用户定B）：业务仓源§0①②改已落地＋4处改新正典（该仓其余未提交改动非本轮所动，不代提交），重拷进包；P2-A~J全修（QA-04关环）；reviewer过+qa过+supervisor终检过打回0/2；本轮不落账本行（P1-3原则）；待push明令。
 - 修订（排布搬家轮，用户定B）：三提示词→docs/prompts/、两说明→docs/history/、归位表→docs/templates/（git mv），6报告git rm（用户令），README新建，两包ignore不入库；引用同步＋HANDOFF报告指回改现行；reviewer打回1处（外部:16）TM已改、qa历史三行冻结加注记；supervisor终检过打回0/2；初级builder=DeepSeek与表一致；待push明令。
+- 修订（-y卡点轮，别项目结论已复现）：codebuddy非交互无-y时Bash审批被拒（rc仍0，看正文判）、加-y常规放行HIGH/CRITICAL仍问（--help原文）；B派工默认带-y，规则进override:27，证据BUGS -y卡点验证节。
+- 修订（-y备注轮）：builder卡:8＋override:28显式-y标注补齐（漏标打回），reviewer过+qa过+supervisor过打回0/2；待push批次并入。
+- 修订（y轮P2P3+逐派轮）：P2域限定×2+标题+判据放宽+勿删通道、P3残留三句全修；逐派账四规则+DISPATCH两行（used主×2，切备空过）+经验一句+schema exit0；reviewer过+qa两派过+supervisor过打回0/2；history两报告属另任务不并入；待push明令。
 
 ## 母版实绩存档（分发冻结前移出账本，P1-3）
 - `{"task":"TASK-override主备-2026-09-11","result":"FAIL","rework":0,"role":"task-manager","model":"opencode-go/muse-spark-1.3-contributor"}`

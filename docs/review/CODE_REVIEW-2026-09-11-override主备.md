@@ -63,3 +63,30 @@
 ## 路径迁移注记（搬家前后对照，历史引用解码）
 
 - `编排者提示词.md`→`docs/prompts/编排者提示词.md`；`外部开发者提示词.md`→`docs/prompts/外部开发者提示词.md`；`迁移整理提示词.md`→`docs/prompts/迁移整理提示词.md`；`2.0-重塑说明.md`→`docs/history/2.0-重塑说明.md`；`2.1-更新说明.md`→`docs/history/2.1-更新说明.md`；`归位表.template.md`→`docs/templates/归位表.template.md`；`治理审查报告/`已删（用户令，结论已落实）。本文件历史节旧路径按此表解码。
+
+## y轮P2P3+逐派复核（2026-09-11，只读）
+
+- 范围：builder:7/:8＋override:27/:28＋supervisor域隔离/抽查行＋BUGS残留句＋AGENTS逐派行＋TM卡逐派行＋HANDOFF.template主备句＋DISPATCH-LOG两行＋经验新一句。
+- ①y轮六处：标题分层、判据放宽不致误判、三处判据互锁、A未删、域隔离、残留诚实——全PASS。
+- ②逐派互锁：AGENTS/TM卡/监督卡/模板/显式五处同义、无新打回权；切备零行空过成立（正式备派须补三处，否则打回）。
+- ③DISPATCH两行8键齐，TASK-MODEL-LOG仍示例单行。
+- Result: 过，P0=0。
+
+## -y备注补齐复核（2026-09-11，只读）
+
+- 范围：`docs/roles/builder.md:8`新增行 vs `USER_MODEL_OVERRIDE.md:28`新增-y标注句 vs 已终检`:27`＋BUGS -y卡点验证节。
+- ①无矛盾：builder:8为:27子集转述；:28系:27行为可观测化，证据支撑“rc不可判、须标注”。
+- ②“漏标按缺派工要素打回”无打回权冲突：打回权仍在reviewer/supervisor，被动语义成立（polish可选，不阻塞）。
+- Result: 过，P0=0。
+
+## -y规则复核（2026-09-11，code-reviewer只读复核，被检override未改）
+
+- 范围：根 `USER_MODEL_OVERRIDE.md:27` 新增 `-y` 半句 vs `docs/qa/BUGS-2026-09-11-override主备.md`“## -y卡点验证”（L149-162）。
+- ①表述与证据一致（三点全对上，PASS）：
+  - `-y` 名：override写“`-y`（`--dangerously-skip-permissions`）” vs BUGS L152 `--help` 原文“`-y, --dangerously-skip-permissions`”逐字一致。PASS。
+  - 安全语义：override写“常规放行、HIGH/CRITICAL仍问” vs BUGS L152原文“`Bypass permission prompts (HIGH/CRITICAL still ask).`”准确转述，未夸大为全放行；`(default: false)` 未转述不影响（override侧是派工默认带参，非改CLI默认）。PASS。
+  - rc判读：override写“无-y时模型Bash审批被拒且rc仍为0，验成功只看正文回显不看rc” vs BUGS L154 A无-y rc=0＋正文“`无法执行：Bash 工具权限被拒绝（非交互模式下无审批弹窗）。`”＋L156“预期输出…只是推断，不是实际运行结果”＋L158-161 B有-y rc=0＋正文“`probe-ok`”＋L162判定“A的rc=0是进程码，拒绝体现在正文而非非零退出码”。“rc仍0＋看正文”与证据一致，无反转。PASS。
+- ②默认带-y与“不静默扣费/审批fail-closed”冲突结论：不冲突，过。
+  - 不静默扣费（override:5/:24/:29，主备均超限停派找人）管的是模型额度/切备计费域；`-y` 管的是B通道单次Bash工具审批域，两者正交；BUGS B单发L66“tokens/费用回显：无”，-y未引入新扣费面。无冲突。
+  - 审批fail-closed：A无-y被拒且无实跑输出证明默认拒绝闭合；-y后“HIGH/CRITICAL仍问”保留高风险护栏（--help原文），非全bypass；作用域锁死“L27 B非交互派工默认”，非全局默认；且L27头标“2026-09-11用户定”属授权执行。常规放行vs HIGH仍问成立，不违fail-closed。
+- Result: 过，P0=0。

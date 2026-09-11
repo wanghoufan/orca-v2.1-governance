@@ -145,3 +145,27 @@
 - ③账本断言（PASS）：`docs/model/TASK-MODEL-LOG.jsonl` 仅1行`{"_example":true,…"task":"TASK-000-example"…}`；`wc -l`→1；python json断言→EXIT:0（`_example is True`单行成立）。
 - ④`git status --short`（两包应ignore不可见：PASS）：`git check-ignore -v` 确认两包命中`.gitignore:4/5`，`status`中零出现；其余可见项如实列出：` M .gitignore`、` M AGENTS.md`、` M V2.1_BRIDGE_INTEGRATION_CONTRACT.md`、` M docs/handoff/HANDOFF.md`、R/RM搬家6项（3提示词→`docs/prompts/`、2说明→`docs/history/`、归位表→`docs/templates/`）、D治理审查报告6份、`?? README.md`。
 - 结论：挂（①PASS＋②FAIL×3行号＋③EXIT0＋④两包不可见PASS/其余搬家项列出）。
+
+## -y卡点验证
+
+- 时间：2026-09-11；路径：分发版包根；只测不改（未动业务/包根/override/账本；本节为QA输出追加；各单发不重试，timeout 180s，均未超时）。
+- ① `codebuddy --help`（免费，只读）→ rc=0；`-y` 原文：`-y, --dangerously-skip-permissions               Bypass permission prompts (HIGH/CRITICAL still ask). Isolated-sandbox full pass: CODEBUDDY_IS_SANDBOX=1 (process env only; high-risk). (default: false)`。
+- ② A无-y：`codebuddy --model deepseek-v4.1-flash --effort high -p "Run this shell command and reply with its exact output: echo probe-ok"`
+  - rc：0（codebuddy进程正常退出，未抛错）
+  - stdout原文：`无法执行：Bash 工具权限被拒绝（非交互模式下无审批弹窗）。`
+  - stderr原文（同输出合并返回，续行）：`命令本身无风险，预期输出为 \`probe-ok\`，但这只是推断，不是实际运行结果。若需真跑，可：- 用 \`codebuddy -p -y "<prompt>"\` 或 \`--permission-mode bypassPermissions\` 重跑- 或在 settings 的 \`permissions.allow\` 中加入 \`Bash\``
+  - 含probe-ok实跑输出？否（仅“预期输出”推断字样，无实际shell回显）。
+- ③ B有-y：`codebuddy --model deepseek-v4.1-flash --effort high -y -p "Run this shell command and reply with its exact output: echo probe-ok"`
+  - rc：0
+  - stdout原文：`probe-ok`（合并输出为三引号代码块内 `probe-ok` 一行）
+  - stderr摘要：无（合并输出中无error/拒绝字样）
+- 判定：成立（A拒绝/无实跑输出而B回probe-ok，别项目结论在我方复现成立；注意A的rc=0是进程码，拒绝体现在正文而非非零退出码）。
+- 残留：HIGH/CRITICAL仍问未live负测（destructive探针风险＞收益，记残留不补测）。
+
+## -y备注验收
+
+- 时间：2026-09-11；路径：分发版包根；只测不改（未动业务/包根/override/账本；本节为QA输出追加）。
+- ① `rg -c "\-y" USER_MODEL_OVERRIDE.md docs/roles/builder.md` → `USER_MODEL_OVERRIDE.md:2`、`docs/roles/builder.md:1`，均≥1 PASS。
+- ② `rg -n "漏标按缺派工要素打回" USER_MODEL_OVERRIDE.md` → 命中 `28:` 单行 PASS。
+- ③ `rg -n "只看正文" docs/roles/builder.md` → 命中 `:8`（B行“自测验成功只看正文回显不看rc”）PASS。
+- 结论：过（①2/1＋②:28＋③:8）。
