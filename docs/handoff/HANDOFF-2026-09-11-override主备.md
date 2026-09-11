@@ -30,12 +30,15 @@
 - 修订（-y卡点轮，别项目结论已复现）：codebuddy非交互无-y时Bash审批被拒（rc仍0，看正文判）、加-y常规放行HIGH/CRITICAL仍问（--help原文）；B派工默认带-y，规则进override:27，证据BUGS -y卡点验证节。
 - 修订（-y备注轮）：builder卡:8＋override:28显式-y标注补齐（漏标打回），reviewer过+qa过+supervisor过打回0/2；待push批次并入。
 - 修订（y轮P2P3+逐派轮）：P2域限定×2+标题+判据放宽+勿删通道、P3残留三句全修；逐派账四规则+DISPATCH两行（used主×2，切备空过）+经验一句+schema exit0；reviewer过+qa两派过+supervisor过打回0/2；history两报告属另任务不并入；待push明令。
+- 修订（builder槽强制轮，用户P0令）：派工基础设施后端≠表定B通道，builder槽被muse-spark顶（偏离）；自本轮起只走表定主用，禁令进override builder行＋两包同步；在飞派收尾；换通道开新链；B不通贴原文停派不自回切。本次偏离记HANDOFF（分发账本P1-3冻结，代账本备注）。S1/E1补齐；A1维持缺席正确（死指引不进包，听reviewer）。
+- 修订（槽轮终检）：reviewer过+qa挂被裁不成立（E1包内无报告）+supervisor过打回0/2；待push明令。
 
 ## 母版实绩存档（分发冻结前移出账本，P1-3）
 - `{"task":"TASK-override主备-2026-09-11","result":"FAIL","rework":0,"role":"task-manager","model":"opencode-go/muse-spark-1.3-contributor"}`
 - `{"task":"TASK-override-ID核准-2026-09-11","result":"PASS","rework":0,"role":"task-manager","model":"opencode-go/muse-spark-1.3-contributor"}`
 - `{"task":"TASK-全表真测-2026-09-11","result":"PASS","rework":0,"role":"qa","model":"opencode/mimo-v2.5-free"}`
 - 全行含 date/project/escalated/tokens/cost_cny 键（略写），账本已恢复 `_example` 示例行供新项目首任务前删除。
+- 逐派实测存档（P1-1冻回，TASK-dispatchlog-test-2026-09-11）：experience-recorder主`opencode/mimo-v2.5-free` PASS＋qa主同模型PASS（used主×2，切备零行）。
 
 ## 跳步记一句
 单文件小修（仅override表29行）跳planner/product，不跳code-reviewer+qa+supervisor，合规。

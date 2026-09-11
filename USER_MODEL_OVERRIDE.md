@@ -8,7 +8,7 @@
 |---|---|---|---|---|
 | task-manager | opencode-go/muse-spark-1.3-contributor | deepseek-v4.1-flash | codebuddy | 备用=B通道codebuddy显式传参（`--model deepseek-v4.1-flash --effort high`），档位high写口头；磁盘现状pi默认glm/codebuddy默认hy3，B非默认必须显式调；B已测（BUGS 09-11只读rc0＋单发pong PASS） |
 | supervisor | opencode/muse-spark-1.3-contributor-free | opencode-go/muse-spark-1.3-contributor | —（默认本窗口 subagent） | 主用live已核（provider `opencode`）；备用=GO Spark |
-| builder | deepseek-v4.1-flash | opencode/muse-spark-1.3-contributor-free | codebuddy | 主用=B通道（用户定，A已测保留）；备用=FREE Spark live已核；B已测见BUGS 09-11 |
+| builder | deepseek-v4.1-flash | opencode/muse-spark-1.3-contributor-free | codebuddy | 主用=B通道（用户定，A已测保留）；备用=FREE Spark live已核；B已测见BUGS 09-11；只走表定主用（muse-spark禁顶builder槽，在飞派收尾；换通道即开新链记HANDOFF＋账本；B不通贴原文停派找人，不自回切） |
 | planner | codex/gpt-5.6-sol | opencode-go/muse-spark-1.3-contributor | —（默认本窗口 subagent） | 拆活；备用=GO Spark |
 | code-reviewer | codex/gpt-5.6-terra | opencode-go/glm-5.3-flash | —（默认本窗口 subagent） | 复核；备用=原主用 |
 | qa | opencode/mimo-v2.5-free | opencode-go/mimo-v2.5 | —（默认本窗口 subagent） | 测试；主live已核（provider `opencode`）；备=GO base（非Pro，live已核，另有`mimo-v2.5-pro`独立勿混） |

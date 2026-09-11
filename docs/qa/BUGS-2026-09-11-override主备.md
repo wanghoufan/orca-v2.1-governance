@@ -169,3 +169,39 @@
 - ② `rg -n "漏标按缺派工要素打回" USER_MODEL_OVERRIDE.md` → 命中 `28:` 单行 PASS。
 - ③ `rg -n "只看正文" docs/roles/builder.md` → 命中 `:8`（B行“自测验成功只看正文回显不看rc”）PASS。
 - 结论：过（①2/1＋②:28＋③:8）。
+
+## 同步验收
+
+- 时间：2026-09-11；路径：分发版包根；只测不改（未动业务/包根/override/账本；本节为QA输出追加）。
+- ①双断言（supervisor.md:6-20 TASK块＋:26-42 DISPATCH块照粘，路径按需换，均静默PASS）：
+  - 母版TASK `docs/model/TASK-MODEL-LOG.jsonl` → EXIT:0；母版DISPATCH `docs/model/DISPATCH-LOG.jsonl` → EXIT:0。
+  - 新包TASK `新项目模板包/docs/model/TASK-MODEL-LOG.jsonl` → EXIT:0；新包DISPATCH → EXIT:0。
+  - 老包TASK `老项目迁移模板包/docs/model/TASK-MODEL-LOG.jsonl` → EXIT:0；老包DISPATCH → EXIT:0。
+  - 结论：① PASS（6/6 EXIT 0；_example单行自动跳过）。
+- ②母版vs两包 `diff -rq --exclude=.git --exclude=.DS_Store` 原文（节选，EXIT均为0）：
+  - vs新包：`Only in .: .gitignore`／`AGENTS.md differ`／`README.md differ`／`V2.1_BRIDGE… differ`／`Only docs/handoff: HANDOFF.md,HANDOFF-2026-09-11-override主备.md`／`Only docs: history,prompts,sop,templates`／`Only docs/qa: BUGS-2026-09-11-override主备.md`／`Only docs/review: CODE_REVIEW-2026-09-11-override主备.md`／`supervisor.md differ`／`Only 新项目模板包: 编排者提示词.md,外部开发者提示词.md,归位表.template.md`。
+  - vs老包：同上结构，仅包侧为 `编排者/外部/迁移整理/归位表` 四个原位文件。
+  - 映射后内容比对（排除三类：.gitignore／README补记／已知路径前缀）：
+    - SAME（18处）：USER_MODEL_OVERRIDE／GOVERNANCE_VERSION／经验一句话／roles×9（除supervisor）／TASK／DISPATCH／PLAN／BUGS.template／CODE_REVIEW.template／PRODUCT_BACKLOG／HANDOFF.template／EXT-WORKLOG／编排者提示词(map SAME)／归位表(map SAME)。
+    - 路径前缀类（预期内，剔除）：V2.1 contract 2行 `docs/prompts/xxx`→`xxx`（新老包同）；老包迁移整理1行同类；新包缺迁移整理系设计省略（新包README放入列表无此项）。
+    - 非预期差×3（零容忍挂）：
+      - A1 AGENTS.md缺行（两包同）：母版有`两包同步：母版治理改动提交后同步两本地包…diff非预期差零容忍`，两包均无（diff hunk `-两包同步`）。
+      - S1 supervisor.md缺块（两包同）：母版:26-42 DISPATCH校验块（8键＋used/result枚举）两包均缺17行。
+      - E1 外部开发者提示词.md stale（两包同）：母版`历史审查报告已删见README` vs 两包`（含治理审查报告）一律不动`旧措辞。
+  - 结论：② FAIL（A1＋S1＋E1三类实质差；历史/HANDOFF实例/BUGS实例/sop/history省略系包设计排除，不计入本次三类非预期差）。
+- ③两包DISPATCH各为_example单行：`wc -l` 新包1／老包1／母版1；内容均为`{"_example":true,…"task":"TASK-000-example"…}`单行；`rg -n _example` 各命中1:1。结论 PASS。
+- ④两包README补记节存在：`grep -n 同步补记` → 新包`README.md:23:## 同步补记（母版常驻同步，新增文件去向）`、老包`README.md:24`同节。结论 PASS。
+- 总结论：挂（①PASS＋②FAIL×3＋③PASS＋④PASS；待A1/S1/E1三处同步后可转过）。
+
+## 槽禁令验收
+
+- 时间：2026-09-11；路径：分发版包根；只测不改（未动业务/包根/override/两包；本节为QA输出追加）。
+- ① `rg -c "禁顶builder槽" USER_MODEL_OVERRIDE.md 新项目模板包/USER_MODEL_OVERRIDE.md 老项目迁移模板包/USER_MODEL_OVERRIDE.md` → 母版`1`／新包`1`／老包`1`，三处均≥1 PASS。
+- ② supervisor断言块 diff（整文件diff，TASK块:6-20＋DISPATCH块:26-42含其中）：
+  - `diff docs/roles/supervisor.md 新项目模板包/docs/roles/supervisor.md` → 零输出 PASS。
+  - `diff docs/roles/supervisor.md 老项目迁移模板包/docs/roles/supervisor.md` → 零输出 PASS（三文件均为45行逐行一致）。
+- ③ 上轮A1/S1/E1重跑：
+  - A1：`diff AGENTS.md` vs两包各2 hunk：`:26` 路径前缀类（母版`docs/prompts/编排者提示词 :10` vs 包内`编排者提示词 :10`；`git diff`证该前缀随搬家提交已入HEAD，包内裸名与其版式相符，沿既有“路径前缀类预期内剔除”口径）＋`:49` A1原hunk（母版未提交新增`两包同步…`行，两包均无，母版独有）。实质差仍唯一=A1，预期内 PASS。
+  - S1：见②，零差 PASS（上轮缺17行已补齐）。
+  - E1：`diff docs/prompts/外部开发者提示词.md 新包/外部开发者提示词.md` → 仅`16c16` 1 hunk，老包同。母版`（历史审查报告已删见 README；EXT-WORKLOG 例外，见 §一.2）` vs 两包`（EXT-WORKLOG 例外，见 §一.2）`：旧stale `（含治理审查报告）一律不动`已清，但母版parenthetical未同步，diff非零 FAIL。
+- 结论：挂（①PASS＋②PASS＋③A1预期/S1零差/E1残留1行非零；补齐该parenthetical或书面确认为母版独有后可转过）。

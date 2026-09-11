@@ -45,7 +45,8 @@ planner 拆→builder 写→code-reviewer 复核→qa 测→product-reviewer 验
 - schema（全单行，枚举锁死）：`{"task","project","date","role","model","result":"PASS/FAIL","rework":数字,"escalated":"YES/NO","escalation_reason":null或一句,"tokens":数字或null,"cost_cny":数字或null}`。`cost_cny` 与 `tokens` 拿不到填 `null`，不许编；`project`=仓库根目录名（HANDOFF Stage ID 括号备注，如 radar-live），`date` 取 `YYYY-MM-DD`。
 - 分工：builder/senior 写一行初版→supervisor 校验 JSON 合法+返工数→编排者判结果落盘。
 - `result`=任务级 PASS/FAIL（超限切备成功仍可 PASS；FAIL 须配 escalation_reason/备注说明是任务挂还是模型挂）。
-- 逐派记录：每次派工收工编排者往 `docs/model/DISPATCH-LOG.jsonl` 记一行（schema：date/task/role/model/used主或备/runtime/result PASS或FAIL/note；示例行不参与统计；tokens/cost不记）；与派工显式两行互验；supervisor抽查最近一切备行三处对得上。
+- 逐派记录：每次派工收工编排者往 `docs/model/DISPATCH-LOG.jsonl` 记一行（schema：date/task/role/model/used主或备/runtime（本窗口/codebuddy/deepseek-bridge/—）/result PASS或FAIL/note；示例行不参与统计，首个真实派前删除；tokens/cost不记；寿命随任务账本归档）；与派工显式两行互验；supervisor抽查最近一切备行三处对得上。
+- 两包同步：母版治理改动提交后同步两本地包（`新项目模板包/`、`老项目迁移模板包/`）并在 HANDOFF 记一行；`diff` 非预期差零容忍（常驻同步，用户定）。
 - 换模型决策先读账本：返工多、常升级的任务类型优先换强模型。
 
 ## 缓存五条（各家通用，够用就行；本窗口 subagent 链适用，External Runtime 走 builder 通道，换 Runtime/换模型/升级即开新链，见编排者 :10-11；外部施工见外部提示词）
