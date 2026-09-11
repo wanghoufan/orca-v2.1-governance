@@ -36,7 +36,7 @@ planner 拆→builder 写→code-reviewer 复核→qa 测→product-reviewer 验
 
 - 触发：① 同一 Task 累计被 supervisor 打回 2 次自动升（QA 挂不算，只算 supervisor 打回） ② 编排者判定 P0-hard 手动升。满足一条即升。
 - 计数口径：rework=被 supervisor 打回次数；QA 挂/自修好不计数，不断链也累计。
-- 只升当次，不永久转正。换模型即开新链（旧链结论进 HANDOFF，缓存不跨链）。升级原因 + 返工次数记进任务账本。senior 接手后不再计数升级，被 supervisor 打回 2 次即停线找人（列阻塞＋要拍的板，不再升，无更高角色）。
+- 只升当次，不永久转正。换模型/换 Runtime 即开新链（旧链结论进 HANDOFF，缓存不跨链）。升级原因 + 返工次数记进任务账本。senior 接手后不再计数升级，被 supervisor 打回 2 次即停线找人（列阻塞＋要拍的板，不再升，无更高角色）。
 - senior 模型读 `USER_MODEL_OVERRIDE.md` 的 senior-expert 行。
 
 ## 任务账本（换模型的依据，一个项目一个文件）

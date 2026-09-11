@@ -1,4 +1,4 @@
-# HANDOFF｜override主备+双通道+显式+FREE规则（2026-09-11）
+# HANDOFF｜override主备+双通道+显式+FREE规则（2026-09-11，过程存档，现状以修订节＋复验报告为准）
 
 - Captured at（YYYY-MM-DD HH:MM）：2026-09-11
 - Stage ID（本阶段叫什么）：override主备表结构+冒烟（分发版内治理改）
@@ -25,6 +25,7 @@
 - 修订（全表真测轮）：B单发rc0 pong PASS；codex sol/luna各rc0 pong PASS（1.2万tokens级）；GO三ID 3/3 PASS；FREE两ID 2/2 PASS无429不触发升GO；20ID全落已测，仅A沿用已测结论；supervisor终验过打回0/2；账本补第三行PASS；剩P0=0收工。
 - 修订（P1P2轮）：P1-1禁令加作用域/P1-2触发前缀现表化/P1-3账本冻回_example+3行存档/P1-4更新说明补增量/P1-5监督独立行（模型表为准）/P1-6清待真测/P1-7B指回业务仓Contract路径；P2十项文本全修（sop文件未移出留待明令）；reviewer过+qa三组过+supervisor终检过打回0/2；待二次push明令。
 - 修订（P1-7改A轮，用户定）：Contract拷入包根（diff仅多分发注记，已修正一处转录差），L26改随包分发；待复检后连P1P2轮改动一次push。
+- 修订（B源修轮，用户定B）：业务仓源§0①②改已落地＋4处改新正典（该仓其余未提交改动非本轮所动，不代提交），重拷进包；P2-A~J全修（QA-04关环）；reviewer过+qa过+supervisor终检过打回0/2；本轮不落账本行（P1-3原则）；待push明令。
 
 ## 母版实绩存档（分发冻结前移出账本，P1-3）
 - `{"task":"TASK-override主备-2026-09-11","result":"FAIL","rework":0,"role":"task-manager","model":"opencode-go/muse-spark-1.3-contributor"}`

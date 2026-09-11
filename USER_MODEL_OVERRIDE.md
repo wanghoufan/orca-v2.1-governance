@@ -6,9 +6,9 @@
 
 | 角色 | 主用模型（精确ID，禁别名/前缀） | 备用模型（精确ID，同角色） | 执行通道/Runtime（可选，空=本窗口 subagent 原行为；有值由派工基础设施自动调用，TM 不手动开终端） | 备注 |
 |---|---|---|---|---|
-| task-manager | opencode-go/muse-spark-1.3-contributor | deepseek-v4.1-flash | codebuddy（PI智能体B通道，已测：BUGS 09-11只读rc0＋单发pong PASS） | 备用=B通道codebuddy显式传参（`--model deepseek-v4.1-flash --effort high`），档位high写口头；磁盘现状pi默认glm/codebuddy默认hy3，B非默认必须显式调 |
+| task-manager | opencode-go/muse-spark-1.3-contributor | deepseek-v4.1-flash | codebuddy | 备用=B通道codebuddy显式传参（`--model deepseek-v4.1-flash --effort high`），档位high写口头；磁盘现状pi默认glm/codebuddy默认hy3，B非默认必须显式调；B已测（BUGS 09-11只读rc0＋单发pong PASS） |
 | supervisor | opencode/muse-spark-1.3-contributor-free | opencode-go/muse-spark-1.3-contributor | —（默认本窗口 subagent） | 主用live已核（provider `opencode`）；备用=GO Spark |
-| builder | deepseek-v4.1-flash | opencode/muse-spark-1.3-contributor-free | codebuddy（PI智能体B通道，已测见BUGS 09-11；A=Bridge已测保留可切回见规则） | 主用=B通道（用户定，A已测保留）；备用=FREE Spark live已核 |
+| builder | deepseek-v4.1-flash | opencode/muse-spark-1.3-contributor-free | codebuddy | 主用=B通道（用户定，A已测保留）；备用=FREE Spark live已核；B已测见BUGS 09-11 |
 | planner | codex/gpt-5.6-sol | opencode-go/muse-spark-1.3-contributor | —（默认本窗口 subagent） | 拆活；备用=GO Spark |
 | code-reviewer | codex/gpt-5.6-terra | opencode-go/glm-5.3-flash | —（默认本窗口 subagent） | 复核；备用=原主用 |
 | qa | opencode/mimo-v2.5-free | opencode-go/mimo-v2.5 | —（默认本窗口 subagent） | 测试；主live已核（provider `opencode`）；备=GO base（非Pro，live已核，另有`mimo-v2.5-pro`独立勿混） |
@@ -18,8 +18,8 @@
 | senior-expert | codex/gpt-5.6-terra | codex/gpt-5.6-sol | —（默认本窗口 subagent） | 只接升级任务，平时不派；备用=原主用 |
 
 规则（2.1仅保留）：
-- 精确ID：`gpt-5.6`别名指Sol，禁用；必须写全 `codex/gpt-5.6-terra`。codex CLI实调用剥 `codex/` 前缀用短名（如 `-m gpt-5.6-terra`，已真测PASS），表内全ID为ORCA路由ID（短名直调全ID必400，非模型故障）。
-- 池子：各行按表走，不串池（builder主用B走codebuddy，A=Bridge保留可切回；TM主用只走 OPENCODE_GO，备用B按用户定名单例外、B真测前不静默切）；换池须改表。
+- 精确ID：`gpt-5.6`别名指Sol，禁用；必须写全 `codex/gpt-5.6-terra`。codex CLI实调用剥 `codex/` 前缀用短名（如 `-m gpt-5.6-terra`，已真测PASS），表内全ID为ORCA路由ID（短名直调全ID必400，非模型故障；codex/opencode系为路由ID，codebuddy通道用其原生ID见:27，调用形见备注`--model`）。
+- 池子：各行按表走，不串池（builder主用B走codebuddy，A=Bridge保留可切回；TM主用只走 OPENCODE_GO，备用B按用户定名单例外，超限切备记账）；换池须改表。
 - 档位（如 medium）写在派工口头指令里，模型列只写精确 ID。
 - 备用你定；不静默扣费（主备均超限则停派找人）。
 - 分工：sol 偏拆活/兜底升级，builder 通道双轨：A=Bridge（`deepseek-flash` via `deepseek-bridge`，已测）/B=codebuddy（`deepseek-v4.1-flash --effort high`，已测：BUGS 09-11），当前主用B（用户定），A保留可切回（显示名称按用户口径；机器配置以已验证精确 ID 为准，不编 rank 分数）；池映射：FREE=opencode/（Zen，live核无`opencode-free` provider），GPT_PRO=codex/，GO=opencode-go/，BRIDGE=deepseek-bridge/，PI=codebuddy/；超限切备用=编排者在同角色备用内自动切并记账，主备均超限停派找人。

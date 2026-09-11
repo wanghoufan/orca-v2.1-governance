@@ -5,7 +5,7 @@
 | OVERRIDE-QA-01 TM备通道歧义 | P0 | YES | 读 `USER_MODEL_OVERRIDE.md` 第9行：备用列裸ID `deepseek-flash`＋Runtime列`—`，但备注写“备用=pi默认/codebuddy（显示deepseek-v4.1-flash），备用Runtime是否走pi待确认”；按P0“双通道不混＋切换语义无歧义”判挂：切备时不知走A（bridge）还是B（pi），且裸ID缺池前缀 | PASS（补测已闭环） | TM定切换语义＋补TM备Runtime（`pi/codebuddy`或确认留空） | 静态必现，不依赖探针 |
 | OVERRIDE-QA-02 GO mimo备后缀待确认 | P0 | YES | 读表qa行备 `opencode-go/mimo-v2.5`、experience行备同；备注自标“精确后缀待确认”；且主 `opencode-free/mimo-v2.5-free` 有`-free`后缀、备无后缀，前后不一致不可直调 | PASS（补测已闭环） | 用户确认GO mimo精确后缀并改表 | 静态必现；影响qa＋experience两行备 |
 | OVERRIDE-QA-03 FREE Spark映射待确认 | P0 | YES | 读表supervisor主 `opencode-free/muse-spark-1.3-contributor-free` 备注自标“主用待确认即FREE Spark”；builder备同ID备注自标“备用=FREE Spark待确认”；neat主同ID无标注但同ID联动待确认；主用含待确认即P0“精确ID可识别”不满足 | PASS（补测已闭环） | 用户确认FREE Spark正式精确ID（或书面认领表内即正式）后去待确认标注 | 静态必现；涉supervisor主/builder备/neat主 |
-| OVERRIDE-QA-04 codex路由ID≠CLI直传参 | P1 | NO | 探针：`codex exec -m "gpt-5.6-terra" … "reply with exactly: pong"`→EXIT 0 pong（PASS）；`codex exec -m "codex/gpt-5.6-terra" …`→EXIT 1，400 `The 'codex/gpt-5.6-terra' model is not supported when using Codex with a ChatGPT account`；证明Model列是ORCA路由ID（池/模型），非codex `-m`直传参，需剥 `codex/` 前缀 | FAIL（文档歧义，非模型故障） | 在override规则或HANDOFF补一句“codex CLI实调用剥前缀短名” | 短名PASS见Verification；全ID必现400 |
+| OVERRIDE-QA-04 codex路由ID≠CLI直传参 | P1 | NO | 探针：`codex exec -m "gpt-5.6-terra" … "reply with exactly: pong"`→EXIT 0 pong（PASS）；`codex exec -m "codex/gpt-5.6-terra" …`→EXIT 1，400 `The 'codex/gpt-5.6-terra' model is not supported when using Codex with a ChatGPT account`；证明Model列是ORCA路由ID（池/模型），非codex `-m`直传参，需剥 `codex/` 前缀 | PASS（已落地见 override:21；失败原因保留作trace） | 在override规则或HANDOFF补一句“codex CLI实调用剥前缀短名” | 短名PASS见Verification；全ID必现400 |
 | OVERRIDE-QA-05 B通道无可执行探针 | P1 | NO | pi `0.84.2`、codebuddy `2.148.0` 二进制存在，但表内B通道“精确ID暂按`deepseek-flash`记、档位high写口头、Runtime是否填`pi/codebuddy`待测后定”，无已确认只读探针语句，本轮未编命令未真调 | 已给探针待真测（B只读PASS，真可达待批） | 用户定B探针语句后再测（见Verification建议） | 只测B（A已测过不重测），本次没验如实记 |
 
 ## 静态校验（PASS项如实记）
@@ -122,3 +122,15 @@
 - ② `rg -n "Contract存业务仓|分发包仅记" USER_MODEL_OVERRIDE.md` → EXIT:1 零命中 PASS；现L26为“依据：Contract随包分发（包根 `V2.1_BRIDGE_INTEGRATION_CONTRACT.md`，§1三元组…）”旧B措辞已清。
 - ③ `wc -l V2.1_BRIDGE_INTEGRATION_CONTRACT.md` → 149（任务目标写147，实测149=业务147+注记2，不一致）；§1 L24三元组齐：model `deepseek-flash`＋runtime `deepseek-bridge`＋route `deepseek-bridge/deepseek-flash` PASS。
 - 结论：挂（①PASS＋②PASS＋③行数149≠147字面挂、三元组齐；149与①自洽，疑期望147为加注前旧数，待确认改为149后可转过）。
+
+## B源修+P2验收
+
+- 时间：2026-09-11；范围：四组（①拷贝diff ②旧route分类 ③待真测清零 ④账本单行+断言）；只测不改（未动业务/包根/override/账本；本节为QA输出追加）。
+- ① `diff -u 业务仓源 包根拷贝`（源 `/Users/zzymima0000/Developer/coding/Infrastructure/orca-deepseek-bridge/docs/V2.1_BRIDGE_INTEGRATION_CONTRACT.md` vs 包根 `V2.1_BRIDGE_INTEGRATION_CONTRACT.md`）→ 仅 `7a8,9` 两行新增（`> 分发注记…`＋`> 空行`），与包根L8-L9一致；`wc -l` 业务147／包根149（149=147+2）；结论 PASS（“仅差注记块”成立）。
+- ② `rg -n "deepseek-bridge/deepseek-v4-flash"` 两文件：
+  - 业务仓源 → EXIT:0，命中4行：L14/L20/L132/L142（行号以业务仓147行版为准），原文均含“旧 `deepseek-bridge/deepseek-v4-flash` 为兼容 alias”＋“禁作新默认/不得再作新默认/不写虚构别名”——全部分类：兼容声明。
+  - 包根拷贝 → EXIT:0，命中4行：L16/L22/L134/L144（=业务仓行号+2，与注记块插入自洽），原文同上——全部分类：兼容声明。
+  - 实操（作新默认/canonical/模型列/route主用）计数：0；结论 PASS（实操应零成立）。
+- ③ `rg -n "待真测|B真测前" USER_MODEL_OVERRIDE.md` → EXIT:1，零命中 PASS。
+- ④ 账本：`cat docs/model/TASK-MODEL-LOG.jsonl` 仅1行 `{"_example":true,…"task":"TASK-000-example"…}`；`wc -l` → `1 docs/model/TASK-MODEL-LOG.jsonl`；`rg -n "_example" docs/model/TASK-MODEL-LOG.jsonl` → EXIT:0命中`1:{"_example":true,…}`；supervisor断言块（`docs/roles/supervisor.md:6-20`照粘，路径换现账本）→ EXIT:0静默 PASS。
+- 结论：过（①PASS＋②兼容8/实操0＋③EXIT1＋④单行_example＋断言EXIT0）。
