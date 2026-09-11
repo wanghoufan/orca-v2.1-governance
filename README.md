@@ -1,0 +1,31 @@
+# ORCA V2.1 治理模板分发版｜导航（先读我）
+
+开工读盘顺序（全体系唯一）：`AGENTS.md` → `docs/roles/`（本次角色卡）→ 根 `USER_MODEL_OVERRIDE.md`（模型表，有就用它）→ `docs/handoff/`（交接现状）→ 根 `经验一句话.md` → 任务目标放最后。
+
+## 根目录（现行5＋2）
+
+- `AGENTS.md`：全员规则（一页）
+- `USER_MODEL_OVERRIDE.md`：模型表（主用/备用/RUNTIME，改表即生效，精确ID禁别名）
+- `V2.1_BRIDGE_INTEGRATION_CONTRACT.md`：Bridge通道技术合同（包内拷贝，原件在业务仓，更新回仓重拷）
+- `GOVERNANCE_VERSION`：版本（2.1）
+- `经验一句话.md`：收工一句经验
+- 本 `README.md`：导航；`USER_MODEL_OVERRIDE.md` 规则即模型切换口径
+
+## docs/ 地图
+
+- `roles/`：10张角色卡（只看本次派的角色）
+- `prompts/`：编排者/外部开发者/迁移整理三份提示词
+- `history/`：2.0重塑说明、2.1更新说明（历史，看现行先看根）
+- `templates/`：归位表模板
+- `pm/` `qa/` `review/`：计划/测试/评审落盘（各照 template）
+- `handoff/`：交接（含模板）；`model/`：模型账本（首任务前删示例行）
+- `sop/`：仅模板示例，新项目自建
+
+## 已删除（用户令，结论均已落实）
+
+- 历史治理审查报告6份（09-09→09-11）：P1/P2结论已全部修完验过，删前状态见 git 历史；现行结论以包内文件为准
+- 根散文件已归位：三提示词→`prompts/`、两说明→`history/`、归位表→`templates/`
+
+## 本地冻结副本（不入库）
+
+- `新项目模板包/`、`老项目迁移模板包/`：用户本地副本，仓库不收录（见 `.gitignore`）

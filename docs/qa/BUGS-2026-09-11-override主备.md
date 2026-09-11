@@ -134,3 +134,14 @@
 - ③ `rg -n "待真测|B真测前" USER_MODEL_OVERRIDE.md` → EXIT:1，零命中 PASS。
 - ④ 账本：`cat docs/model/TASK-MODEL-LOG.jsonl` 仅1行 `{"_example":true,…"task":"TASK-000-example"…}`；`wc -l` → `1 docs/model/TASK-MODEL-LOG.jsonl`；`rg -n "_example" docs/model/TASK-MODEL-LOG.jsonl` → EXIT:0命中`1:{"_example":true,…}`；supervisor断言块（`docs/roles/supervisor.md:6-20`照粘，路径换现账本）→ EXIT:0静默 PASS。
 - 结论：过（①PASS＋②兼容8/实操0＋③EXIT1＋④单行_example＋断言EXIT0）。
+
+## 搬家基线重测
+
+- 时间：2026-09-11；路径：分发版包根；两包（`新项目模板包/`、`老项目迁移模板包/`）冻结不测；只测不改（未动业务/包根/override/账本；本节为QA输出追加）。
+- ①读盘冒烟（PASS 6/6可读）：`AGENTS.md`、`docs/roles/task-manager.md`、`USER_MODEL_OVERRIDE.md`、`docs/handoff/HANDOFF.md`、`经验一句话.md`、`README.md` 全存在可读。
+- ②`rg -n "编排者提示词\.md|外部开发者提示词\.md|迁移整理提示词\.md|归位表\.template\.md|2\.0-重塑说明\.md|2\.1-更新说明\.md" --glob '!新项目模板包/**' --glob '!老项目迁移模板包/**' .` → EXIT:0，命中7行：
+  - PASS 4行：`docs/history/2.0-重塑说明.md:10`（`docs/prompts/迁移整理提示词.md`）、`:15`（`docs/prompts/编排者提示词.md`）、`V2.1_BRIDGE_INTEGRATION_CONTRACT.md:17`（`docs/prompts/编排者提示词.md`）、`:18`（`docs/prompts/外部开发者提示词.md`）。
+  - FAIL 3行（5 token缺`docs/`前缀）：`docs/review/CODE_REVIEW-2026-09-11-override主备.md:30`（`` `2.1-更新说明.md:6` ``、`` `2.0-重塑说明.md:7` ``）、`:40`（`` `编排者提示词.md:10` ``）、`:48`（`` `外部开发者提示词.md:16` ``、`` `2.1-更新说明.md:1` ``）。结论 FAIL。
+- ③账本断言（PASS）：`docs/model/TASK-MODEL-LOG.jsonl` 仅1行`{"_example":true,…"task":"TASK-000-example"…}`；`wc -l`→1；python json断言→EXIT:0（`_example is True`单行成立）。
+- ④`git status --short`（两包应ignore不可见：PASS）：`git check-ignore -v` 确认两包命中`.gitignore:4/5`，`status`中零出现；其余可见项如实列出：` M .gitignore`、` M AGENTS.md`、` M V2.1_BRIDGE_INTEGRATION_CONTRACT.md`、` M docs/handoff/HANDOFF.md`、R/RM搬家6项（3提示词→`docs/prompts/`、2说明→`docs/history/`、归位表→`docs/templates/`）、D治理审查报告6份、`?? README.md`。
+- 结论：挂（①PASS＋②FAIL×3行号＋③EXIT0＋④两包不可见PASS/其余搬家项列出）。

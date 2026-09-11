@@ -26,6 +26,7 @@
 - 修订（P1P2轮）：P1-1禁令加作用域/P1-2触发前缀现表化/P1-3账本冻回_example+3行存档/P1-4更新说明补增量/P1-5监督独立行（模型表为准）/P1-6清待真测/P1-7B指回业务仓Contract路径；P2十项文本全修（sop文件未移出留待明令）；reviewer过+qa三组过+supervisor终检过打回0/2；待二次push明令。
 - 修订（P1-7改A轮，用户定）：Contract拷入包根（diff仅多分发注记，已修正一处转录差），L26改随包分发；待复检后连P1P2轮改动一次push。
 - 修订（B源修轮，用户定B）：业务仓源§0①②改已落地＋4处改新正典（该仓其余未提交改动非本轮所动，不代提交），重拷进包；P2-A~J全修（QA-04关环）；reviewer过+qa过+supervisor终检过打回0/2；本轮不落账本行（P1-3原则）；待push明令。
+- 修订（排布搬家轮，用户定B）：三提示词→docs/prompts/、两说明→docs/history/、归位表→docs/templates/（git mv），6报告git rm（用户令），README新建，两包ignore不入库；引用同步＋HANDOFF报告指回改现行；reviewer打回1处（外部:16）TM已改、qa历史三行冻结加注记；supervisor终检过打回0/2；初级builder=DeepSeek与表一致；待push明令。
 
 ## 母版实绩存档（分发冻结前移出账本，P1-3）
 - `{"task":"TASK-override主备-2026-09-11","result":"FAIL","rework":0,"role":"task-manager","model":"opencode-go/muse-spark-1.3-contributor"}`

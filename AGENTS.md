@@ -23,7 +23,7 @@ task-manager=编排者（唯一对人说话）｜supervisor=监督者（只对�
 
 ## 派工顺序
 
-planner 拆→builder 写→code-reviewer 复核→qa 测→product-reviewer 验→supervisor 复检→编排者收齐找人。经验/neat-freak 只在收尾派一次。本窗口内派 subagent，全自动。三类例外（人肉调试/外部施工/迁移基线）可起终端，见编排者提示词 :10。
+planner 拆→builder 写→code-reviewer 复核→qa 测→product-reviewer 验→supervisor 复检→编排者收齐找人。经验/neat-freak 只在收尾派一次。本窗口内派 subagent，全自动。三类例外（人肉调试/外部施工/迁移基线）可起终端，见 docs/prompts/编排者提示词 :10。
 跳步：单文件小修可跳 planner/product，不可跳 code-reviewer+qa+supervisor；跳了记一句原因。分歧听谁的：技术分歧听 code-reviewer，范围分歧听 Task Manager。
 续 session：同一功能/Bug 链（开发→QA→返工→再 QA）尽量续上一个 session（codex 用 resume），不要每轮新开；返工派必须续。用完不急着关，关了重开更贵。resume 由派工基础设施保持，编排者不手动开终端；升级换 senior-expert 时开新链，不续旧 session。
 - External Builder Runtime 通用插座：builder 仍是 builder（9+1 不新增），Runtime 仅为执行通道（本窗口 subagent / codex / opencode / External Runtime），由 override「执行通道/Runtime」列或口头指定、派工基础设施自动调用；Runtime 自带 internal reviewer/QA/self-check 仅为自检证据，不能替代 code-reviewer/qa/product-reviewer/supervisor；permission_request 走机器可读→ORCA/TM 审批单点→用户定→回 runtime，builder 不直聊用户。

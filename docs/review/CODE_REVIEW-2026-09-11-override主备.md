@@ -51,3 +51,15 @@
 - ②旧alias合法命中只剩兼容声明：`rg -c "deepseek-bridge/deepseek-v4-flash"` 源=4／包=4，行位对应（源L14/L20/L132/L142＝包L16/L22/L134/L144，差2系注记位移），逐处均为“为兼容alias”＋“禁作新默认/不写虚构别名”，零实操默认；§1三元组行内“§0/§16/§18.1中的旧route一律读作兼容alias”系通用指称无字面旧串，不计入实操（任务口径）；Canary L29 `deepseek-v4-flash`（无前缀，42处实证）系Harness历史取证非alias。PASS。
 - ③P2尾巴无漂移、Runtime瘦身未丢A：override L9/L11 Runtime列实测均为精确`codebuddy`（余8行均为`—（默认本窗口subagent）`，列值零`pi/codebuddy`）；L22“池子…builder主用B走codebuddy，A=Bridge保留可切回；TM主用只走OPENCODE_GO，备用B名单例外”无B真测前半句（`rg 待真测|待测`全表仅L27标题“留测待切”＋“批量压测待批”系额度后续，按既往复核非stale）；L21含“codebuddy通道用其原生ID见:27，调用形见备注`--model`”半句在位；A保留三处在位（L11“A已测保留”＋L22“A=Bridge保留可切回”＋L25/L27双轨“A保留可切回”），备注`pi默认glm/codebuddy默认hy3`系磁盘现状说明非Runtime列，未丢A。HANDOFF.template:14“格式见包根Contract §10 decisionFile＋approval”在位；外部:16“（EXT-WORKLOG 例外，见 §一.2）”在位；AGENTS L39“换模型/换 Runtime即开新链”＋L50“换 Runtime/换模型/升级即开新链”＋L29插座句在位拼写无漂移；HANDOFF-override首行“过程存档，现状以修订节＋复验报告为准”在位；BUGS QA-04状态PASS＋“已落地见override:21”在位；更新说明标题“（相对 2.0 只加缓存五条；09-11 增量见末节）”scope在位；全表`codebuddy/deepseek-flash/deepseek-v4.1-flash/deepseek-bridge`拼写零漂移。PASS。
 - Result: 过，P0=0。
+
+## 排布搬家复核（2026-09-11，只读）
+
+- 范围：包根（两包冻结未看，`.git/`排除）＋`git diff HEAD`（git mv保留历史：3提示词→`docs/prompts/`、2说明→`docs/history/`、归位表→`docs/templates/`、6报告git rm、README新建、`.gitignore`加两包）。
+- ①裸文件名：现行5处均带新前缀PASS；本文件历史节旧路径引用系搬家前快照，按包内历史不动冻结不改。
+- ②`治理审查报告`字样：README已删上下文PASS；外部`:16`括号已改“历史审查报告已删见 README”（TM返工）。
+- ③README地图与`ls -R`实测一致（roles×10/prompts×3/history×2/templates×1）；④Contract两处新路径`ls`在位。
+- Result: 打回转PASS（外部:16一处TM已改），P0=0。
+
+## 路径迁移注记（搬家前后对照，历史引用解码）
+
+- `编排者提示词.md`→`docs/prompts/编排者提示词.md`；`外部开发者提示词.md`→`docs/prompts/外部开发者提示词.md`；`迁移整理提示词.md`→`docs/prompts/迁移整理提示词.md`；`2.0-重塑说明.md`→`docs/history/2.0-重塑说明.md`；`2.1-更新说明.md`→`docs/history/2.1-更新说明.md`；`归位表.template.md`→`docs/templates/归位表.template.md`；`治理审查报告/`已删（用户令，结论已落实）。本文件历史节旧路径按此表解码。
