@@ -20,7 +20,7 @@
   " docs/model/TASK-MODEL-LOG.jsonl
   ```
   单行粘贴先落临时文件再跑整文件第二道：`echo '<单行JSON>' > /tmp/one.jsonl` 后把上式路径换成 `/tmp/one.jsonl` 再跑。坏了打回重写；返工数对齐本 Task 上下文中的打回次数，少报就打回。
-- 模型：同 task-manager 行。
+- 模型：读 USER_MODEL_OVERRIDE.md 的 supervisor 行（独立行，与编排者的 task-manager 行错开，保复检独立性；冲突以模型表为准）。
 - 输出：无独立文档，打回意见直接写在被检输出的评论区/复检行。
 - 例外：编排者失联才替喊人一声。
 - 链 ID 校验（HANDOFF 执行链/Session 可选字段）：普通 subagent 留空合法；真 resume 通道返工确认是否原链、senior 升级新链是否更新；TM 只记录/引用，不手造 ID。

@@ -6,8 +6,8 @@
   - Q1：TM备Runtime填pi/codebuddy还是留空+护栏（L9+L27），附B只读探针语句
   - Q2：GO mimo精确ID（L14/L16 `opencode-go/mimo-v2.5`是否即正式）
   - Q3：FREE Spark精确ID书面认领（L10/L11/L17 `opencode-free/muse-spark-1.3-contributor-free`是否即正式）
-- 当前 Task（正干到哪）（累计打回 n/2，supervisor每次打回时TM同步更新）：本Task累计supervisor打回 0/2；reviewer过P0=0；qa挂P0×3均为已知待确认已转Q1-3；supervisor有条件放行不打回
-- 执行链/Session（可选）：普通subagent链，code-reviewer ses_f719fbc7effeNTiHzuhfPyNqV2、qa ses_f719fbc6affewEF1GQNmYA4pT6、supervisor ses_f719e1b0fffeR12EVgrFOrLkXy；TM只记录不手造
+- 当前 Task（正干到哪）（累计打回 n/2，supervisor每次打回时TM同步更新）：结论见 CODE_REVIEW/BUGS 对应节，本 HANDOFF 只记 trace＋链 ID；状态：reviewer/qa/supervisor/调研A/B/补测/终验各派已收（见执行链行与修订节）
+- 执行链/Session（可选）：普通subagent链各派已收（链 ID `ses_***` 母版实录已脱敏，拷包清空；真 resume 通道填实链；TM只记录不手造）
 - 未闭环评审意见（code-reviewer/qa 留的还没改的）：
   - P1-1 builder备注A/B混写（L11 Runtime bridge vs备注pi）：待Q1定B后按reviewer改法修备注
   - P1-2 TM备跨池护栏（L9+第22条）：待Q1定后补护栏措辞二选一
@@ -23,6 +23,14 @@
 - 收尾记一笔：跳planner/product原因单文件小修29行+测试系qa本职；账本FAIL诚实（qa挂证据）；经验/neat-freak收尾按需另派，本轮未派
 - 修订（ID核准轮）：调研A/B查实→Q1 B=`deepseek-v4.1-flash` via codebuddy（只读rc=0，真测待批）TM备/builder主切B+A保留、Q2 GO mimo base确认、Q3 FREE真前缀`opencode/`（5行全改）+codex剥前缀一句；qa补测过P0=0；supervisor终检过打回0/2；账本补第二行PASS；L29 FREE触发器为常设条件保留。
 - 修订（全表真测轮）：B单发rc0 pong PASS；codex sol/luna各rc0 pong PASS（1.2万tokens级）；GO三ID 3/3 PASS；FREE两ID 2/2 PASS无429不触发升GO；20ID全落已测，仅A沿用已测结论；supervisor终验过打回0/2；账本补第三行PASS；剩P0=0收工。
+- 修订（P1P2轮）：P1-1禁令加作用域/P1-2触发前缀现表化/P1-3账本冻回_example+3行存档/P1-4更新说明补增量/P1-5监督独立行（模型表为准）/P1-6清待真测/P1-7B指回业务仓Contract路径；P2十项文本全修（sop文件未移出留待明令）；reviewer过+qa三组过+supervisor终检过打回0/2；待二次push明令。
+- 修订（P1-7改A轮，用户定）：Contract拷入包根（diff仅多分发注记，已修正一处转录差），L26改随包分发；待复检后连P1P2轮改动一次push。
+
+## 母版实绩存档（分发冻结前移出账本，P1-3）
+- `{"task":"TASK-override主备-2026-09-11","result":"FAIL","rework":0,"role":"task-manager","model":"opencode-go/muse-spark-1.3-contributor"}`
+- `{"task":"TASK-override-ID核准-2026-09-11","result":"PASS","rework":0,"role":"task-manager","model":"opencode-go/muse-spark-1.3-contributor"}`
+- `{"task":"TASK-全表真测-2026-09-11","result":"PASS","rework":0,"role":"qa","model":"opencode/mimo-v2.5-free"}`
+- 全行含 date/project/escalated/tokens/cost_cny 键（略写），账本已恢复 `_example` 示例行供新项目首任务前删除。
 
 ## 跳步记一句
 单文件小修（仅override表29行）跳planner/product，不跳code-reviewer+qa+supervisor，合规。

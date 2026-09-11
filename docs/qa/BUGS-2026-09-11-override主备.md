@@ -99,3 +99,26 @@
 - ① `opencode/muse-spark-1.3-contributor-free`：命令 `opencode run -m opencode/muse-spark-1.3-contributor-free "reply with exactly: pong"` → rc=0；stdout原文 `pong`；stderr摘要 `> build · muse-spark-1.3-contributor-free`（无报错/无429）；结论 PASS。
 - ② `opencode/mimo-v2.5-free`：命令 `opencode run -m opencode/mimo-v2.5-free "reply with exactly: pong"` → rc=0；stdout原文 `pong`；stderr摘要 `> build · mimo-v2.5-free`（无报错/无429）；结论 PASS。
 - 合计：2/2 PASS，无429/额度尽证据，本轮不触发FREE耗尽规则。
+
+## P1修复验收
+
+- 时间：2026-09-11；范围：报告§6三组＋账本抽查，只测不改（未动业务/`USER_MODEL_OVERRIDE.md`/账本；坏例仅落`/tmp/qa-bad.jsonl`，不污染包内）。
+- ① supervisor卡断言块跑现账本（`docs/roles/supervisor.md:6-20`原块照粘，路径换现账本）：
+  - `python3 -c "<断言块>" docs/model/TASK-MODEL-LOG.jsonl` → EXIT:0，无输出（PASS，静默）。
+  - 坏例打回验证：`printf '{"task":"BAD","project":"x"}\n' > /tmp/qa-bad.jsonl` 后同断言块跑`/tmp/qa-bad.jsonl` → EXIT:1，命中行：`L1: 缺键 ['cost_cny', 'date', 'escalated', 'escalation_reason', 'model', 'result', 'rework', 'role', 'tokens']`＋`L1: result枚举错: None`＋`L1: escalated枚举错: None`＋`L1: rework非int: None`（打回行为PASS；`/tmp/qa-bad.jsonl` 29字节留`/tmp`，包内零新增）。
+- ② `rg -n "opencode-free" USER_MODEL_OVERRIDE.md` → EXIT:0，命中仅2行：
+  - `25:…池映射：FREE=opencode/（Zen，live核无\`opencode-free\` provider）…`（映射说明）
+  - `29:…（旧 \`opencode-free/\` 一律视为 \`opencode/\`，触发器按现表前缀执行）…`（迁移句）
+  - 数据行（:9-:18）零命中（PASS，符合“仅:25与:29，数据行零命中”）。
+- ③ `rg -n "待真测|待测后定|待用户另批" USER_MODEL_OVERRIDE.md` → EXIT:1，零命中（PASS）。
+  - 同式跑本BUGS：`rg -n "待真测|待测后定|待用户另批" docs/qa/BUGS-2026-09-11-override主备.md` → EXIT:0，命中`:9`（QA-05首轮原文“待测后定/待真测”）＋`:49`（补测引用“待真测”护栏）＋`:58`（“待真测/待用户另批”转述），属历史节证据留痕，单列不判挂。
+- 抽查账本：`cat docs/model/TASK-MODEL-LOG.jsonl` 仅1行`{"_example":true,…"task":"TASK-000-example"…}`；`rg -n "_example" docs/model/TASK-MODEL-LOG.jsonl` → EXIT:0命中`1:{"_example":true,…}`；`wc -l` → `1 docs/model/TASK-MODEL-LOG.jsonl`＋`29 USER_MODEL_OVERRIDE.md`（账本仅`_example`单行PASS；`rg -n "opencode-free" docs/model/TASK-MODEL-LOG.jsonl` → EXIT:1零命中）。
+- 结论：过（①EXIT 0/坏例EXIT 1打回＋②EXIT 0仅:25/:29＋③EXIT 1零命中，账本单行`_example`）。
+
+## P1-7改A验收
+
+- 时间：2026-09-11；范围：①拷贝diff ②B措辞清零 ③包根行数+§1三元组；只测不改（未动业务/包根/override；无包内新增，证据为命令EXIT+行号原文）。
+- ① `diff -u Infrastructure/orca-deepseek-bridge/docs/V2.1_BRIDGE_INTEGRATION_CONTRACT.md V2.1_BRIDGE_INTEGRATION_CONTRACT.md` → 仅 `7a8,9` 两行新增（`> 分发注记…`＋`> 空行`），与包根L8-L9一致；`wc -l` 业务147／包根149（149=147+2）；结论 PASS（“仅差分发注记2行”成立）。
+- ② `rg -n "Contract存业务仓|分发包仅记" USER_MODEL_OVERRIDE.md` → EXIT:1 零命中 PASS；现L26为“依据：Contract随包分发（包根 `V2.1_BRIDGE_INTEGRATION_CONTRACT.md`，§1三元组…）”旧B措辞已清。
+- ③ `wc -l V2.1_BRIDGE_INTEGRATION_CONTRACT.md` → 149（任务目标写147，实测149=业务147+注记2，不一致）；§1 L24三元组齐：model `deepseek-flash`＋runtime `deepseek-bridge`＋route `deepseek-bridge/deepseek-flash` PASS。
+- 结论：挂（①PASS＋②PASS＋③行数149≠147字面挂、三元组齐；149与①自洽，疑期望147为加注前旧数，待确认改为149后可转过）。

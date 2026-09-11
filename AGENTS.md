@@ -44,9 +44,10 @@ planner 拆→builder 写→code-reviewer 复核→qa 测→product-reviewer 验
 - 文件：`docs/model/TASK-MODEL-LOG.jsonl`，一行一任务，跨项目同名同 schema，分析时拼起来直接统计。模板自带的 `{"_example":true}` 行不参与统计，首个真实任务前删除。example 行由迁移整理工/首个 TM 在首个真实任务前删除。
 - schema（全单行，枚举锁死）：`{"task","project","date","role","model","result":"PASS/FAIL","rework":数字,"escalated":"YES/NO","escalation_reason":null或一句,"tokens":数字或null,"cost_cny":数字或null}`。`cost_cny` 与 `tokens` 拿不到填 `null`，不许编；`project`=仓库根目录名（HANDOFF Stage ID 括号备注，如 radar-live），`date` 取 `YYYY-MM-DD`。
 - 分工：builder/senior 写一行初版→supervisor 校验 JSON 合法+返工数→编排者判结果落盘。
+- `result`=任务级 PASS/FAIL（超限切备成功仍可 PASS；FAIL 须配 escalation_reason/备注说明是任务挂还是模型挂）。
 - 换模型决策先读账本：返工多、常升级的任务类型优先换强模型。
 
-## 缓存五条（各家通用，够用就行；本窗口 subagent 链适用，外部施工见外部提示词）
+## 缓存五条（各家通用，够用就行；本窗口 subagent 链适用，External Runtime 走 builder 通道，换 Runtime/换模型/升级即开新链，见编排者 :10-11；外部施工见外部提示词）
 
 - 静态打头：派工先读同一批文件，顺序全体系唯一：AGENTS→角色卡→override 表→HANDOFF→经验一句话→任务目标放最后。prefix 稳定命中，谁也不许自创顺序。
 - 动态押后：任务目标、git 状态、时间戳、随机 ID 永远放最后，system prompt 前面只放不变的东西。
@@ -58,5 +59,5 @@ planner 拆→builder 写→code-reviewer 复核→qa 测→product-reviewer 验
 
 - P0 没完+人没喊停，不准收工，不准“先到这里”。
 - 每轮末三行心跳：目标/剩 P0/下一步。
-- 不 push（commit 需编排者明确指令，含分支名，外部者用 `ext/` 开头）；不碰 secrets；不改 V1.10/V2.0 封存。
+- 不 push（commit 需编排者明确指令，含分支名，外部者用 `ext/` 开头）；不碰 secrets；不改 V1.10/V2.0 封存；`docs/sop/` 仅模板示例，新项目自建（包内历史交接不动）。
 - 换模型的事用户决策，不许自作主张、不许写恢复类条件。
