@@ -1,4 +1,4 @@
-# USER_MODEL_OVERRIDE｜2.1 一句话切模型（优先于 registry 兜底）
+# USER_MODEL_OVERRIDE｜一句话切模型（优先于 registry 兜底）
 
 > 你改这张表就生效，不用走 promotion/sync/run-all。编排者每次派工前读一次。
 > 窗口说一句也一样：“Builder主用XX，备用YY”，编排者按同格式记一行。
@@ -21,7 +21,7 @@
 - 精确ID：Sol必须写全 `codex/gpt-5.6-sol`，禁裸别名；V4.1必须写全 `deepseek-v4.1-flash`；FREE必须写全 `opencode/muse-spark-1.3-contributor-free`；codex实调用剥 `codex/` 前缀用短名，表内仍记全ID为ORCA路由ID；不编rank分数。
 - OPENCODE_GO = MANUAL_ONLY：GO不得作为任何角色主用/备用；一切受限只按表切同角色备用或停派找人，禁自动进GO；只有用户明确说“这次可用GO”才允许单次启用，不写表、不留自动条件。
 - V4.1统一：主动CodeBuddy路由只许 `deepseek-v4.1-flash`；档位high只写派工口头，不进模型列。
-- Bridge standby：历史Contract（包根 `V2.1_BRIDGE_INTEGRATION_CONTRACT.md`，只读核对，不改）内已验证 `deepseek-flash` 降为standby历史路由，仅用户明确切回时启用，不进主动表、不作新默认。
+- Bridge standby：历史Contract（包根 `BRIDGE_INTEGRATION_CONTRACT.md`，只读核对，不改）内已验证 `deepseek-flash` 降为standby历史路由，仅用户明确切回时启用，不进主动表、不作新默认。
 - B通道-y：codebuddy非交互派单默认带`-y`；无-y时Bash审批被拒且rc仍为0，自测验成功只看正文回显不看rc；派工显式必须标注`-y`已带，漏标打回。
 - 派工显式：编排者每派必先贴一行“正在调用 XX｜主用精确ID＋Runtime／备用精确ID＋Runtime”，收工必贴“XX回来了 PASS/FAIL＋实际走主还是备”，HANDOFF执行链＋账本记同一行。
 - 超限口径：主备均不可用即停派找用户，不静默扣费；换模型/换Runtime用户定，换通道开新链记HANDOFF＋账本；槽位不经改表不得擅自顶替。

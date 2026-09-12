@@ -1,6 +1,6 @@
-# HANDOFF｜2.1 交接（暂停/恢复用，先读我）
+# HANDOFF｜交接（暂停/恢复用，先读我）
 
-> V1 字段（governance-state / Evidence / Human Gate / Promotion / Dispatch ID）已废弃，不填。
+> 旧版字段（governance-state / Evidence / Human Gate / Promotion / Dispatch ID）已废弃，不填。
 
 - Captured at（YYYY-MM-DD HH:MM）：
 - PROJECT_PHASE：（PLAN / WAITING_HUMAN_APPROVAL / DEVELOP）

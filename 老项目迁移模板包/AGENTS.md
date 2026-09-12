@@ -1,6 +1,6 @@
-# AGENTS.md｜ORCA V2.1（全员遵守，一页）
+# AGENTS.md｜ORCA（全员遵守，一页）
 
-## 两阶段治理（V2.2；固定 9+1，不新增角色）
+## 两阶段治理（固定 9+1，不新增角色）
 
 - 状态：`PHASE_1_PLAN / WAITING_HUMAN_APPROVAL / PHASE_2_DEVELOP`（HANDOFF 记 `PROJECT_PHASE: PLAN / WAITING_HUMAN_APPROVAL / DEVELOP`）。`PROJECT_PHASE` 当前值以 HANDOFF 为准。
 - Phase1（PLAN，用户口令`第一阶段，计划`）：只许 task-manager／supervisor／planner（Sol）／product-reviewer（显示名 Research Reviewer，ID 不变，FREE）；禁 builder／code-reviewer／qa 派工，禁业务代码改动，禁 Release。PLAN 链：Planner→Research Reviewer→Planner→…→Readiness Gate→Human Gate；用户不搬运反馈（TM 自动回传）；`PLAN_READINESS_SCORE>=90` 才进 WAITING（Readiness 定义以 `docs/pm/PRODUCT_PLAN.template.md` 为准，卡内不另写）。
@@ -71,5 +71,5 @@ Phase1（PLAN）：planner（Sol）→product-reviewer（Research Reviewer）→
 
 - P0 没完+人没喊停，不准收工，不准“先到这里”。
 - 每轮末三行心跳：目标/剩 P0/下一步。
-- 不 push（commit 需编排者明确指令，含分支名，外部者用 `ext/` 开头）；不碰 secrets；不改 V1.10/V2.0 封存；`docs/sop/` 仅模板示例，新项目自建（包内历史交接不动）。
+- 不 push（commit 需编排者明确指令，含分支名，外部者用 `ext/` 开头）；不碰 secrets；不改旧版封存；`docs/sop/` 仅模板示例，新项目自建（包内历史交接不动）。
 - 换模型的事用户决策，不许自作主张、不许写恢复类条件。

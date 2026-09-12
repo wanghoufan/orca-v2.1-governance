@@ -1,6 +1,6 @@
 # scripts/orchestration｜L3 Watchdog（防停摆）
 
-配套《docs/prompts/2026-09-02 丨 Orca 通用编排者持续推进协议 丨 V1.1》的机械保险层（L3）。
+配套《docs/prompts/Orca 通用编排者持续推进协议.md》的机械保险层（L3）。
 编排者/监督者都是 agent，会死；这个定时器不会——它负责在编排停摆时自动唤醒协调者。
 
 ## `coordinator-watchdog-standalone.sh`（零配置，即拷即用）

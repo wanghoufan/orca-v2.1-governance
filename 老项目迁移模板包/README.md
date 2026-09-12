@@ -1,8 +1,8 @@
-# ORCA V2.1 老项目迁移模板包
+# ORCA 老项目迁移模板包
 
 ## 用途
 
-用于已有项目接入 ORCA V2.1。迁移整理工只整理治理文件，不改业务逻辑。
+用于已有项目接入 ORCA。迁移整理工只整理治理文件，不改业务逻辑。
 
 ## 放入项目根目录
 
@@ -24,22 +24,22 @@ docs/review/
 ## 同步补记（母版常驻同步，新增文件去向）
 
 ```text
-V2.1_BRIDGE_INTEGRATION_CONTRACT.md → 项目根（包内已含原文）
+BRIDGE_INTEGRATION_CONTRACT.md → 项目根（包内已含原文）
 GOVERNANCE_VERSION                   → 项目根（包内已含原文）
 外部开发者提示词.md / 编排者提示词.md / 迁移整理提示词.md → 项目根（包内原位）
 归位表.template.md                   → 项目根或 docs/templates/（包内原位）
 docs/model/DISPATCH-LOG.jsonl        → 项目 docs/model/（包内已含示例行，首派前删除）
-docs/pm/PRODUCT_PLAN.template.md     → 项目 docs/pm/（Phase1专用，Readiness正典，V2.1 Two-Phase Amendment新增）
+docs/pm/PRODUCT_PLAN.template.md     → 项目 docs/pm/（Phase1专用，Readiness正典）
 docs/review/RESEARCH_REVIEW.template.md → 项目 docs/review/（Phase1专用，内部ID product-reviewer不变，新增）
 scripts/orchestration/               → 项目 scripts/orchestration/（可选：仅 Orca 终端/外部通道编排长任务时部署 L3 watchdog，部署法见其 README）
 ```
 
 ## 迁移命令
 
-现有 V2.1 迁移入口是：
+现有迁移入口是：
 
 ```text
-【迁移整理｜2.1】
+【迁移整理】
 ```
 
 完整指令见同目录 `迁移整理提示词.md`。将本模板包放入项目后，把该提示词发送给负责迁移的智能体。

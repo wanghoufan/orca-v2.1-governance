@@ -61,3 +61,7 @@
 ## 升2.2复核
 - 范围：GOV三处2.2＋AGENTS:3/TM:9 V2.2＋HANDOFF:5/§9＋更新说明:8＋PLAN标记:4＋经验:14＋两ZIP（只读，git diff+rg+unzip -p+diff -q实跑）。
 - 结论：打回转PASS。初检P0=1（母版经验14行未同步两包+ZIP）TM已修（三处14行逐字同＋ZIP重建＋ZERO验）；其余全PASS，语义零改；README provenance等残留保留合理。
+
+## 去版本复核
+- 初检打回P0=3（口令fence漏清×6＋老包README失步×1＋脚本README死链×3）TM已修（口令三处×2＋README同步＋脚本README三处指新名＋协议收编说明三处去版本）；返工后现行主动文件零版本号残留（冻结类/改名对照节/目录名除外），13改名R保历史，引用全可达，ZIP重建ZERO验。
+- 结论：打回转PASS，P0=0。
