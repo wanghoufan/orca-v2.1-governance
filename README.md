@@ -1,5 +1,7 @@
 # ORCA V2.1 治理模板分发版｜导航（先读我）
 
+> 模板名V2.1冻结，治理版本以 `GOVERNANCE_VERSION=2.2` 为准。
+
 开工读盘顺序（全体系唯一）：`AGENTS.md` → `docs/roles/`（本次角色卡）→ 根 `USER_MODEL_OVERRIDE.md`（模型表，有就用它）→ `docs/handoff/`（交接现状）→ 根 `经验一句话.md` → 任务目标放最后。
 
 ## 用户只需记住三个口令

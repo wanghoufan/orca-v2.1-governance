@@ -18,7 +18,7 @@ task-manager=编排者（唯一对人说话）｜supervisor=监督者（只对�
 
 | 谁 | 写哪 | 模板 |
 |---|---|---|
-| planner | `docs/pm/` | PLAN.template.md |
+| planner | `docs/pm/` | Phase1照PRODUCT_PLAN.template.md；Phase2照PLAN.template.md |
 | builder | 业务仓库本身 | — |
 | code-reviewer | `docs/review/` | CODE_REVIEW.template.md |
 | qa | `docs/qa/` | BUGS.template.md |

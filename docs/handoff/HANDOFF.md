@@ -6,7 +6,7 @@
 - 更新：2026-09-12，收编持续推进协议（§7）＋L3 watchdog 脚本进 `scripts/orchestration/`（§8），两包同步、zip 重建。未 commit（等用户指令）。
 - 更新：2026-09-11，开发暂停收尾（已推 `b84e61d`）。历史旧报告6份已删；`docs/history/` 新增审查报告3份（-y轮/现势/逐派，未提交，待定去留）。现行结论以包内文件＋本 HANDOFF §1-§3 为准。
 
-## 1. 当前工作进展（2026-09-11 开发暂停，已推 b84e61d）
+## 1. 当前工作进展（2026-09-11快照，已superseded，现行以§9 V2.2＋USER_MODEL_OVERRIDE为准）
 
 - 模型表：10角色主备全定（`USER_MODEL_OVERRIDE.md`），全表20个ID真测PASS（codex短名sol/terra/luna、GO三ID、FREE两ID、B通道codebuddy单发pong）；FREE真前缀`opencode/`已全改，GO-mimo用base非Pro。
 - B通道：`deepseek-v4.1-flash` via codebuddy（`--model … --effort high`，high写口头），2026-09-12起转备用（GO额度不够，主备对调）；`-y`规则/正文判据/显式标注照旧，切备B时用。A通道Bridge已测保留可切回，Contract随包（包根，业务仓源4处已改新正典）。
@@ -72,3 +72,4 @@
 
 - V2.2（BatchA＋BatchB，Amendment转正，GOVERNANCE_VERSION已升2.2，用户定）：母版主动文件已同步两包（override新表＋10卡＋AGENTS两阶段＋编排者三口令＋PRODUCT_PLAN/RESEARCH_REVIEW双新模板＋PLAN两行＋HANDOFF六字段＋协议两阶段优先一行＋双账本示例行＋双包README去向行；AGENTS裸名1行保留；supervisor断言块两包与母版字节同），预期差仅扁平包裸名4行（AGENTS×1/Contract×2/迁移整理×1，布局正确）＋外部提示词history半句（包无history/省略合理），两ZIP重建并校验非旧缓存，未 commit（等用户指令）。
 - 收尾记一笔（neat-freak 2026-09-12）：对齐6处（README版本2.1→2.2、HANDOFF经验9→10条、§3行号:29→override:27×2＋:27→override:21＋override:29→:22；经验14行/10条×3处一致、GOV三处2.2一致、ZIP为本轮新建无需重建）；清/tmp：one*.jsonl与qa-bad均无残留（/tmp仅存09-10/09-11旧combined/fbcap/sup_test三文件非本轮产物不动，包内无临时文件）；未决：builder/supervisor卡override:27三处（实指-y规则现为:25）母版与两包字节同故未动，待TM定是否另开变更同步三处＋重建ZIP。
+- Sol外审P2整改（2026-09-12，TM执行）：P2-1/README版本声明已加；P2-2/AGENTS planner格补PRODUCT_PLAN入口；P2-3/§1标superseded；P2-4/待办：下次分发前冻回DISPATCH-LOG仅_example；P2-6/watchdog md5四方同`4464dfb3`（包根/两包/Downloads源）已闭环；P2-7/协议顶注行在位、"真机QA已启用"零虚假断言（仅qa.md门禁条件句）。P2-5/P2-8无需改。
