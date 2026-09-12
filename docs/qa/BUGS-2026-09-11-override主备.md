@@ -205,3 +205,22 @@
   - S1：见②，零差 PASS（上轮缺17行已补齐）。
   - E1：`diff docs/prompts/外部开发者提示词.md 新包/外部开发者提示词.md` → 仅`16c16` 1 hunk，老包同。母版`（历史审查报告已删见 README；EXT-WORKLOG 例外，见 §一.2）` vs 两包`（EXT-WORKLOG 例外，见 §一.2）`：旧stale `（含治理审查报告）一律不动`已清，但母版parenthetical未同步，diff非零 FAIL。
 - 结论：挂（①PASS＋②PASS＋③A1预期/S1零差/E1残留1行非零；补齐该parenthetical或书面确认为母版独有后可转过）。
+
+## 对调重验
+
+- 时间：2026-09-12；路径：分发版包根；只读未调模型（FREE主/B备此前均已真测PASS，本轮不跑模型；TM已改三表＋HANDOFF，本轮只做文字重验；本节为QA输出追加）。
+- 读盘顺序：AGENTS→roles/qa→USER_MODEL_OVERRIDE→HANDOFF→经验一句话→任务目标最后（包根＋两包）。
+- ① 旧禁令退役：`rg -n "当前主用B|主用为B|主用B走|禁顶builder槽" USER_MODEL_OVERRIDE.md 新项目模板包/USER_MODEL_OVERRIDE.md 老项目迁移模板包/USER_MODEL_OVERRIDE.md` → EXIT:1 零命中 PASS（历史 `禁顶builder槽` 仅剩本文件:199旧节留痕，三表零命中）。
+- ② builder行逐字同：三表 `| builder |` 整行 SAME PASS；主 `opencode/muse-spark-1.3-contributor-free`／备 `deepseek-v4.1-flash`／Runtime `—（默认本窗口 subagent；切备B走codebuddy）` 三列一致（备注含 2026-09-12主备对调＋FREE耗尽按:29）。
+- ③ 双断言EXIT 0（supervisor.md:6-20 TASK块＋:26-42 DISPATCH块照粘）：母版TASK→EXIT:0、母版DISPATCH→EXIT:0；新包TASK→EXIT:0、新包DISPATCH→EXIT:0；老包TASK→EXIT:0、老包DISPATCH→EXIT:0（6/6 EXIT 0，_example行自动跳过）；`wc -l` 母版TASK 1／DISPATCH 1、新包各1、老包各1，均为 `{"_example":true,…"task":"TASK-000-example"…}` 单行 PASS。
+- 结论：过（①EXIT1＋②SAME＋③6/6 EXIT0）。
+
+## luna重验
+
+- 时间：2026-09-12；路径：分发版包根；禁模型调用只读（未跑任何模型探针；仅grep/rg/diff/python断言只读；本节为QA输出追加）。
+- 读盘顺序：AGENTS→roles/qa→USER_MODEL_OVERRIDE→HANDOFF→经验一句话→任务目标最后（包根＋两包）。
+- ① 三表product行diff零差且含luna：`grep -n "product-reviewer"` 三表均命中`:15:| product-reviewer | codex/gpt-5.6-luna | opencode-go/muse-spark-1.3-contributor | —（默认本窗口 subagent） | 备用=GO Spark |`；`diff` 母版vs新包零输出SAME、母版vs老包零输出SAME；含`codex/gpt-5.6-luna`成立 PASS。
+- ② rg"整批升GO"三表＋HANDOFF各1行且同为停用声明：`rg -c` 母版1／新包1／老包1／`docs/handoff/HANDOFF.md`1（`rg -n` 均为单行：三表`:29`、HANDOFF`:35`）；原文三表`:29"…替代09-11整批升GO…；整批升GO停用（GO无额度）…"`、HANDOFF`:35"…FREE整批升GO已停用（GO无额度，2026-09-12用户定）…"`，均含停用声明 PASS（备注：按`rg -o`出现次数三表各2次／HANDOFF1次，因三表同行含"替代09-11整批升GO"前缀＋"整批升GO停用"正文，行级各1处成立，字级差如实记）。
+- ③ rg"codex/gpt-5.6-terra"product行零命中：`grep "product-reviewer" 三表 | grep -c "codex/gpt-5.6-terra"` → 0命中EXIT:1 PASS（对照：全表terra仅`code-reviewer:13`／`senior-expert:18`／规则`:21`，product行无）。
+- ④ 双断言exit 0（supervisor.md:6-20 TASK块＋:26-42 DISPATCH块照粘）：母版TASK→exit0、母版DISPATCH→exit0；新包TASK→exit0、新包DISPATCH→exit0；老包TASK→exit0、老包DISPATCH→exit0（6/6 exit 0，_example行自动跳过）；`wc -l` 六账本各1行且均为`{"_example":true,…}`单行 PASS。
+- 结论：过（①SAME＋含luna＋②各1行停用＋③零命中＋④6/6 exit0）。

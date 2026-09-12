@@ -29,6 +29,9 @@ GOVERNANCE_VERSION                   → 项目根（包内已含原文）
 外部开发者提示词.md / 编排者提示词.md / 迁移整理提示词.md → 项目根（包内原位）
 归位表.template.md                   → 项目根或 docs/templates/（包内原位）
 docs/model/DISPATCH-LOG.jsonl        → 项目 docs/model/（包内已含示例行，首派前删除）
+docs/pm/PRODUCT_PLAN.template.md     → 项目 docs/pm/（Phase1专用，Readiness正典，V2.1 Two-Phase Amendment新增）
+docs/review/RESEARCH_REVIEW.template.md → 项目 docs/review/（Phase1专用，内部ID product-reviewer不变，新增）
+scripts/orchestration/               → 项目 scripts/orchestration/（可选：仅 Orca 终端/外部通道编排长任务时部署 L3 watchdog，部署法见其 README）
 ```
 
 ## 迁移命令

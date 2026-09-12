@@ -1,8 +1,18 @@
 # AGENTS.md｜ORCA V2.1（全员遵守，一页）
 
+## 两阶段治理（V2.2；固定 9+1，不新增角色）
+
+- 状态：`PHASE_1_PLAN / WAITING_HUMAN_APPROVAL / PHASE_2_DEVELOP`（HANDOFF 记 `PROJECT_PHASE: PLAN / WAITING_HUMAN_APPROVAL / DEVELOP`）。`PROJECT_PHASE` 当前值以 HANDOFF 为准。
+- Phase1（PLAN，用户口令`第一阶段，计划`）：只许 task-manager／supervisor／planner（Sol）／product-reviewer（显示名 Research Reviewer，ID 不变，FREE）；禁 builder／code-reviewer／qa 派工，禁业务代码改动，禁 Release。PLAN 链：Planner→Research Reviewer→Planner→…→Readiness Gate→Human Gate；用户不搬运反馈（TM 自动回传）；`PLAN_READINESS_SCORE>=90` 才进 WAITING（Readiness 定义以 `docs/pm/PRODUCT_PLAN.template.md` 为准，卡内不另写）。
+- Human Gate：`WAITING_HUMAN_APPROVAL`（`PLAN_GATE=READY_FOR_HUMAN_REVIEW`）时 TM 停循环只找人一次，不可自动跨越，不可自行启动 builder；只有用户明确说`第二阶段，开发`才进 Phase2。
+- Phase2（DEVELOP）：锁定 `DEV_BASELINE=PRODUCT_PLAN_Vx.x`，默认主链 V4.1 Builder→V4.1 Reviewer→V4.1 QA→Supervisor→TM；禁随意改 Plan（Plan 变更只走 Change C Controlled Reopen＋Human Approval＋新版本＋新基线）；product-reviewer（Research Reviewer）默认不派，recorder/neat 只在收尾派。
+- Change Request（用户口令`变更请求：……`，TM 分类）：`CHANGE_REQUEST: NONE / A / B / C`——A=开发内小改留 DEVELOP 不召 Planner；B=局部功能变化更新局部 Requirement/DoD 留 DEVELOP 不召 Sol Planner；C=产品/架构变更进 `PLAN_REOPEN_REQUIRED`，局部暂停＋Sol Planner＋Research Reviewer＋Human Approval＋新 Plan 版本＋新 DEV_BASELINE 回 DEVELOP，不全量重跑。
+- 独立重申：task-manager（唯一对人说话）与 supervisor（只对编排者说话）保持独立，不合并；无 Spark Gate；无额度状态机字段。
+- 升级保留：同一 Task 累计被 supervisor 打回 2 次自动升 senior-expert（Sol），或编排者判定 P0-hard 手动升；senior 接手后被打回 2 次即停线找人（详见本文件升级节）。
+
 ## 角色（9 常驻 + 1 升级专用，不再新增）
 
-task-manager=编排者（唯一对人说话）｜supervisor=监督者（只对编排者说话，编排者失联时除外）｜planner｜builder｜code-reviewer｜qa｜product-reviewer｜experience-recorder｜neat-freak｜senior-expert=高级开发（只接升级任务）。职责看 `docs/roles/`，一句话一张。
+task-manager=编排者（唯一对人说话）｜supervisor=监督者（只对编排者说话，编排者失联时除外）｜planner｜builder｜code-reviewer｜qa｜product-reviewer（显示名 Research Reviewer，内部 ID 不变）｜experience-recorder｜neat-freak｜senior-expert=高级开发（只接升级任务）。职责看 `docs/roles/`，一句话一张。
 
 ## 谁写哪（写错地方打回）
 
@@ -12,7 +22,7 @@ task-manager=编排者（唯一对人说话）｜supervisor=监督者（只对�
 | builder | 业务仓库本身 | — |
 | code-reviewer | `docs/review/` | CODE_REVIEW.template.md |
 | qa | `docs/qa/` | BUGS.template.md |
-| product-reviewer | `docs/review/` | PRODUCT_BACKLOG.template.md |
+| product-reviewer（Research Reviewer，ID 不变） | `docs/review/` | RESEARCH_REVIEW.template.md（Phase1；PRODUCT_BACKLOG.template.md 保留兼容） |
 | task-manager | `docs/handoff/` | HANDOFF.template.md |
 | supervisor | 无独立文档，打回写被检文件评论区 | — |
 | experience-recorder | 根 `经验一句话.md`，追加一句 | — |
@@ -21,16 +31,16 @@ task-manager=编排者（唯一对人说话）｜supervisor=监督者（只对�
 
 业务文件（src/assets/配置/AGENTS.md/旧交接）原地不动；搬了会 broken 的留原地记映射。
 
-## 派工顺序
+## 派工顺序（Phase-aware；旧单线默认链已废止）
 
-planner 拆→builder 写→code-reviewer 复核→qa 测→product-reviewer 验→supervisor 复检→编排者收齐找人。经验/neat-freak 只在收尾派一次。本窗口内派 subagent，全自动。三类例外（人肉调试/外部施工/迁移基线）可起终端，见 docs/prompts/编排者提示词 :10。
+Phase1（PLAN）：planner（Sol）→product-reviewer（Research Reviewer）→planner→…→Readiness Gate→Human Gate（禁 builder／code-reviewer／qa／业务改动／Release）。Phase2（DEVELOP）：builder 写→code-reviewer 复核→qa 测→supervisor 复检→编排者收齐找人（默认 V4.1 主链；product-reviewer 默认不派）。经验/neat-freak 只在收尾派一次。本窗口内派 subagent，全自动。三类例外（人肉调试/外部施工/迁移基线）可起终端，见 docs/prompts/编排者提示词 :10。
 跳步：单文件小修可跳 planner/product，不可跳 code-reviewer+qa+supervisor；跳了记一句原因。分歧听谁的：技术分歧听 code-reviewer，范围分歧听 Task Manager。
 续 session：同一功能/Bug 链（开发→QA→返工→再 QA）尽量续上一个 session（codex 用 resume），不要每轮新开；返工派必须续。用完不急着关，关了重开更贵。resume 由派工基础设施保持，编排者不手动开终端；升级换 senior-expert 时开新链，不续旧 session。
 - External Builder Runtime 通用插座：builder 仍是 builder（9+1 不新增），Runtime 仅为执行通道（本窗口 subagent / codex / opencode / External Runtime），由 override「执行通道/Runtime」列或口头指定、派工基础设施自动调用；Runtime 自带 internal reviewer/QA/self-check 仅为自检证据，不能替代 code-reviewer/qa/product-reviewer/supervisor；permission_request 走机器可读→ORCA/TM 审批单点→用户定→回 runtime，builder 不直聊用户。
 
 ## 模型
 
-每次派前读根 `USER_MODEL_OVERRIDE.md`，有就用它。精确 ID，禁别名。换谁、用到几时，用户定。
+每次派前读根 `USER_MODEL_OVERRIDE.md`，有就用它（主动表10行以新表为准）。精确 ID，禁别名。`OPENCODE_GO = MANUAL_ONLY`（禁一切自动切备进GO，主备均不可用停派找人）。主动路由只许 `deepseek-v4.1-flash` via `codebuddy`；`deepseek-flash`只许Bridge历史/standby语境（用户明确切回才启用）。换谁、用到几时，用户定。
 
 ## 升级（普通→高级，只对当次任务）
 

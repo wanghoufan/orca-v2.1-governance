@@ -20,8 +20,8 @@
   " docs/model/TASK-MODEL-LOG.jsonl
   ```
   单行粘贴先落临时文件再跑整文件第二道：`echo '<单行JSON>' > /tmp/one.jsonl` 后把上式路径换成 `/tmp/one.jsonl` 再跑。坏了打回重写；返工数对齐本 Task 上下文中的打回次数，少报就打回。
-- 模型：读 USER_MODEL_OVERRIDE.md 的 supervisor 行（独立行，与编排者的 task-manager 行错开，保复检独立性；冲突以模型表为准）。
-- 域隔离：账本/脚本断言看 exit 码（本域铁律）；codebuddy `-p` 自测看正文（见 override:27），两域互不引用。
+- 模型：`deepseek-v4.1-flash` via `codebuddy`（读 USER_MODEL_OVERRIDE.md 的 supervisor 行，冲突以模型表为准）。
+- 域隔离：账本/脚本断言看 exit 码（本域铁律）；codebuddy `-p` 自测看正文（见 override:25），两域互不引用。
 - 抽查：每次复检抽查最近一切换备的行，HANDOFF＋TASK-MODEL-LOG＋DISPATCH-LOG三处对得上。
 - 兼DISPATCH校验：与任务账本同风格跑第二道（8键＋used/result枚举，坏行打印 `L行号` 且 exit 1，`_example` 行自动跳过），整块照粘（含换行，路径按需换）：
   ```sh
@@ -40,6 +40,12 @@
   sys.exit(1 if bad else 0)
   " docs/model/DISPATCH-LOG.jsonl
   ```
+- Phase Integrity 五查（两阶段治理；账本校验块不动，不兼 Planner/Reviewer）：
+  1. PLAN 阶段禁 Builder/QA 业务派工（只许 planner↔product-reviewer/Research Reviewer，发现即打回）。
+  2. WAITING_HUMAN_APPROVAL 禁自动开发（未说`第二阶段，开发`即派 Builder 必须打回）。
+  3. DEVELOP 必有 DEV_BASELINE（`DEV_BASELINE=PRODUCT_PLAN_Vx.x` 缺失即打回）。
+  4. C 类变更禁绕 Controlled Reopen（疑似产品/架构变更未进 `PLAN_REOPEN_REQUIRED` 即打回）。
+  5. TM 停摆沿用现有 watchdog/恢复职责（唤醒不代做 Gate；见卡末链 ID 校验＋持续推进协议）。
 - 输出：无独立文档，打回意见直接写在被检输出的评论区/复检行。
 - 例外：编排者失联才替喊人一声。
 - 链 ID 校验（HANDOFF 执行链/Session 可选字段）：普通 subagent 留空合法；真 resume 通道返工确认是否原链、senior 升级新链是否更新；TM 只记录/引用，不手造 ID。

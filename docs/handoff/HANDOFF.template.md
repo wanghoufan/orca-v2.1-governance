@@ -3,6 +3,12 @@
 > V1 字段（governance-state / Evidence / Human Gate / Promotion / Dispatch ID）已废弃，不填。
 
 - Captured at（YYYY-MM-DD HH:MM）：
+- PROJECT_PHASE：（PLAN / WAITING_HUMAN_APPROVAL / DEVELOP）
+- PLAN_VERSION：（如 PRODUCT_PLAN_V1.0，无则空）
+- PLAN_READINESS_SCORE：（数字 0-100，无则空；定义以 docs/pm/PRODUCT_PLAN.template.md 为准）
+- PLAN_GATE：（IN_PROGRESS / READY_FOR_HUMAN_REVIEW / APPROVED）
+- DEV_BASELINE：（如 PRODUCT_PLAN_V1.0；DEVELOP 必填）
+- CHANGE_REQUEST：（NONE / A / B / C）
 - Stage ID（本阶段叫什么）：
 - 剩 P0（没完的才列，多一条都不行）：
 - 当前 Task（正干到哪）（累计打回 n/2，supervisor每次打回时TM同步更新）：

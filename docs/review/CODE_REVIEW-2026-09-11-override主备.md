@@ -96,3 +96,14 @@
 - 槽禁令与:27/:28/换链无矛盾：“只走表定主用”指不经改表不自切（切回A须改表＋开新链）；禁顶指基础设施后端擅自顶替，非禁表定备用；B故障域与额度切备正交；在飞派收尾不断链。
 - S1断言块三处字节同（45行，exit 0）；E1包内无报告自洽（经验:12通用落点规则非指回）；A1缺席正确（死指引不进包），旧挂重裁为预期差。
 - Result: 过，P0=0。
+
+## builder对调复核（2026-09-12，code-reviewer只读复核，被检文件未改）
+
+- 范围：根 `USER_MODEL_OVERRIDE.md`＋两包同名文件（三表）＋`docs/handoff/HANDOFF.md:§1/§3`＋`docs/qa/BUGS-2026-09-11-override主备.md`＋经验一句。任务口径：builder主=FREE Spark（`opencode/muse-spark-1.3-contributor-free`，本窗口），备=B通道（`deepseek-v4.1-flash` via codebuddy）。
+- ①三表builder行一致PASS：三表L11逐字一致（主 `opencode/muse-spark-1.3-contributor-free`／备 `deepseek-v4.1-flash`／Runtime `—（默认本窗口 subagent；切备B走codebuddy）`）；主行Runtime=本窗口＋切备B注记，与:22/:28/-y规则同义。PASS。
+- ②:22/:25已正PASS，:26/:27残留B主用P0×1（打回）：:22“builder主用FREE走本窗口、备用B走codebuddy”PASS；:25“当前主用FREE（2026-09-12用户定，GO额度不够，主备对调），B转备用保留”PASS。但 `rg -n "主用B"` 三表均命中:27尾句“主备归属已定（当前主用B，A保留可切回）”；另:26标题“当前主用为B见下条”（`rg 主用为B`命中，不在任务字面串内但语义同错）——两处均为现行规范正文，非历史语境，与新主备直接矛盾。改法：:26标题改“当前主用为FREE见builder行/:25”；:27尾句改“主备归属已定（当前主用FREE，B转备用保留，A保留可切回）”；三表同改＋HANDOFF记一行（两包常驻同步）。
+- ③FREE/B均真测PASS，切备语义成立PASS：FREE见BUGS全表真测-FREE（L99-L100，`opencode/muse-spark…-free`＋`opencode/mimo-v2.5-free`各rc0含pong，2/2 PASS）；B见BUGS B真测单发（L62-L68，`codebuddy --model deepseek-v4.1-flash --effort high -p` rc0 stdout `pong` PASS）＋只读rc0（L55）＋-y卡点验证（L152-L162）；A沿用已测（Contract Probe `0018f7b3`，:26三元组在位）。切备链（备B＋codebuddy＋`-y`＋显式标注:28＋FREE耗尽按:29＋双超限停派）完整。PASS。
+- ④HANDOFF同义PASS：§1 B通道bullet“2026-09-12起转备用（GO额度不够，主备对调）”＋builder槽bullet“主用=FREE Spark（本窗口，2026-09-12用户定）；备用=B；FREE耗尽按:29”＋§3“builder主用FREE `opencode/muse-spark-1.3-contributor-free`（本窗口，2026-09-12用户定）；备用=B；FREE耗尽按:29”——与三表L11/:22/:25同义。PASS。
+- 附带（不计P0，TM确认）：`diff`母版vs两包override仅差product-reviewer主用（母版`codex/gpt-5.6-terra` vs 两包`codex/gpt-5.6-luna`），属本次对调域外已知差异（母版备注“Luna转正后换”），不阻塞；:27内“测试只测B（A已测过）/批量压测待批”系历史语境保留，不算残留。
+- Result: 打回，P0=1。
+- 返工复核（2026-09-12，TM已改三表:26/:27）：`rg "当前主用B|主用为B|主用B走"`三表＋HANDOFF零命中；三表L11/:22/:25/:26“builder主备见下条”/:27尾“builder主用FREE、备用B（2026-09-12用户定，GO额度不够对调）”逐字一致，与HANDOFF §1§3同义；母版vs两包diff仅product-reviewer域外差。Result: 过，P0=0。

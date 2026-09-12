@@ -1,1 +1,10 @@
-{"_example":true,"date":"2026-09-09","model":"opencode/mimo-v2.5-free","note":"模板示例行，不参与统计，首个真实派工前删除","result":"PASS","role":"experience-recorder","runtime":"本窗口","task":"TASK-000-example","used":"主"}
+{"_example":true,"date":"2026-09-09","model":"deepseek-v4.1-flash","note":"模板示例行，不参与统计，首个真实派工前删除","result":"PASS","role":"experience-recorder","runtime":"codebuddy","task":"TASK-000-example","used":"主"}
+{"date":"2026-09-12","model":"codex/gpt-5.6-sol","note":"拆活13Task落docs/pm/PLAN-2026-09-12-整改.md｜链ses_f6b950560ffeBwdIwfCElca0Hc","result":"PASS","role":"planner","runtime":"codex","task":"整改拆活BatchA/B/C","used":"主"}
+{"date":"2026-09-12","model":"deepseek-v4.1-flash","note":"A1表+A2九卡+A3 AGENTS，11文件，自检rg全过｜链ses_f6b922b8cffeKSf6048QQNgPjj｜-y已带","result":"PASS","role":"builder","runtime":"codebuddy","task":"BatchA模型整改A1+A2+A3","used":"主"}
+{"date":"2026-09-12","model":"deepseek-v4.1-flash","note":"Model Gate 15/15，FREE×1＋B×1，Sol零烧｜链ses_f6b8fbb4affeub5sR1f78kDX7h｜-y已带","result":"PASS","role":"qa","runtime":"codebuddy","task":"A4 Model Gate验证","used":"主"}
+{"date":"2026-09-12","model":"deepseek-v4.1-flash","note":"BatchA复核过P0=0，P2×1行号漂移｜链ses_f6b8dceacffeCqjA9A6tXWB7xl｜-y已带","result":"PASS","role":"code-reviewer","runtime":"codebuddy","task":"复核BatchA模型整改","used":"主"}
+{"date":"2026-09-12","model":"deepseek-v4.1-flash","note":"BatchA复检过，打回0/2，BatchB放行｜链ses_f6b8cddd5ffeTV7ihfn72tGa6K｜-y已带","result":"PASS","role":"supervisor","runtime":"codebuddy","task":"复检BatchA开BatchB门","used":"主"}
+{"date":"2026-09-12","model":"deepseek-v4.1-flash","note":"BatchB施工B1-B6，15文件，自检grep全过｜链ses_f6b8ab97cfferxbwA4iFWLcDte｜-y已带","result":"PASS","role":"builder","runtime":"codebuddy","task":"BatchB双阶段治理施工B1-B6","used":"主"}
+{"date":"2026-09-12","model":"deepseek-v4.1-flash","note":"B7 PhaseGate条件过，Canary七项PENDING｜链ses_f6b88af11ffeM0Z4Q45C3D8QzV｜-y已带","result":"PASS","role":"qa","runtime":"codebuddy","task":"B7双阶段治理测试","used":"主"}
+{"date":"2026-09-12","model":"deepseek-v4.1-flash","note":"C1回归四项全PASS，Sol零烧｜链ses_f6b84696fffeg1WELqRz7BTy2w｜-y已带","result":"PASS","role":"qa","runtime":"codebuddy","task":"C1回归测试","used":"主"}
+{"date":"2026-09-12","model":"deepseek-v4.1-flash","note":"C2同步42×2＋ZIP验非旧缓存｜链ses_f6b8284bcffeX8Keu375QS0Pb4｜-y已带","result":"PASS","role":"builder","runtime":"codebuddy","task":"C2两包同步＋ZIP＋版本标记","used":"主"}

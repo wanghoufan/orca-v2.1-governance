@@ -32,6 +32,11 @@
 - 修订（y轮P2P3+逐派轮）：P2域限定×2+标题+判据放宽+勿删通道、P3残留三句全修；逐派账四规则+DISPATCH两行（used主×2，切备空过）+经验一句+schema exit0；reviewer过+qa两派过+supervisor过打回0/2；history两报告属另任务不并入；待push明令。
 - 修订（builder槽强制轮，用户P0令）：派工基础设施后端≠表定B通道，builder槽被muse-spark顶（偏离）；自本轮起只走表定主用，禁令进override builder行＋两包同步；在飞派收尾；换通道开新链；B不通贴原文停派不自回切。本次偏离记HANDOFF（分发账本P1-3冻结，代账本备注）。S1/E1补齐；A1维持缺席正确（死指引不进包，听reviewer）。
 - 修订（槽轮终检）：reviewer过+qa挂被裁不成立（E1包内无报告）+supervisor过打回0/2；待push明令。
+- 修订（builder对调轮，2026-09-12用户定，代账本备注）：GO额度不够，主备对调（主FREE Spark本窗口、备B通道；旧槽禁令退役，:22/:25/:26/:27同步）；reviewer打回1次（残留主用B）TM修后返工过＋qa文字重验过＋supervisor过打回0/2；在飞B派收尾，新派走FREE。
+- 修订（luna+升级口径轮，2026-09-12用户定，代账本备注）：product改回luna三表对齐；:29改升级口径（主→备按表，备亦超限停派找人，整批升GO停用）；reviewer过（含GO备四行试切停派判）＋qa过＋supervisor过打回0/2；未push等确认。
+- 修订（BatchA门，2026-09-12整改方案，代账本备注）：A1新表（TM=FREE/supervisor=V4.1/builder=V4.1/planner=Sol/reviewer=V4.1/qa=V4.1/product=FREE/recorder=V4.1/neat=V4.1/senior=Sol，GO MANUAL_ONLY，Bridge standby）＋A2九卡＋A3 AGENTS模型节；A4 Model Gate 15/15（FREE×1＋B×1，Sol零烧）；reviewer过P0=0＋supervisor过打回0/2；账本冻_example（本轮不落实绩行）；BatchB放行。
+- 修订（BatchB/C记账全文行，2026-09-12，落盘位明确：HANDOFF存档，分发TASK文件保持冻结）：`{"task":"BatchB双阶段治理施工（B1+B2+B3+B4+B5+B6）","project":"2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11","date":"2026-09-12","role":"builder","model":"deepseek-v4.1-flash","result":"PASS","rework":1,"escalated":"NO","escalation_reason":null,"tokens":null,"cost_cny":null}`（rework=1对齐补链有效打回）；`{"task":"C2两包同步＋ZIP＋版本标记","project":"2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11","date":"2026-09-12","role":"builder","model":"deepseek-v4.1-flash","result":"PASS","rework":1,"escalated":"NO","escalation_reason":null,"tokens":null,"cost_cny":null}`（rework=1对齐终检打回）；DISPATCH补C1/C2两行后共9实录行（_example保留）。
+- 修订（senior升级复检轮，用户选B，代账本备注）：有效打回2次升senior（Sol最小化验证，禁Benchmark）；DISPATCH 9实录＋存档两全文行＋链ID＋rework对齐＋DoD抽点五项全过；TM派工单笔误一处（-y六处实为八处，文件正确）；放行，push待用户令。
 
 ## 母版实绩存档（分发冻结前移出账本，P1-3）
 - `{"task":"TASK-override主备-2026-09-11","result":"FAIL","rework":0,"role":"task-manager","model":"opencode-go/muse-spark-1.3-contributor"}`
