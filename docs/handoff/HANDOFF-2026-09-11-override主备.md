@@ -44,6 +44,7 @@
 - `{"task":"TASK-全表真测-2026-09-11","result":"PASS","rework":0,"role":"qa","model":"opencode/mimo-v2.5-free"}`
 - 全行含 date/project/escalated/tokens/cost_cny 键（略写），账本已恢复 `_example` 示例行供新项目首任务前删除。
 - 逐派实测存档（P1-1冻回，TASK-dispatchlog-test-2026-09-11）：experience-recorder主`opencode/mimo-v2.5-free` PASS＋qa主同模型PASS（used主×2，切备零行）。
+- 逐派实测存档（2026-09-13冻回，BatchA/B/C共9行全PASS：planner-Sol/codex×1、builder-V4.1/codebuddy×3、qa-V4.1/codebuddy×3、reviewer-V4.1/codebuddy×1、supervisor-V4.1/codebuddy×1，used全主，切备零行，链ID见DISPATCH各行note）。
 
 ## 跳步记一句
 单文件小修（仅override表29行）跳planner/product，不跳code-reviewer+qa+supervisor，合规。

@@ -34,7 +34,6 @@
 - **切换口径**：换模型/换Runtime用户定；升级=主→备按表切，备亦超限停派找用户；FREE整批升GO已停用（GO无额度，2026-09-12用户定）。
 - **绝不提“等免费模型恢复”**：换模型纯用户决策。模板里相关字眼已清完（用户显式说一句触发式不算恢复类条件，见 override:22），不准再写、再说、再设到期条件。
 - **不动旧版**：一切只改当前治理包（旧版封存）。
-- **副本不提交**：实验品，不 commit、不 push，用完扔。
 - **单点对接**：只有编排者找用户，监督者平时静默。
 - **computer-use**：先 `get-app-state --restore-window` 再按键盘；进详情页点站内链接，别跟地址栏较劲；看截图用 Read 读 path。
 - **开工前读**：`经验一句话.md`（10 条）+ 本 HANDOFF。
@@ -80,3 +79,12 @@
 - 内容去版本：现行标题/规则/口令/映射中数字版本号清零（版本标记文件改指针语"以Git历史为准"）；冻结类内容（审查报告/BUG单/合同正文/执行记录）只改名不动正文；README加改名对照节过渡老链接。
 - 返工记一笔：reviewer打回P0=3（口令×6/老包README/脚本死链×3）＋supervisor打回（两包模板标题）均已修，终检过，累计打回1/2；ZIP重建ZERO验。
 - 收尾记一笔（neat-freak 2026-09-12）：对齐抽查全过（主动文件零死链零治理版本残留，旧名仅README对照节＋冻结正文按§10保留；两ZIP解压与磁盘仅差.DS_Store）；/tmp无本轮残留（已清zipcheck，bridge旧物＋watchdog日志不动），包内无临时文件；未决：无新增。
+
+## 11. 禁套娃记一笔（2026-09-12，用户定）
+
+- AGENTS插座行追加"禁把codebuddy包进本窗口subagent套娃调用（表定codebuddy的角色必须走通道直调），违者打回"（母版＋两包＋ZIP重建）；起因：业务项目编排者用本窗口子代理顶替codebuddy通道，supervisor记偏离。
+
+## 12. P1P2修复同步记一笔（2026-09-13，用户定修P1×3＋P2-1~4）
+
+- 母版8处：builder升级口径（只算supervisor打回）／AGENTS状态短名＋REOPEN枚举／派工口通道分离／runtime补codex／supervisor断言加runtime行／HANDOFF删副本不提交条／HANDOFF.template加REOPEN枚举／编排者Readiness改指正典；DISPATCH冻回示例＋HANDOFF-override存档9行摘要。
+- 两包镜像同步（裸名路径适配，supervisor断言块字节同），ZIP重建ZERO验；reviewer过＋qa过＋supervisor过（打回0/2）；未commit，等用户指令。

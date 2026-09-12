@@ -3,7 +3,7 @@
 > 旧版字段（governance-state / Evidence / Human Gate / Promotion / Dispatch ID）已废弃，不填。
 
 - Captured at（YYYY-MM-DD HH:MM）：
-- PROJECT_PHASE：（PLAN / WAITING_HUMAN_APPROVAL / DEVELOP）
+- PROJECT_PHASE：（PLAN / WAITING_HUMAN_APPROVAL / DEVELOP / PLAN_REOPEN_REQUIRED，仅Change C受控重开期间）
 - PLAN_VERSION：（如 PRODUCT_PLAN_V1.0，无则空）
 - PLAN_READINESS_SCORE：（数字 0-100，无则空；定义以 docs/pm/PRODUCT_PLAN.template.md 为准）
 - PLAN_GATE：（IN_PROGRESS / READY_FOR_HUMAN_REVIEW / APPROVED）

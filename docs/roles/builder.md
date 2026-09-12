@@ -8,5 +8,5 @@
 - B通道自测：codebuddy非交互派单默认带`-y`（无-y则模型Bash审批被拒且rc仍为0）；自测验成功只看正文回显不看rc，见 USER_MODEL_OVERRIDE.md:25。
 - Phase2 only：仅 `PROJECT_PHASE=DEVELOP` 可执行（Phase1/WAITING 派工拒绝）；开工必读 `DEV_BASELINE=PRODUCT_PLAN_Vx.x`＋Requirement/DoD，按基线实现。
 - 范围：禁自扩产品范围；疑似 C 类（改核心流程/数据结构/权限模型/关键技术路线/范围明显扩大）立即停手立返 TM，不自行“顺手改”（A 留 DEVELOP 小改可做，B 等 TM 更新局部 Requirement/DoD 后做）。
-- 升级：V4.1 两轮失败升级——第一次实现→Review/QA FAIL→整改一次→仍 FAIL 即停 V4.1 链升 senior-expert（Sol），不第三轮无限磨；P0-hard 可直升（当次有效）。
+- 升级：同一 Task 累计被 supervisor 打回 2 次（QA 挂/Review FAIL 不计数，见 AGENTS 升级节）即停 V4.1 链升 senior-expert（Sol），不第三轮无限磨；P0-hard 可直升（当次有效）。
 - 不做：不改治理表，不push、commit 均需编排者指令；key 写占位＋记 log，不贴真值。

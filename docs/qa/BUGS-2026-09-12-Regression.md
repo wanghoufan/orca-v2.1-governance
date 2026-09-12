@@ -89,3 +89,12 @@
 - ③ `rg -n "保持2\.1|先不动，2\.2|2\.2留用户" .`→2命中（非README，均历史存档非未决）：`docs/history/2.1-更新说明.md:7` Amendment段“保持2.1，2.2留用户拍板”（同文件:8已记“升2.2（用户定，Amendment转正）”闭环）＋`docs/review/CODE_REVIEW-2026-09-12-ModelGate.md:52` ModelGate时点取证“保持2.1，2.2留用户拍板”（ dated冻结报告，不改历史）；`先不动，2.2`严格串零命中（`先不动`散串仅PLAN任务书历史约束语，不在本次三元模式内）；README单列：`rg … README.md`零命中EXIT:1（无provenance行需除外）。未决残留0。PASS（语义；句法2均为历史，非待办）。
 - ④ 双账本校验exit 0：TASK `docs/model/TASK-MODEL-LOG.jsonl`（_example单行跳过）EXIT:0；DISPATCH `docs/model/DISPATCH-LOG.jsonl`（_example＋9行09-12真实派工）EXIT:0（supervisor卡命令原文）。PASS。
 - 结论：升2.2抽验过，四项全PASS；只读零改动（除本节追加外）。观察项（非阻塞）：包根`README.md:23`仍写“版本（2.1）”，与GOVERNANCE_VERSION=2.2滞后一行，交收尾neat顺手改，不计本轮FAIL。
+
+## P1P2验收（qa只读，2026-09-13）
+
+- 派工槽位：role=qa｜model=`deepseek-v4.1-flash`｜used主｜runtime=codebuddy，备用=无，-y已带（本轮纯只读：python-validator/rg/diff/unzip -l/python-zipfile，未发起模型调用，无 codebuddy 活派工，故-y N/A；无GO调用）。
+- ① 双断言exit 0（supervisor卡命令原文）：TASK `docs/model/TASK-MODEL-LOG.jsonl`（_example单行跳过）静默 EXIT:0；DISPATCH `docs/model/DISPATCH-LOG.jsonl`（_example单行跳过，母版已冻回仅_example）静默 EXIT:0；`grep -n "runtime.*codex" docs/roles/supervisor.md`→:40 `if o.get('runtime') not in ('本窗口','codebuddy','codex','deepseek-bridge','—')`在位（新runtime行已含codex）。PASS。
+- ② `rg -n "opencode-go/" USER_MODEL_OVERRIDE.md AGENTS.md docs/roles/`→零命中 EXIT:1；全仓余命中仅历史/报告引用语境（history整改方案/09-11存档/09-11报告/ModelGate证据/PLAN任务书命令字面），两包旧表已清零（新旧包USER_MODEL_OVERRIDE.md均零命中），无新增主动fallback。PASS。
+- ③ 母版vs两包仅预期差：`diff` builder/supervisor/override/HANDOFF.template/双新模板母版vs新旧包均EXIT:0（字节同）；AGENTS仅:36裸名前缀1行差（`docs/prompts/编排者提示词` vs `编排者提示词`，布局正确）＋Contract 2行＋编排者提示词防停摆行＋scripts README同类前缀差（扁平包裸名，预期）；README主表/补记差异系包用途不同（新项目初始化 vs 老项目迁移 vs 母版导航＋同步补记8行双新模板/watchdog去向），属包README补记预期差。P1-1（builder:11已改只算supervisor打回2次）/P1-2（AGENTS:58＋supervisor:40均已补codex）/P1-3（HANDOFF“副本不提交”已删，rg零命中）/P2-1（HANDOFF.template:6已含PLAN_REOPEN_REQUIRED）/P2-2（PHASE_1长名零命中）/P2-3（编排者提示词已改“定义为准，卡内不复述”）/P2-4（AGENTS:36已补派工口≠执行通道半句）同步两包字节同。PASS。
+- ④ 两ZIP与磁盘ZERO＋含双新模板：`diff -r /tmp解压/包磁盘`新旧包均零输出 EXIT:0（.DS_Store除外；ZIP为09-13 02:13新建，非旧缓存）；`python zipfile namelist`新旧ZIP均含`docs/pm/PRODUCT_PLAN.template.md`（1160B）＋`docs/review/RESEARCH_REVIEW.template.md`（956B）各2/2；抽查ZIP内builder升级行/supervisor runtime行与磁盘一致（含codex）。PASS。
+- 结论：P1P2验收过，四项全PASS；只读零改动（除本节追加外；/tmp/zipcheck_new|old已清）。观察项（非阻塞，不计本轮FAIL，留后）：HANDOFF.md:33 runtime枚举仍缺codex（与AGENTS:58/supervisor:40不一致，P1-2同枚举不同文件，审查§5未列，交下轮）；P2-5协议顶注未补脚本名（现行standalone.sh为准句缺失）；P2-6两包README仍有“链接目标”/“项目根或”措辞；P2-7 HANDOFF§2第4条待办仍挂（母版DISPATCH已冻回仅_example，口径“母版可留实绩/分发物纯示例”未写死）。

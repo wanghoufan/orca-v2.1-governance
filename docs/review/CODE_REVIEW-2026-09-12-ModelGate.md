@@ -65,3 +65,25 @@
 ## 去版本复核
 - 初检打回P0=3（口令fence漏清×6＋老包README失步×1＋脚本README死链×3）TM已修（口令三处×2＋README同步＋脚本README三处指新名＋协议收编说明三处去版本）；返工后现行主动文件零版本号残留（冻结类/改名对照节/目录名除外），13改名R保历史，引用全可达，ZIP重建ZERO验。
 - 结论：打回转PASS，P0=0。
+
+## 禁套娃复核
+- Task: 禁套娃增量（AGENTS插座行追加一句×3＋HANDOFF§11＋两ZIP重建，只读不改被检文件，本节为唯一追加）
+- Reviewer: code-reviewer | Result: 过（P0=0）
+- ①无矛盾PASS：新增句"禁把codebuddy包进本窗口subagent套娃调用（表定codebuddy的角色必须走通道直调），违者打回"接在插座行"builder不直聊用户"之后（AGENTS.md:39，三处＋ZIP内逐字同）；与前半句"Runtime仅为执行通道，由override执行通道/Runtime列指定"同向强化，与override表（supervisor/builder/reviewer/qa=codebuddy直调，TM/product=本窗口）一致；与派工顺序"本窗口内派subagent"不冲突（后者指本窗口角色FREE，codebuddy角色走通道直调）；9+1不新增（builder仍是builder）未破。
+- ②§10/§11结构PASS：`rg -n "^## " docs/handoff/HANDOFF.md`示§1-§11连续在位；§10标题"去版本号记一笔（2026-09-12，用户定：版本真相只认Git历史）"已恢复（误替换修复）；§11"禁套娃记一笔（2026-09-12，用户定）"新增2行（空行＋正文），引文与AGENTS句逐字对上，起因句（顶替通道/supervisor记偏离）为事实陈述不进治理正文。
+- ③三处＋ZIP一致PASS：`git diff`三处AGENTS同为插座行1行追加，无他改；`diff -q`母版↔两包唯一差为Line36扁平包裸名（`docs/prompts/`省略，§9已载明布局正确，预期差）；`unzip -p`两ZIP内AGENTS:39均含禁套娃句逐字同，ZIP与磁盘差仅同上裸名1行；两ZIP均重建（Bin 55249→55305／56507→56563）。
+- 未动项：被检文件外无改动；本复核未派subagent（禁套娃遵守）。
+
+## P1P2修复复核
+- Task: GOV现行§5之P1×3＋P2-1~4（builder升级口径／AGENTS状态行短名＋REOPEN／派工口通道分离／runtime补codex／supervisor断言加runtime／HANDOFF删副本条／HANDOFF.template加REOPEN／编排者Readiness改指正典／DISPATCH冻回示例＋HANDOFF存档／两包镜像＋ZIP重建，只读不改被检输出，本节为唯一追加）
+- Reviewer: code-reviewer | Result: 过（P0=0；P2-1~4全闭环；残留×3均为P3，不拦门）
+- P1-1 PASS：`docs/roles/builder.md:11`已改为“同一Task累计被supervisor打回2次（QA挂/Review FAIL不计数）”，与`AGENTS.md:47-48`（只算supervisor打回，QA挂不计数）＋Contract:134同口径；两包字节同，ZIP内同文。
+- P1-2 PASS：`AGENTS.md:58`枚举已补`codex`（本窗口/codebuddy/codex/deepseek-bridge/—），与override planner/senior=codex＋实录codex一致；`docs/roles/supervisor.md:40`加runtime枚举校验行；现DISPATCH仅_example跑新断言exit 0，codex正例in枚举True。
+- P1-3 PASS：`docs/handoff/HANDOFF.md:37`“副本不提交”整条已删，全仓`rg`零残留；与:33“两包已入库跟踪＋常驻同步”不再自斥。
+- P2-1 PASS（选方案①）：`AGENTS.md:5`＋`HANDOFF.template.md:6`均加`PLAN_REOPEN_REQUIRED（仅Change C期间）`，与supervisor:48 Change C检查可落盘。
+- P2-2 PASS：`AGENTS.md:5`已统一HANDOFF短名`PLAN/WAITING/DEVELOP`（＋REOPEN），长名`PHASE_1_PLAN/PHASE_2_DEVELOP`已清，与HANDOFF.template:6对上。
+- P2-3 PASS：`docs/prompts/编排者提示词.md:15`删内联Gate条件，改为“定义以PRODUCT_PLAN.template.md为准，卡内不复述”，与`AGENTS.md:6`正典＋`PRODUCT_PLAN.template.md:32`五条件不再漂移。
+- P2-4 PASS：`AGENTS.md:36`已补“（默认派工口；执行通道按override『执行通道/Runtime』列，表定codebuddy/codex的走通道直调，禁套娃）”，派工口≠执行通道分离，与:39禁套娃同向。
+- 附加项PASS：母版DISPATCH已冻回仅_example（新断言exit 0），两包＋两ZIP内纯示例；`HANDOFF-2026-09-11-override主备.md`加BatchA/B/C 9行存档句；builder/supervisor/template三处母版↔两包SAME，AGENTS/编排者唯一差为扁平包裸名（布局正确白名单）；两ZIP含全部修复、32/33 files无.DS_Store。
+- 残留P3×3（不拦门）：①`docs/roles/task-manager.md:9` Phase owner仍三值缺REOPEN未同步；②`:10`仍内联Readiness子集（缺两验证项，原报告未列TM）；③`HANDOFF.md:23` §2-4冻回待办已实现未删（GOV P2-7收尾）。建议下批顺手修。
+- 新矛盾：无（P0/P1零新增）。
