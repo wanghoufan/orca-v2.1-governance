@@ -21,8 +21,8 @@
   ```
   单行粘贴先落临时文件再跑整文件第二道：`echo '<单行JSON>' > /tmp/one.jsonl` 后把上式路径换成 `/tmp/one.jsonl` 再跑。坏了打回重写；返工数对齐本 Task 上下文中的打回次数，少报就打回。
 - 模型：`deepseek-v4.1-flash` via `codebuddy`（读 USER_MODEL_OVERRIDE.md 的 supervisor 行，冲突以模型表为准）。
-- 域隔离：账本/脚本断言看 exit 码（本域铁律）；codebuddy `-p` 自测看正文（见 override:25），两域互不引用。
-- 抽查：每次复检抽查最近一切换备的行，HANDOFF＋TASK-MODEL-LOG＋DISPATCH-LOG三处对得上。
+- 域隔离：账本/脚本断言看 exit 码（本域铁律）；codebuddy `-p` 自测看正文（见 USER_MODEL_OVERRIDE.md supervisor 行调用方式），两域互不引用。
+- 抽查：每次复检抽查实派==表，HANDOFF＋TASK-MODEL-LOG＋DISPATCH-LOG三处对得上。
 - 兼DISPATCH校验：与任务账本同风格跑第二道（8键＋used/result枚举，坏行打印 `L行号` 且 exit 1，`_example` 行自动跳过），整块照粘（含换行，路径按需换）：
   ```sh
   python3 -c "
@@ -35,9 +35,9 @@
    try: o=json.loads(s)
    except Exception as e: print(f'L{n}: JSON坏:',e); bad+=1; continue
    if not req<=set(o): print(f'L{n}: 缺键',sorted(req-set(o))); bad+=1
-   if o.get('used') not in ('主','备'): print(f'L{n}: used枚举错:',o.get('used')); bad+=1
+   if o.get('used') != '主': print(f'L{n}: used非常量主:',o.get('used')); bad+=1
    if o.get('result') not in ('PASS','FAIL'): print(f'L{n}: result枚举错:',o.get('result')); bad+=1
-   if o.get('runtime') not in ('本窗口','codebuddy','codex','deepseek-bridge','—'): print(f'L{n}: runtime枚举错:',o.get('runtime')); bad+=1
+   if o.get('runtime') not in ('本窗口','codebuddy','codex','—'): print(f'L{n}: runtime枚举错:',o.get('runtime')); bad+=1
   sys.exit(1 if bad else 0)
   " docs/model/DISPATCH-LOG.jsonl
   ```

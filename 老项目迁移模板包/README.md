@@ -4,7 +4,7 @@
 
 用于已有项目接入 ORCA。迁移整理工只整理治理文件，不改业务逻辑。
 
-## 放入项目根目录
+## 放入项目根目录（文件位置）
 
 ```text
 AGENTS.md
@@ -16,23 +16,17 @@ docs/model/
 docs/qa/
 docs/review/
 迁移整理提示词.md
-归位表.template.md
-```
-
-其中 `AGENTS.md`、`USER_MODEL_OVERRIDE.md` 和 `docs/roles/` 已包含 ORCA 分发版原文；项目已有的运行记录保留在原处。
-
-## 同步补记（母版常驻同步，新增文件去向）
-
-```text
+归位表.template.md                   → 项目 docs/templates/
 BRIDGE_INTEGRATION_CONTRACT.md → 项目根（包内已含原文）
 GOVERNANCE_VERSION                   → 项目根（包内已含原文）
 外部开发者提示词.md / 编排者提示词.md / 迁移整理提示词.md → 项目根（包内原位）
-归位表.template.md                   → 项目根或 docs/templates/（包内原位）
 docs/model/DISPATCH-LOG.jsonl        → 项目 docs/model/（包内已含示例行，首派前删除）
 docs/pm/PRODUCT_PLAN.template.md     → 项目 docs/pm/（Phase1专用，Readiness正典）
 docs/review/RESEARCH_REVIEW.template.md → 项目 docs/review/（Phase1专用，内部ID product-reviewer不变，新增）
 scripts/orchestration/               → 项目 scripts/orchestration/（可选：仅 Orca 终端/外部通道编排长任务时部署 L3 watchdog，部署法见其 README）
 ```
+
+其中 `AGENTS.md`、`USER_MODEL_OVERRIDE.md` 和 `docs/roles/` 已包含 ORCA 分发版原文；项目已有的运行记录保留在原处。
 
 ## 迁移命令
 

@@ -1,7 +1,7 @@
 # PRODUCT_PLAN（Phase1 专用；Readiness 定义唯一正典，卡内引用不重写）
 
 - Plan Version：
-- PROJECT_PHASE：（PLAN / WAITING_HUMAN_APPROVAL / DEVELOP）
+- PROJECT_PHASE：（PLAN / WAITING_HUMAN_APPROVAL / DEVELOP / PLAN_REOPEN_REQUIRED，仅Change C受控重开期间）
 - Product Goal：
 - Target Users：
 - Problem：

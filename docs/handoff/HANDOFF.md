@@ -141,3 +141,34 @@
 - 额度词全表零命中（额度/受限/超限/限额/顶替/恢复/切备/主备/备用/主用/停派/找人/免费/MANUAL_ONLY/standby）；10行4列解析过；三方md5一致 `27969fa4a3d1b9312e4e8fd4fca98e0e`。
 - 未动 AGENTS 模型节与角色卡硬编码（残留旧口径，老项目如仍读到以本表为准）；未 commit，等用户指令。
 - 清理（2026-09-13，用户令A删）：`docs/sop/`杂项1件＋`docs/history/`审查报告3件（-y轮/现势/逐派）`git rm`，两包无此二目录不动；两zip重建。
+
+## 18. 分工追审修复记一笔（2026-09-13，用户拍板P1-3选B、P2-1退轻量）
+
+- P1-1：六卡模型行去硬编码（见表不复述）；TM卡:12/编排者:15/README模型节改“默认主链（以表为准）”。
+- P1-2：三处`:25`改命名锚点（见表supervisor行调用方式）；P1-3B：AGENTS:43改纯表语（无备用列/used恒填主/实派==表），删GO/主备/顶替句；P2-1退轻量：DISPATCH枚举删`deepseek-bridge`（AGENTS:58＋supervisor校验块同步），AGENTS:43后半句Bridge句删，Contract文件保留。
+- P2同批：PRODUCT_PLAN加REOPEN值、qa标签中立、builder改停原链、senior补停线句、AGENTS补TM例外、双账本示例行换现行主用（builder/Luna、recorder/FREE本窗口）、协议收编说明补脚本名句、两包README合一表＋去向写死；P3同批（Contract去标题版本名、排名快照脚注、“新表”半句删）。
+- 验：双账本断言exit 0、卡内ID仅supervisor/planner/senior三行、override行号引用零悬空、母版↔两包rolesZERO＋AGENTS仅:36裸名差＋Contract仅§0裸名差、两zip重建；未commit，等用户指令。
+
+## 19. 总监督收编记一笔（2026-09-13，用户定名“总监督”）
+
+- 来源：用户 Downloads/大模型 HANDOFF 原件冻存 `docs/prompts/Orca 编排治理监督者提示词.md`（1879行，md5三方一致，正文未改动）；两包放包根。
+- AGENTS红线加一条：总监督体系外独立（不占9+1，编排者无权派工/解雇），只读三件按监督者提示词执行，发现停摆直接找用户；与supervisor无关不合并；质量走supervisor链，推进/停摆听总监督。
+- 其余文档未动；用户自建总监督角色，读AGENTS＋监督者提示词干活；未commit，等用户指令。
+
+## 20. 总监督收敛记一笔（2026-09-13，用户令wake-only）
+
+- 起因：0907项目总监督按1879行全文最大权限干活，改机制＋连问用户5件事（截图：退役watchdog/补standalone/清145条误报/升协议/跨项目清理）。
+- 收敛：监督者提示词顶部加收编说明（正文冻结不动，现行以说明为准；只做唤醒三件事：心跳断/transport丢/停摆，只喊编排者；禁主动问用户、禁动机制；两次叫不醒才找用户一次）；AGENTS红线总监督句同步改wake-only（先读顶部收编说明，平时只喊编排者）。
+- 三方md5一致 `7f97535e`；两包放包根；未commit，等用户指令。
+
+## 21. 收尾记一笔（2026-09-13，neat-freak＋commit封口）
+
+- 对齐全过：经验10条／双账本示例行现行主用且断言exit 0／卡内模型ID仅supervisor/planner/senior三行／override行号引用零悬空／旧口径（V4.1主链/顶替/GO/主备/bridge运行时）零残留／fence配对／母版↔两包roles ZERO＋AGENTS仅:36裸名差＋Contract仅§0裸名差；README prompts行补监督者提示词；监督者提示词三方md5 `7f97535e`、override三方md5 `27969fa4`；两zip重建含新文件、无`.DS_Store`。
+- 本轮含追审报告新文件1件（`docs/review/GOVERNANCE_REVIEW-2026-09-13-分工追审.md`，P0=0/P1=3/P2=9/P3=4，P1已闭环）。
+- 即日起模板冻结：只收问题不改文件，见§22。
+
+## 22. 后续整改清单（冻结期攒单，用户发一条记一条）
+
+> 规则：编号F-序号；只记日期＋来源项目＋现象＋影响面；不分析不修；P0才单独问是否插队。
+
+- （暂无）

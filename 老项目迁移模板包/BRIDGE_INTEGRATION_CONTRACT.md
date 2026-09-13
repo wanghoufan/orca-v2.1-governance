@@ -1,4 +1,4 @@
-# V2.1_BRIDGE_INTEGRATION_CONTRACT
+# BRIDGE_INTEGRATION_CONTRACT
 
 DeepSeek Bridge 作为 **ORCA V2.1 builder 角色的 External Builder Runtime / Execution Channel** 的最小机器接入契约。
 面向 V2.1 执行优化者与派工基础设施实现者；不含 Registry / Promotion / 新角色 / 新治理状态机。
