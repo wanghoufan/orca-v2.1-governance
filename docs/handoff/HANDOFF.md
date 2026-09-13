@@ -2,6 +2,9 @@
 
 > 本文件为实例，拷进新项目时清空第 1-2 节照模板重写。
 
+- 更新：2026-09-13，迁移入口自举化（并入《迁移整理提示词》，不新增文件）＋两包 README 路径对齐＋F-01 闭环（§23）。
+- 更新：2026-09-13，开发暂停封口（追审修复＋总监督wake-only收编＋neat-freak对齐＋§§1-3现势重写；已 push `de20e13`；即日起模板冻结，只收问题不改文件，攒单见§22）。
+
 - 更新：2026-09-13，开发暂停收尾（neat-freak 对齐＋CUA-MAC-1 收口＋§§1-3 现势重写；已 push `acc8456`）。
 - 更新：2026-09-13，模型分工表改版＋Mac通道诊断任务TM收口（§15）；已 push `00845ad`。
 - 更新：2026-09-13，开发暂停收尾（neat-freak对齐＋§§1-3现势重写＋§14记一笔；未commit，等用户指令）。
@@ -10,41 +13,33 @@
 - 更新：2026-09-12，收编持续推进协议（§7）＋L3 watchdog 脚本进 `scripts/orchestration/`（§8），两包同步、zip 重建。
 - 更新：2026-09-11，开发暂停收尾（已推 `b84e61d`）。历史旧报告6份已删；`docs/history/` 新增审查报告3份（-y轮/现势/逐派，未提交，待定去留）。现行结论以包内文件＋本 HANDOFF §1-§3 为准。
 
-## 1. 当前工作进展（2026-09-13，现势；开发暂停收尾完成）
+## 1. 当前工作进展（2026-09-13，现势；开发暂停封口完成，已冻结）
 
-- 模型表（`USER_MODEL_OVERRIDE.md` 最终版，md5 三方一致 `3a661a71`）：TM＝用户临时指派/开窗口时定（不定模型，备用 V4.1）｜supervisor＝`deepseek-v4.1-flash` via codebuddy（额度受限停工找用户、切账号继续、不自动转备份）｜builder/qa/product-reviewer＝`codex/gpt-5.6-luna` via codex｜code-reviewer/experience-recorder/neat-freak＝`opencode/muse-spark-1.3-contributor-free`（本窗口）｜planner/senior-expert＝`codex/gpt-5.6-sol` via codex（不变）。V4.1/codebuddy 通道保留非删。
-- Mac 真机 QA 通道诊断：完成。七项 6/7 PASS，滚动缺位。跨模型复测（codex/Luna vs deepseek/V4.1）滚动 FAIL 稳定复现 → 证实与模型/通道无关。
-- CUA-MAC-1 收口：正向对照阳性（系统级 PageDown 滚动条 value `0→0.66`）＋ orca 两路径 no-op（AX 元素路径 `AXScrollDownByPage` 与合成坐标路径均 `ok=true` 但滚动条 value 仍 0）→ **根因判定 = Orca provider scroll false-positive / no-op**。最小复现包 `docs/qa/CUA-MAC-1-最小复现包-2026-09-13.md`。
-- CUA-MAC-2（Orca 终端 composer 输入 P1）：未进正式复测，待另开单。CUA-MAC-3（批准 P2）：已批准（持久档加 `com.stablyai.orca`，验证生效）。
-- backlog 文档修订 8 项：诊断报告 §9 已落（R1/QA-MAC-4 覆盖面、R2-R5、QA-MAC-5/6/7）。
-- 正式真机 QA：维持**未启用**。Android/iPhone：继续暂缓。
-- 参考文档：`docs/model/模型分工工作量排名-2026-09-13-参考.md`（母版独有，仅供用户看，不随日常更新，等通知再更）。
-- commit/push：`00845ad`（分工表改版＋Mac收口＋跨模型复测＋排名）、`acc8456`（CUA-MAC-1 收口），均已 push origin/main。
-- 账本：分发口径冻结，TASK/DISPATCH 均仅 `_example` 行。
+- 分工表（`USER_MODEL_OVERRIDE.md` 纯表，标题＋单表4列：角色/模型精确ID/执行通道/调用方式，表外零文字，三方md5一致 `27969fa4`）：TM＝开窗口时定｜supervisor＝`deepseek-v4.1-flash`/codebuddy｜builder/qa/product-reviewer＝`codex/gpt-5.6-luna`/codex｜code-reviewer/recorder/neat＝FREE/本窗口｜planner/senior＝`codex/gpt-5.6-sol`/codex。表内无备用列、无额度语句；换人用户直接改表。
+- 分工追审（`docs/review/GOVERNANCE_REVIEW-2026-09-13-分工追审.md`，P0=0/P1=3/P2=9/P3=4）：P1全闭（六卡去硬编码／命名锚点／AGENTS纯表语used恒主）＋Bridge退轻量＋P2/P3同批，均已落地同步两包。
+- 总监督（定名“总监督”，体系外独立不占9+1）：规范冻存 `docs/prompts/Orca 编排治理监督者提示词.md`（正文1879行冻结，顶部wake-only收编说明为准，三方md5 `7f97535e`）；AGENTS红线已收敛（平时只喊编排者，两次叫不醒才找用户一次）；极简上岗自举实测PASS（一句“你是总监督”即读对三件套、零问决策）。
+- Mac 通道诊断收口：CUA-MAC-1根因＝Orca provider scroll false-positive/no-op（最小复现包在位）；跨模型复测证实与模型/通道无关；正式真机QA维持未启用。
+- commit/push：`de20e13`（追审＋总监督封口）已 push origin/main，工作区干净；两zip重建含新文件、无`.DS_Store`。
+- 对外：0907安卓项目迁移提示词已给（剪切板发出）；0910视频转文字项目迁移提示词已给（4461字节，纯表替换＋治理同步＋自验基线）；两边等回结果。
+- 账本：分发口径冻结，TASK/DISPATCH 均仅 `_example` 行（现行主用示例）。
+- 解冻一笔（2026-09-13，用户指令）：迁移入口自举化（并入《迁移整理提示词》，不新增文件）＋两包 README 路径对齐＋F-01 闭环，详见 §23；本笔完成后恢复冻结。
 
-## 2. 下一步任务（恢复开发按序做）
+## 2. 下一步任务（冻结期：只跑项目、只攒单，不改模板）
 
-1. 开第一单业务（`第一阶段，计划`）：Sol Planner 长对话→PRODUCT PLAN→Research Reviewer→Readiness≥90→用户拍板→`第二阶段，开发`。
-2. CUA-MAC-1 滚动缺陷：等 Orca 侧修复 scroll 实现（修复方向见 `CUA-MAC-1-最小复现包-2026-09-13.md` §七）；修复后另开单复测，先立正向对照＋零噪声面。
-3. CUA-MAC-2（Orca 终端 composer 输入）：另开单复测（尚未进正式）。
-4. 观察 supervisor V4.1 额度消耗：额度受限停工找用户，用户切账号后通知继续，不自动转备份。
-5. Android/iPhone 真机 QA：继续暂缓，未派工未测。
-6. 母版每次改完同步两包＋HANDOFF 记一行（常驻同步，diff 零容忍）；ZIP 重建验无 `.DS_Store`。
-7. sop 杂项＋history 3 报告去留：用户一句话即移出（`docs/sop/` 仅模板示例）。
-8. GOVERNANCE_REVIEW 现行 P2/P3＋优化 5 条纳入 backlog，下次常规改动同批。
+1. 跑项目攒问题：0907/0910等老项目按新表＋新治理跑，用户截图/描述发问题，编排者按F-编号记§22，不分析不修；P0才问是否插队。
+2. 出关：用户说“统一整改”时，按§22清单出分批计划，用户拍板才动手。
+3. CUA-MAC-1：等Orca侧修scroll，修复后另开单复测（先立正向对照＋零噪声面）；CUA-MAC-2另开单；Android/iPhone继续暂缓。
+4. 第一单业务：用户说`第一阶段，计划`才进Sol Planner链，否则不动。
 
 ## 3. 注意事项及规矩（违反即打回）
 
-- **模型表为准**：一切与 `USER_MODEL_OVERRIDE.md` 冲突以表为准（最终版：TM 不定／supervisor=V4.1／builder·qa·product=Luna／reviewer·recorder·neat=FREE／planner·senior=Sol）；精确 ID 禁别名；codex 实调用剥 `codex/` 前缀用短名。
-- **supervisor 用 V4.1**：额度受限停工找用户、切账号后继续，不自动转备份；不得擅自切 Luna/FREE 顶替。
-- **真机 QA 硬门禁**：每 session 先派预检收 PASS 回执才派正式，非 PASS 停派找人；`ok=true` 无状态/像素变化记 `FAIL_UNVERIFIED_ACTION`；禁拼 PASS；Mac 预检不代 Android/iPhone 验收。
-- **两域判据**：codebuddy 自测看正文（含预期回显即可）；账本/脚本断言看 exit 码；互不引用。
-- **账本冻结**：分发包 TASK/DISPATCH 只留 `_example` 行，首个真实任务前删除；实绩记 HANDOFF 存档。
-- **两包常驻同步**：母版改完同步两包＋HANDOFF 记一行，`diff` 零容忍；ZIP 重建验非旧缓存、无 `.DS_Store`。
-- **切换口径**：换模型/换 Runtime 用户定；升级只算 supervisor 累计打回 2 次（QA 挂不计数），senior 再被打回 2 次即停线找人；不写"等免费模型恢复"类条件。
-- **不动旧版＋不擅自提交**：无明确指令不 commit 不 push；不碰 secrets；不覆盖未跟踪文件。
-- **单点对接**：只有编排者找用户，监督者静默。
-- **开工前读**：`AGENTS.md`→角色卡→`USER_MODEL_OVERRIDE.md`→本 HANDOFF→`经验一句话.md`（10 条）→任务目标放最后。
+- **纯表为准**：`USER_MODEL_OVERRIDE.md`只有4列，无备用列、无额度语句；一切冲突以表为准；禁猜额度禁问额度（额度由用户改表体现）；codex实调用剥`codex/`前缀用短名。
+- **派工纪律归AGENTS**：同链续session、静态打头动态押后、换模型/换通道/升级即开新链；DISPATCH的used恒填主，supervisor抽查实派==表。
+- **总监督wake-only**：只做唤醒三件事（心跳断/transport丢/停摆），平时只喊编排者，禁主动问用户，两次叫不醒才找用户一次；质量判定走supervisor链。
+- **冻结**：无“统一整改”指令不改母版/两包/zip；只往§22攒单。
+- **不动旧版＋不擅自提交**：无明确指令（含分支名）不 commit 不 push；不碰 secrets；不覆盖未跟踪文件。
+- **单点对接**：只有编排者找用户，总监督平时静默。
+- **开工前读**：`AGENTS.md`→角色卡→`USER_MODEL_OVERRIDE.md`→本 HANDOFF→`经验一句话.md`（11 条）→任务目标放最后。
 
 ## 4. 2026-09-09 两轮审查修复记录
 
@@ -171,4 +166,14 @@
 
 > 规则：编号F-序号；只记日期＋来源项目＋现象＋影响面；不分析不修；P0才单独问是否插队。
 
-- （暂无）
+- F-01｜2026-09-13｜**已闭环（§23）**｜来源：编排者核对（老项目迁移模板包自查）｜现象：迁移包 README「放入项目根目录」清单漏列 `Orca 通用编排者持续推进协议.md` 与 `Orca 编排治理监督者提示词.md`（两文件实际在包根，包内无 `docs/prompts/` 目录），而 `编排者提示词.md` 第 13 行引用 `docs/prompts/Orca 通用编排者持续推进协议.md`｜影响面：老项目迁移包＋新项目模板包（两包 README 均未提此二文件、docs/ 下均无 prompts/ 目录，已核实同缺）→ 照 README 搬运后该引用指不到文件、防停摆指引断链。｜处置：两包 README 已补列并指定落 `docs/prompts/`，2026-09-13 文档对齐时一并修复（§23）。
+
+## 23. 迁移入口自举化＋文档对齐记一笔（2026-09-13，用户定）
+
+- 起因：原有《迁移整理提示词》首句假设"模板文件夹已拷进本项目"，无法自举；用户要的是：把一份提示词交给老项目智能体，它自己回治理仓库取包→拷进本项目→整理→测试，全程不打扰用户。
+- 处置：把「自举取包＋冲突处理」并入《迁移整理提示词》当第 0 步（**一份入口，不新增文件**）。先试写的《自举迁移提示词》与《迁移整理提示词》内容重复（用户发现），两份已删。
+- 《迁移整理提示词》新内容：第 0 步（检测包是否到位→按本机写死源路径取包→按清单铺开，协议/监督者入 `docs/prompts/`、归位表入 `docs/templates/`→冲突铁律：不删不覆盖、撞了改名 `<原名>.旧版-2026-09-13` 留同级、AGENTS.md 备份＋合并、全程不问人）＋原 1-6 步（"模板无 scripts，不新建"按包实际改为"业务原地不动"）＋末尾一次性汇报。母版与包内字节同（md5 `deed589a`），顶部加"本机专用"小字。
+- 文档对齐（**F-01 闭环**）：两包 README 拷贝清单补列《Orca 通用编排者持续推进协议》《Orca 编排治理监督者提示词》并指定落 `项目 docs/prompts/`（此前既漏列、又令 `AGENTS.md` 与《编排者提示词》里的 `docs/prompts/` 引用在包内悬空）；母版 README prompts 行、老项目包描述同步更新。
+- 两包同步：老项目包（README＋迁移整理提示词＋zip）＋新项目包（README＋zip；新项目包不加迁移提示词）。两 zip 已重建，解压与磁盘仅差 `.DS_Store`、zip 内无 `.DS_Store`、无自举残留文件，验过。母版↔两包预期差 3 处（AGENTS:36×1＋Contract:17-18×2，均裸名路径适配）；《迁移整理提示词》原有 1 处裸名差已消（第 6 条改书名号，母版与包内字节同 `deed589a`）。
+- 经验一句话加一条（共 11 条，三处 md5 `891c84fe`），HANDOFF §3 开工前读的条数同步改 11。
+- 未 commit，等用户指令。

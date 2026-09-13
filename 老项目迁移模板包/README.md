@@ -19,7 +19,8 @@ docs/review/
 归位表.template.md                   → 项目 docs/templates/
 BRIDGE_INTEGRATION_CONTRACT.md → 项目根（包内已含原文）
 GOVERNANCE_VERSION                   → 项目根（包内已含原文）
-外部开发者提示词.md / 编排者提示词.md / 迁移整理提示词.md → 项目根（包内原位）
+外部开发者提示词.md / 编排者提示词.md / 迁移整理提示词.md → 项目根（包内原位；迁移整理含自举取包）
+Orca 通用编排者持续推进协议.md / Orca 编排治理监督者提示词.md → 项目 docs/prompts/（AGENTS 与编排者提示词按此路径引用，勿留根）
 docs/model/DISPATCH-LOG.jsonl        → 项目 docs/model/（包内已含示例行，首派前删除）
 docs/pm/PRODUCT_PLAN.template.md     → 项目 docs/pm/（Phase1专用，Readiness正典）
 docs/review/RESEARCH_REVIEW.template.md → 项目 docs/review/（Phase1专用，内部ID product-reviewer不变，新增）
