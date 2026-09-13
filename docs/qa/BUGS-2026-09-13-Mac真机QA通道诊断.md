@@ -8,7 +8,7 @@
 
 | Bug ID | Priority | Stage P0 Blocking? | Repro | Status | Current Task | 备注（截图/日志一句） |
 |---|---|---|---|---|---|---|
-| CUA-MAC-1 | P0 | YES | 任一目标 `scroll` 返回 `ok=true` 但像素零位移 | OPEN | 任务B-滚动 | 三目标 × 两路径（合成坐标／AX 元素）全部 0；控制组 0 |
+| CUA-MAC-1 | P0 | YES | 任一目标 `scroll` 返回 `ok=true` 但像素零位移 | 根因已判定（scroll false-positive/no-op，见§11） | 任务B-滚动 | 正向对照阳性＋两路径均 no-op；控制组 0 |
 | CUA-MAC-2 | P1 | NO | Orca 终端 composer `set-value` 像素不变 | OPEN | 任务B-输入 | 裁剪区 `(480-1460,1250-1420)` 0/166600 |
 | CUA-MAC-3 | P2 | NO | 新 codex session 访问 Orca 返回未批准 | DIAGNOSED(PENDING_USER_APPROVAL) | 任务A | 批准＝**按应用×会话**白名单（含跨会话持久档）；修复待用户当次批准 |
 
@@ -170,7 +170,7 @@
 
 **最小修复方向（两条，P1-2）**：
 1. provider 为 `scroll` 补自证：回读 `elementFrames`／滚动条 value／像素回读，使成功可判；
-2. 修合成事件注入本身（滚动未产生可观测位移）。
+2. 修 scroll 实现本身：accessibility 路径 `AXScrollDownByPage` 派发后滚动条 value 不变（AX action 未真正生效）；synthetic 路径因 provider `focus=false` 事件未送达目标窗口。
 
 ## 是否存在一条完整通过七项的固定执行链
 
@@ -320,3 +320,15 @@ TM 收口时必办（不得省）：① 按口径把本任务派工显式两行�
 - 批准：持久档 `ComputerUseAppApprovals.json` 已加 `com.stablyai.orca`；codex 会话访问 Orca 无「未批准」错误，批准生效。
 - 预检（硬门禁，TM 派 qa｜`codex/gpt-5.6-luna`＋codex）：读屏/截图/点击/输入(查找文件框)/判断UI/端到端 PASS，滚动 `FAIL_UNVERIFIED_ACTION`（文件列表 `scroll` 无位移）复现 → 总体**非 PASS**，停派不进正式。
 - 结论：跨模型（codex/Luna vs 原 deepseek/V4.1）复测，滚动缺陷**稳定复现** → CUA-MAC-1 根因在 Orca provider 层，与模型/通道无关。正式 QA 维持**未启用**。CUA-MAC-2（Orca 终端 composer）本次未进正式，未复测。
+
+---
+
+## 11. 滚动正向对照与最终根因判定（2026-09-13）
+
+- **正向对照（系统级，阳性）**：TextEdit 60 行溢出文档，系统级 PageDown 使滚动条 value `0 → 0.6619`，Home 恢复 `0`（可逆）→ 证明同一区域确实可滚、有滚动余量。
+- **orca provider scroll 两条路径（均 no-op）**：
+  - AX 元素路径（`--element-index 1`，滚动区）：`ok=true`、`actionName=AXScrollDownByPage`、`path=accessibility` → 滚动条 value 仍 `0`。
+  - 合成坐标路径（`--x 336 --y 219`）：`ok=true`、`path=synthetic` → 滚动条 value 仍 `0`。
+- **排除清单五项已逐一确认**：页面未到底（从顶部起、60 行溢出）、有滚动余量、以滚动条 value 硬值判位移不依赖像素噪声、scale=2 无坐标换算、系统级可达（排除焦点为唯一解释，AX 路径本不经焦点）。
+- **最终根因判定：CUA-MAC-1 = Orca provider scroll false-positive / no-op**（返回 ok=true 但滚动条 value／可见文字／像素均无变化）。
+- 最小复现包：`docs/qa/CUA-MAC-1-最小复现包-2026-09-13.md`。
