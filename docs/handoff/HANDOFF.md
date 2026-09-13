@@ -2,50 +2,49 @@
 
 > 本文件为实例，拷进新项目时清空第 1-2 节照模板重写。
 
-- 更新：2026-09-13，模型分工表改版＋Mac通道诊断任务TM收口（§15）；未commit，等用户指令。
+- 更新：2026-09-13，开发暂停收尾（neat-freak 对齐＋CUA-MAC-1 收口＋§§1-3 现势重写；已 push `acc8456`）。
+- 更新：2026-09-13，模型分工表改版＋Mac通道诊断任务TM收口（§15）；已 push `00845ad`。
 - 更新：2026-09-13，开发暂停收尾（neat-freak对齐＋§§1-3现势重写＋§14记一笔；未commit，等用户指令）。
 - 更新：2026-09-13，本项目编排者（TM）由 GO（`opencode-go/muse-spark-1.3-contributor`）**切回免费**（`opencode/muse-spark-1.3-contributor-free`，即表内 TM 主用）；切换过程中报 provider 错 `reasoning encrypted_content was not issued to this caller`（会话内模型 caller 变更后旧加密 reasoning 块被重放，续旧会话必复现）。处置：**未改表**（FREE 本就是表内主用），旧会话不 resume，开新会话继续。
 - 更新：2026-09-12，模型与双阶段整改＋C2两包同步＋zip重建（§9），版本标记文件改指针语（版本真相以Git历史为准）。
 - 更新：2026-09-12，收编持续推进协议（§7）＋L3 watchdog 脚本进 `scripts/orchestration/`（§8），两包同步、zip 重建。
 - 更新：2026-09-11，开发暂停收尾（已推 `b84e61d`）。历史旧报告6份已删；`docs/history/` 新增审查报告3份（-y轮/现势/逐派，未提交，待定去留）。现行结论以包内文件＋本 HANDOFF §1-§3 为准。
 
-## 1. 当前工作进展（2026-09-13，现势；开发暂停时点）
+## 1. 当前工作进展（2026-09-13，现势；开发暂停收尾完成）
 
-- 模型表（`USER_MODEL_OVERRIDE.md`现行，未动）：TM=FREE／supervisor=V4.1+codebuddy／builder=V4.1+codebuddy（-y默认带）／planner=Sol+codex／reviewer=V4.1（独立Session）／qa=V4.1／product=FREE（Research Reviewer，Phase1按需）／recorder/neat=V4.1／senior=Sol+codex；`OPENCODE_GO=MANUAL_ONLY`，Bridge standby；TM已由GO切回FREE（未改表，开新会话，见顶注）。
-- 治理：PLAN→WAITING_HUMAN_APPROVAL→DEVELOP＋Human Gate＋Change A/B/C＋DEV_BASELINE＋双新模板＋HANDOFF六字段（含`PLAN_REOPEN_REQUIRED`）；9+1不新增，TM/supervisor独立；禁套娃（表定codebuddy角色走通道直调）。
-- §12 P1P2修复（2026-09-13）：母版8处＋两包镜像同步＋ZIP重建ZERO验；reviewer过＋qa过＋supervisor过（打回0/2）；未commit。
-- §13 真机QA会话能力预检门禁（2026-09-13，用户定P1）：母版4处（qa卡硬门禁＋7态枚举＋ok=true判据／BUGS.template预检节／编排者提示词先派预检／AGENTS总门禁一句）；正式QA路由不变；两包镜像同步（qa/BUGS ZERO，AGENTS/提示词仅预期裸名路径差）＋ZIP重建解压ZERO验；reviewer过（P0=0/P2×5）＋qa过（P0=0/P2×4）＋supervisor复检打回1/2后补落盘；未commit；Android/iPhone真机未测，Mac预检不代真机验收。
-- 验证链：Model Gate 15/15、PhaseGate门禁四项全过、C1回归全过、Sol外审PASS（P0=0/P1=0/P2清完）→PROMOTION_READY仍成立；新增§12/§13门禁均已过。
-- watchdog：本机已部署运行（2分钟一轮，三件事全过），旧0907任务共存；通用部署尚未在其他项目安装。
-- 真机QA：V4.1保持"待验证"，Canary七项（读屏/截图/点击/输入/滚动/判断UI状态/真实端到端）须七项全过才写已启用；现行仅截图/读屏/判断PASS，其余PENDING。
-- 版本与同步：版本真相以Git历史为准（`GOVERNANCE_VERSION`指针语）；母版↔两包↔ZIP已同步（本轮15改＋2 ZIP重建）；未commit，未push。
-- 账本：分发口径冻结——母版＋两包TASK/DISPATCH均仅`_example`行（§12已冻回，P2-4待办闭环）；实绩9行存档在`HANDOFF-2026-09-11-override主备.md`。
-- 工作区状态（2026-09-13 现势）：已改未提交＝原15项＋本轮分工表改版（override×3＋AGENTS×3，见§15）；未跟踪6件（§13证据3件：`BUGS-2026-09-13-预检门禁.md`／`CODE_REVIEW-2026-09-13-预检门禁.md`／`GOVERNANCE_REVIEW-2026-09-13-现行.md`；Mac通道诊断3件：`BUGS-2026-09-13-Mac真机QA通道诊断.md`／`BUGS-2026-09-13-Mac通道诊断-QA独立复核.md`／`CODE_REVIEW-2026-09-13-Mac通道诊断.md`；均证据不删）；包内无临时文件，`.DS_Store`仅本地存在不进ZIP。
+- 模型表（`USER_MODEL_OVERRIDE.md` 最终版，md5 三方一致 `3a661a71`）：TM＝用户临时指派/开窗口时定（不定模型，备用 V4.1）｜supervisor＝`deepseek-v4.1-flash` via codebuddy（额度受限停工找用户、切账号继续、不自动转备份）｜builder/qa/product-reviewer＝`codex/gpt-5.6-luna` via codex｜code-reviewer/experience-recorder/neat-freak＝`opencode/muse-spark-1.3-contributor-free`（本窗口）｜planner/senior-expert＝`codex/gpt-5.6-sol` via codex（不变）。V4.1/codebuddy 通道保留非删。
+- Mac 真机 QA 通道诊断：完成。七项 6/7 PASS，滚动缺位。跨模型复测（codex/Luna vs deepseek/V4.1）滚动 FAIL 稳定复现 → 证实与模型/通道无关。
+- CUA-MAC-1 收口：正向对照阳性（系统级 PageDown 滚动条 value `0→0.66`）＋ orca 两路径 no-op（AX 元素路径 `AXScrollDownByPage` 与合成坐标路径均 `ok=true` 但滚动条 value 仍 0）→ **根因判定 = Orca provider scroll false-positive / no-op**。最小复现包 `docs/qa/CUA-MAC-1-最小复现包-2026-09-13.md`。
+- CUA-MAC-2（Orca 终端 composer 输入 P1）：未进正式复测，待另开单。CUA-MAC-3（批准 P2）：已批准（持久档加 `com.stablyai.orca`，验证生效）。
+- backlog 文档修订 8 项：诊断报告 §9 已落（R1/QA-MAC-4 覆盖面、R2-R5、QA-MAC-5/6/7）。
+- 正式真机 QA：维持**未启用**。Android/iPhone：继续暂缓。
+- 参考文档：`docs/model/模型分工工作量排名-2026-09-13-参考.md`（母版独有，仅供用户看，不随日常更新，等通知再更）。
+- commit/push：`00845ad`（分工表改版＋Mac收口＋跨模型复测＋排名）、`acc8456`（CUA-MAC-1 收口），均已 push origin/main。
+- 账本：分发口径冻结，TASK/DISPATCH 均仅 `_example` 行。
 
 ## 2. 下一步任务（恢复开发按序做）
 
-1. 先拍板本轮是否commit/push：15改＋3新文件＋2 ZIP；需用户明确指令（含分支名，外部者`ext/`开头），无指令则保持未提交。
-2. 开第一单业务（`第一阶段，计划`）：Sol Planner长对话→PRODUCT PLAN→Research Reviewer→Readiness≥90→用户拍板→`第二阶段，开发`。
-3. Mac真机QA通道修复与复测（暂停前任务A/B，恢复时从P1预检起）：每session先跑预检PASS才进正式；禁跨模型/跨Runtime/跨session拼PASS；禁按Enter发命令；残留清零。
-4. Canary重测（有桌面通道/新模型时）：点击/输入/滚动/端到端四项，按qa门禁"七项全过才写已启用"。
-5. 母版每次改完同步两包＋HANDOFF记一行（常驻同步，`diff`零容忍；包内扁平裸名系布局正确不改）。
-6. sop杂项＋history 3报告去留：用户一句话即移出，之前勿动（`docs/sop/`仅模板示例，新项目自建）。
-7. GOVERNANCE_REVIEW现行报告P2/P3＋优化5条纳入backlog，下次常规改动同批（P1×3已在§12修完）。
+1. 开第一单业务（`第一阶段，计划`）：Sol Planner 长对话→PRODUCT PLAN→Research Reviewer→Readiness≥90→用户拍板→`第二阶段，开发`。
+2. CUA-MAC-1 滚动缺陷：等 Orca 侧修复 scroll 实现（修复方向见 `CUA-MAC-1-最小复现包-2026-09-13.md` §七）；修复后另开单复测，先立正向对照＋零噪声面。
+3. CUA-MAC-2（Orca 终端 composer 输入）：另开单复测（尚未进正式）。
+4. 观察 supervisor V4.1 额度消耗：额度受限停工找用户，用户切账号后通知继续，不自动转备份。
+5. Android/iPhone 真机 QA：继续暂缓，未派工未测。
+6. 母版每次改完同步两包＋HANDOFF 记一行（常驻同步，diff 零容忍）；ZIP 重建验无 `.DS_Store`。
+7. sop 杂项＋history 3 报告去留：用户一句话即移出（`docs/sop/` 仅模板示例）。
+8. GOVERNANCE_REVIEW 现行 P2/P3＋优化 5 条纳入 backlog，下次常规改动同批。
 
 ## 3. 注意事项及规矩（违反即打回）
 
-- **模型表为准**：一切与 `USER_MODEL_OVERRIDE.md` 冲突以表为准（用户定）；精确ID禁别名（禁裸`gpt-5.6`、禁`deepseek-v4.1-flash`入Bridge列）；codex实调用剥`codex/`前缀用短名；codebuddy用原生ID见override:21；TM切回FREE未改表，旧会话不resume。
-- **builder主用V4.1**：`deepseek-v4.1-flash` via codebuddy＋`-y`＋显式标注；FREE不得顶Builder槽；换通道/换模型/换Runtime开新链记HANDOFF＋账本；B不通贴原文停派找人，不自回切；禁套娃（表定codebuddy角色走通道直调）。
-- **真机QA硬门禁**：每session先派预检收PASS回执才派正式，非PASS停派找人；枚举只许7态，禁`FAIL_MODEL_ACTION`；`ok=true/exit 0/调用成功`无状态或像素变化记`FAIL_UNVERIFIED_ACTION`；禁拼PASS；Mac预检不代Android/iPhone验收。
-- **两域判据**：codebuddy自测看正文（含预期回显即可）；账本/脚本断言看exit码；互不引用。
-- **逐派三处互验**：显式两行＋DISPATCH一行＋HANDOFF主备句；切备行HANDOFF/TASK/DISPATCH对上，supervisor抽查；`runtime`枚举（本窗口/codebuddy/codex/deepseek-bridge/—）。
-- **账本冻结**：分发包TASK/DISPATCH只留`_example`行，首任务/首派前删除；实绩记HANDOFF存档，不落分发账本。
-- **两包常驻同步**：母版改完同步两包＋HANDOFF记一行，`diff`零容忍；两包已入库跟踪；包内提示词原位裸名系布局正确；ZIP重建后验非旧缓存、无`.DS_Store`。
-- **切换口径**：换模型/换Runtime用户定；升级只算supervisor累计打回2次（QA挂不计数），senior再被打回2次即停线找人；FREE整批升GO已停用（GO无额度，用户定）；绝不写“等免费模型恢复”类条件。
-- **不动旧版＋不擅自提交**：一切只改当前治理包（旧版封存）；无明确指令不commit不push；不碰secrets；不覆盖未跟踪文件。
-- **单点对接**：只有编排者找用户，监督者平时静默。
-- **computer-use**：先 `get-app-state --restore-window` 再按键盘；进详情页点站内链接，别跟地址栏较劲；看截图用 Read 读 path；测试框只写`QA-CUA-CANARY`，双验＋清残留，禁按Enter。
-- **开工前读**：`AGENTS.md`→角色卡→`USER_MODEL_OVERRIDE.md`→本HANDOFF→`经验一句话.md`（10条）→任务目标放最后。
+- **模型表为准**：一切与 `USER_MODEL_OVERRIDE.md` 冲突以表为准（最终版：TM 不定／supervisor=V4.1／builder·qa·product=Luna／reviewer·recorder·neat=FREE／planner·senior=Sol）；精确 ID 禁别名；codex 实调用剥 `codex/` 前缀用短名。
+- **supervisor 用 V4.1**：额度受限停工找用户、切账号后继续，不自动转备份；不得擅自切 Luna/FREE 顶替。
+- **真机 QA 硬门禁**：每 session 先派预检收 PASS 回执才派正式，非 PASS 停派找人；`ok=true` 无状态/像素变化记 `FAIL_UNVERIFIED_ACTION`；禁拼 PASS；Mac 预检不代 Android/iPhone 验收。
+- **两域判据**：codebuddy 自测看正文（含预期回显即可）；账本/脚本断言看 exit 码；互不引用。
+- **账本冻结**：分发包 TASK/DISPATCH 只留 `_example` 行，首个真实任务前删除；实绩记 HANDOFF 存档。
+- **两包常驻同步**：母版改完同步两包＋HANDOFF 记一行，`diff` 零容忍；ZIP 重建验非旧缓存、无 `.DS_Store`。
+- **切换口径**：换模型/换 Runtime 用户定；升级只算 supervisor 累计打回 2 次（QA 挂不计数），senior 再被打回 2 次即停线找人；不写"等免费模型恢复"类条件。
+- **不动旧版＋不擅自提交**：无明确指令不 commit 不 push；不碰 secrets；不覆盖未跟踪文件。
+- **单点对接**：只有编排者找用户，监督者静默。
+- **开工前读**：`AGENTS.md`→角色卡→`USER_MODEL_OVERRIDE.md`→本 HANDOFF→`经验一句话.md`（10 条）→任务目标放最后。
 
 ## 4. 2026-09-09 两轮审查修复记录
 
@@ -128,3 +127,10 @@
 - 证据 `/tmp/qa-cua-2026-09-13/evidence/`（重启即清）；仓库仅新建诊断报告3件（未跟踪）。
 - 文档修订（④⑤⑥ 项）已落地：诊断报告 §9 集中记录 R1/R2/R3/R4/R5/QA-MAC-5/6/7 八项处置，编排者提示词 :19 澄清预检会话归属（母版＋两包同步）；余 ①②③＝真机复测另开单（CUA-MAC-1/2）＋批准（CUA-MAC-3），仍需真机/当次批准，未动。
 - 复测（2026-09-13，TM 派 qa｜`codex/gpt-5.6-luna`＋codex，主用，批准已生效＝持久档加 `com.stablyai.orca`）：预检 6/7 PASS，滚动项 `FAIL_UNVERIFIED_ACTION` 复现（文件列表 `scroll` 无位移）→ 硬门禁非 PASS 停派，不进正式复测。**跨模型复测证实 CUA-MAC-1 滚动缺陷在 Orca provider 层，与模型/通道无关**；CUA-MAC-2（终端 composer）本次未进正式未复测。正式 QA 维持**未启用**。
+
+## 16. 开发暂停收尾记一笔（2026-09-13，neat-freak）
+
+- 对齐检查全过：经验一句话 10 条、账本 TASK/DISPATCH 均仅 `_example`、override 三方 md5 一致 `3a661a71`、两包 AGENTS 仅预期裸名路径差 1 处、`/tmp/scroll-test.txt` 已清、git 干净。
+- §§1-3 现势重写：§1 记最终模型表＋Mac 诊断收口＋CUA-MAC-1 根因判定＋commit 状态；§2 列 8 项恢复任务；§3 更新 supervisor V4.1 口径＋真机 QA 硬门禁＋账本冻结。
+- 清理：TextEdit 测试文档已关闭不保存、`/tmp/scroll-test.txt` 已删；`/tmp/qa-cua-2026-09-13/evidence/` 为诊断证据留存（重启即清，非本轮残留，不动）。
+- 未 commit（§§1-3 重写＋§16 待用户指令 commit/push）。
