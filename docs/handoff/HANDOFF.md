@@ -16,7 +16,7 @@
 
 ## 1. 当前工作进展（2026-09-13，现势；开发暂停封口完成，已冻结）
 
-- 分工表（`USER_MODEL_OVERRIDE.md` 纯表，标题＋单表4列：角色/模型精确ID/执行通道/调用方式，表外零文字，三方md5一致 `27969fa4`）：TM＝开窗口时定｜supervisor＝`deepseek-v4.1-flash`/codebuddy｜builder/qa/product-reviewer＝`codex/gpt-5.6-luna`/codex｜code-reviewer/recorder/neat＝FREE/本窗口｜planner/senior＝`codex/gpt-5.6-sol`/codex。表内无备用列、无额度语句；换人用户直接改表。
+- 分工表（`USER_MODEL_OVERRIDE.md` 纯表，标题＋单表4列：角色/模型精确ID/执行通道/调用方式，表外零文字）：TM＝开窗口时定｜supervisor＝`opencode-go/muse-spark-1.3-contributor`/opencode｜builder＝`opencode-go/deepseek-v4.1-flash`/opencode｜qa/product-reviewer＝`codex/gpt-5.6-luna`/codex｜code-reviewer/recorder/neat＝FREE/本窗口｜planner/senior＝`codex/gpt-5.6-sol`/codex。表内无备用列；分工表软链制（各项目根表均为软链指母版真源，改母版即全项目同步）；换人用户直接改母版表。
 - 分工追审（`docs/review/GOVERNANCE_REVIEW-2026-09-13-分工追审.md`，P0=0/P1=3/P2=9/P3=4）：P1全闭（六卡去硬编码／命名锚点／AGENTS纯表语used恒主）＋Bridge退轻量＋P2/P3同批，均已落地同步两包。
 - 总监督（定名“总监督”，体系外独立不占9+1）：规范冻存 `docs/prompts/Orca 编排治理监督者提示词.md`（正文1879行冻结，顶部wake-only收编说明为准，三方md5 `7f97535e`）；AGENTS红线已收敛（平时只喊编排者，两次叫不醒才找用户一次）；极简上岗自举实测PASS（一句“你是总监督”即读对三件套、零问决策）。
 - Mac 通道诊断收口：CUA-MAC-1根因＝Orca provider scroll false-positive/no-op（最小复现包在位）；跨模型复测证实与模型/通道无关；正式真机QA维持未启用。
@@ -73,7 +73,7 @@
 
 ## 9. 转正记一笔（2026-09-12）
 
-- 转正记一笔（BatchA＋BatchB，版本标记改指针语，用户定）：母版主动文件已同步两包（override新表＋10卡＋AGENTS两阶段＋编排者三口令＋PRODUCT_PLAN/RESEARCH_REVIEW双新模板＋PLAN两行＋HANDOFF六字段＋协议两阶段优先一行＋双账本示例行＋双包README去向行；AGENTS裸名1行保留；supervisor断言块两包与母版字节同），预期差仅扁平包裸名4行（AGENTS×1/Contract×2/迁移整理×1，布局正确）＋外部提示词history半句（包无history/省略合理），两ZIP重建并校验非旧缓存，未 commit（等用户指令）。
+- 转正记一笔（BatchA＋BatchB，版本标记改指针语，用户定）：母版主动文件已同步两包（override新表＋10卡＋AGENTS两阶段＋编排者三口令＋PRODUCT_PLAN/RESEARCH_REVIEW双新模板＋PLAN两行＋HANDOFF六字段＋协议两阶段优先一行＋双账本示例行＋双包README去向行；AGENTS裸名1行保留；supervisor断言块两包与母版字节同），预期差仅扁平包裸名2处（AGENTS:36×1/scripts README:3×1，布局正确）＋外部提示词history半句（包无history/省略合理），两ZIP重建并校验非旧缓存，未 commit（等用户指令）。
 - 收尾记一笔（neat-freak 2026-09-12）：对齐6处（README版本2.1→2.2、HANDOFF经验9→10条、§3行号:29→override:27×2＋:27→override:21＋override:29→:22；经验14行/10条×3处一致、GOV三处2.2一致、ZIP为本轮新建无需重建）；清/tmp：one*.jsonl与qa-bad均无残留（/tmp仅存09-10/09-11旧combined/fbcap/sup_test三文件非本轮产物不动，包内无临时文件）；未决：builder/supervisor卡override:27三处（实指-y规则现为:25）母版与两包字节同故未动，待TM定是否另开变更同步三处＋重建ZIP。
 - Sol外审P2整改（2026-09-12，TM执行）：P2-1/README版本声明已加；P2-2/AGENTS planner格补PRODUCT_PLAN入口；P2-3/§1标superseded；P2-4/待办：下次分发前冻回DISPATCH-LOG仅_example；P2-6/watchdog md5四方同`4464dfb3`（包根/两包/Downloads源）已闭环；P2-7/协议顶注行在位、"真机QA已启用"零虚假断言（仅qa.md门禁条件句）。P2-5/P2-8无需改。
 
@@ -175,7 +175,7 @@
 - 处置：把「自举取包＋冲突处理」并入《迁移整理提示词》当第 0 步（**一份入口，不新增文件**）。先试写的《自举迁移提示词》与《迁移整理提示词》内容重复（用户发现），两份已删。
 - 《迁移整理提示词》新内容：第 0 步（按本机写死源路径取包→按清单铺开，协议/监督者入 `docs/prompts/`、归位表入 `docs/templates/`→冲突铁律：不删不覆盖、撞了改名 `<原名>.旧版-2026-09-13` 留同级、AGENTS.md 备份＋合并、全程不问人）＋原 1-6 步（"模板无 scripts，不新建"按包实际改为"业务原地不动"）＋末尾一次性汇报。母版与包内字节同（md5 `deed589a`），顶部加"本机专用"小字。
 - 文档对齐（**F-01 闭环**）：两包 README 拷贝清单补列《Orca 通用编排者持续推进协议》《Orca 编排治理监督者提示词》并指定落 `项目 docs/prompts/`（此前既漏列、又令 `AGENTS.md` 与《编排者提示词》里的 `docs/prompts/` 引用在包内悬空）；母版 README prompts 行、老项目包描述同步更新。
-- 两包同步：老项目包（README＋迁移整理提示词＋zip）＋新项目包（README＋zip；新项目包不加迁移提示词）。两 zip 已重建，解压与磁盘仅差 `.DS_Store`、zip 内无 `.DS_Store`、无自举残留文件，验过。母版↔两包预期差 3 处（AGENTS:36×1＋Contract:17-18×2，均裸名路径适配）；《迁移整理提示词》原有 1 处裸名差已消（第 6 条改书名号，母版与包内字节同 `deed589a`）。
+- 两包同步：老项目包（README＋迁移整理提示词＋zip）＋新项目包（README＋zip；新项目包不加迁移提示词）。两 zip 已重建，解压与磁盘仅差 `.DS_Store`、zip 内无 `.DS_Store`、无自举残留文件，验过。母版↔两包预期差 2 处（AGENTS:36＋scripts README:3，均裸名路径适配，Contract 已删）；《迁移整理提示词》原有 1 处裸名差已消（第 6 条改书名号，母版与包内字节同 `deed589a`）。
 - 经验一句话加一条（共 11 条，三处 md5 `891c84fe`），HANDOFF §3 开工前读的条数同步改 11。
 - 已 commit＋push origin/main（含本笔收尾回填），工作区干净。
 
@@ -192,3 +192,36 @@
 - 连带：母版 README 老项目包描述去掉同一判据表述；§23 第 0 步描述同步修正。
 - 老包 zip 重建（解压与磁盘仅差 `.DS_Store`、zip 内无 `.DS_Store`，验过）；新项目包无此文件不动。
 - 已 commit＋push origin/main。
+
+## 26. 基础设施规范入母版记一笔（2026-09-15，用户定短名＋四处落位）
+
+- 文件（短名，去版本号，引用不朽）：母版 `docs/sop/docker.md`（源2026-09-02 V1.1）、`docs/sop/supabase.md`（源2026-09-03 V1.4）、`docs/sop/sqlite.md`（源2026-09-15 V1.0）。头部版本行与末尾版本记录保留为历史；正文现行互引6处去版本（docker配套文件改直链`./supabase.md`，其余书名号去"Vx.x"），`规范 V1`/`%20`零残留已验。
+- 四处：母版真源＋新项目模板包＋老项目迁移模板包（sop三份md5三方一致）＋中央 `~/.agents/rules/docker.md|supabase.md|sqlite.md` 软链指回母版（散兵智能体不走ORCA也能读到；`orca.md→AGENTS.md`同理）。
+- 接线：README docs地图sop行补三文件名；《迁移整理提示词》第0步docs清单加sop（含三文件名），两包README归位清单成对补 `docs/sop/→项目 docs/sop/`；老包迁移提示词与母版字节同已验。
+- 两zip重建并验（python zipfile：sop三份在位且与磁盘md5一致、无`.DS_Store`；`unzip -l|grep`在本机对中文包名显示异常，不可作验收依据）。
+- 派工：DB任务必带supabase/sqlite，部署任务必带docker，进静态prefix（任务目标仍最后），supervisor抽查没带打回。
+- 未commit，等用户指令（含分支名才动）。
+
+## 27. 检查整改＋分工表软链制记一笔（2026-09-15，用户定全修）
+
+- P0：DISPATCH runtime 枚举加 `opencode`（AGENTS:58 三处＋supervisor 卡断言块三处），与现表 supervisor/builder=opencode 对齐；此后按现表派工不再被自家断言打回。
+- P1：README 模型口径节、HANDOFF §1 分工表段改现表口径（supervisor＝muse-spark/opencode、builder＝deepseek-v4.1-flash/opencode）；supervisor 卡去硬编码（见表不复述）、builder/supervisor 两卡 `-y` 引用改通道无关（按表对应行调用方式，codebuddy `-y` 留作示例）。
+- P2：派工必带 sop 进链（AGENTS 派工顺序＋编排者提示词读盘 :12/干活 1，supervisor 抽查）；AGENTS:74 改"基础设施规范位"；sop 两处实例注记（docker §2.1 本机示例/§8 实例、supabase §12 实例/§18 示例路径各项目替换）；经验＋1（共 12 条，三处一致）。
+- 分工表软链制：真源只在母版；各项目根表均为软链指母版，改母版即全项目同步（禁拷实文件；跨机器断链时拷实文件并记 HANDOFF）。接线：AGENTS 模型节＋母版 README＋两包 README＋《迁移整理提示词》第 0 步（表不拷贝，备份后建链，目标＝源路径去尾段包名＋/USER_MODEL_OVERRIDE.md）。
+- 两包同步＋两 zip 重建并验；母版↔两包 roles ZERO、AGENTS 仅 :36 裸名差。
+- 未 commit，等用户指令（含分支名才动）。
+
+## 28. Bridge/codebuddy 通道彻底删除记一笔（2026-09-15，用户定）
+
+- 删文件：`BRIDGE_INTEGRATION_CONTRACT.md` 母版＋两包共 3 份彻底删除，不存档（Git 历史可回溯）。
+- 清引用（母版＋两包同步）：AGENTS（:36 表定通道、:39 禁套娃句、:58 runtime 枚举删 codebuddy，现为本窗口/codex/opencode/—）／supervisor 卡断言 tuple／builder 卡（:7 删 Bridge 前缀与 bridge-builder 例、:8 删 codebuddy 例）／编排者 :10（删 Bridge/Contract，通道以分工表为准）／外部 :3（删 Bridge 句）／BUGS.template :15（删 codebuddy 例）／HANDOFF.template :20（删 Contract 格式句）／母版 README（删 Contract 行与改名对照行）／两包 README（删 Contract 去向行）／迁移整理 :13（删 Contract 清单项）／经验删 -y 轮一条（11 条）／`docs/model/模型分工工作量排名-2026-09-13-参考.md` 整份删除（含 codebuddy 快照行）。
+- 保留：builder 行 `opencode-go/deepseek-v4.1-flash via opencode` 不动（禁的只是 codebuddy 路）；日期冻结的历史报告/交接旧节内旧提法不动（证据原文）。
+- 两 zip 重建并验；未 commit，等用户指令（含分支名才动）。
+
+## 29. 复审剩余项对齐记一笔（2026-09-15，用户定）
+
+- P0-1：AGENTS:6＋TM:10 删 FREE，product-reviewer 模型/通道以表为准（现 codex/Luna）。
+- P1：TM:9 补第四态／TM:7＋HANDOFF.template:15 used 口径改恒填主／AGENTS:64 缓存静态打头加 sop 分支／AGENTS:6＋README:9＋编排者:16 Gate 补全模板全条件／TASK schema 补 note 可选键＋示例换 builder 现行＋迁移整理 5.6 删示例步骤＋README 措辞统一／HANDOFF :76/:178 计数改 2 处裸名差。
+- P2：TM:10 速记补后两项／AGENTS:38＋编排者:10 resume 明确含 opencode／builder 禁新建举例改通道无关／README（根 11 件、history 第三份、已删除补排名、对照空悬注记、账本措辞）／sop 三头部加自身版本注（冻结件旧提法豁免不改）／supervisor 五查改六查（加状态机合法性）。
+- 工具：`scripts/check-sync.sh` 一键核母版↔两包（预期差仅 AGENTS:36＋scripts README:3，其余零容忍），替代 HANDOFF 人工计数。
+- 两包同步＋两 zip 重建并验；sop/复审报告 git add 落盘；未 commit，等用户指令（含分支名才动）。

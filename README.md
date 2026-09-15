@@ -6,20 +6,19 @@
 
 ## 用户只需记住三个口令
 
-- `第一阶段，计划`：进 Phase1（PLAN），Planner＋Research Reviewer 出 PRODUCT_PLAN，≥90 才找你。
+- `第一阶段，计划`：进 Phase1（PLAN），Planner＋Research Reviewer 出 PRODUCT_PLAN，≥90 且模板 Gate 全条件满足（P0=0＋blocking P1=0＋事实/假设验证）才找你。
 - `第二阶段，开发`：Human Gate 批准后进 Phase2（DEVELOP，锁定 DEV_BASELINE），默认主链开发（模型以override表为准）。
 - `变更请求：……`：开发中反馈统一入口，TM 按 A（小改留 DEVELOP）/ B（局部功能改留 DEVELOP 不召 Sol）/ C（产品架构变 Controlled Reopen）分类。
 
 ## 模型口径（一句话，以根 `USER_MODEL_OVERRIDE.md` 表为准）
 
-- supervisor 走 `deepseek-v4.1-flash` via codebuddy；builder/qa/product-reviewer 走 `codex/gpt-5.6-luna` via codex；code-reviewer/经验/neat 走 FREE 本窗口；planner/senior 走 `codex/gpt-5.6-sol` via codex；TM 开窗口时定。
-- 换人用户直接改表；表内无备用列。
+- supervisor 走 `opencode-go/muse-spark-1.3-contributor` via opencode；builder 走 `opencode-go/deepseek-v4.1-flash` via opencode；qa/product-reviewer 走 `codex/gpt-5.6-luna` via codex；code-reviewer/经验/neat 走 FREE 本窗口；planner/senior 走 `codex/gpt-5.6-sol` via codex；TM 开窗口时定。
+- 换人用户直接改母版真源表；表内无备用列。分工表软链制：各项目根表均为软链指母版真源，改母版即全项目同步（禁拷实文件；跨机器断链时拷实文件并记 HANDOFF）。
 
-## 根目录（现行7）
+## 根目录（现行11）
 
 - `AGENTS.md`：全员规则（一页）
 - `USER_MODEL_OVERRIDE.md`：模型表（角色/模型/执行通道/调用方式，改表即生效，精确ID照抄执行）
-- `BRIDGE_INTEGRATION_CONTRACT.md`：Bridge通道技术合同（包内拷贝，原件在业务仓，更新回仓重拷）
 - `GOVERNANCE_VERSION`：版本指针文件（内容：以Git历史为准）
 - `经验一句话.md`：收工一句经验
 - `scripts/orchestration/`：L3 watchdog 脚本＋部署说明（防停摆，配套 docs/prompts/ 持续推进协议；仅 Orca 终端/外部通道编排时部署）
@@ -29,26 +28,26 @@
 
 - `roles/`：10张角色卡（只看本次派的角色）
 - `prompts/`：编排者/外部开发者/迁移整理三份提示词（迁移整理含自举取包＋冲突处理，可当老项目唯一入口）＋《Orca 通用编排者持续推进协议》（防停摆三层监督收编版；其动态角色论与十卡制冲突，不采用）＋《Orca 编排治理监督者提示词》（总监督wake-only收编版，平时只喊编排者）
-- `history/`：重塑说明、更新说明（历史，看现行先看根）
+- `history/`：重塑说明、更新说明、ORCA 模型与双阶段治理整改方案（历史，看现行先看根）
 - `templates/`：归位表模板
 - `pm/` `qa/` `review/`：计划/测试/评审落盘（各照 template）
-- `handoff/`：交接（含模板）；`model/`：模型账本（首任务前删示例行）
-- `sop/`：仅模板示例，新项目自建
+- `handoff/`：交接（含模板）；`model/`：模型账本（TASK 首个真实任务前、DISPATCH 首个真实派工前删示例行）
+- `sop/`：基础设施规范（docker.md、supabase.md、sqlite.md，去版本号引用），新项目自建
 
 ## 已删除（用户令，结论均已落实）
 
 - 历史治理审查报告6份（09-09→09-11）：P1/P2结论已全部修完验过，删前状态见 git 历史；现行结论以包内文件为准
+- `docs/model/模型分工工作量排名-2026-09-13-参考.md`（2026-09-15 删，快照过期，见 git 历史）
 - 根散文件已归位：三提示词→`prompts/`、两说明→`history/`、归位表→`templates/`
 
 ## 改名对照（去版本号一次改名，老链接按此找新位置）
 
-- `V2.1_BRIDGE_INTEGRATION_CONTRACT.md` → `BRIDGE_INTEGRATION_CONTRACT.md`
 - `docs/history/2.0-重塑说明.md` → `docs/history/重塑说明.md`
 - `docs/history/2.1-更新说明.md` → `docs/history/更新说明.md`
-- `docs/history/ORCA-V2.1-治理审查报告-*` → `docs/history/ORCA-治理审查报告-*`
+- `docs/history/ORCA-V2.1-治理审查报告-*` → `docs/history/ORCA-治理审查报告-*`（实物已删，见 git 历史）
 - `docs/history/*ORCA V2.1模型与双阶段治理-整改方案 丨 V1.0.md` → `docs/history/*ORCA模型与双阶段治理-整改方案.md`
 - `docs/prompts/*持续推进协议 丨 V1.1.md` → `docs/prompts/Orca 通用编排者持续推进协议.md`
-- `docs/sop/*交接上下文 丨 V1.0.md` → 去掉末尾 ` 丨 V1.0`
+- `docs/sop/*交接上下文 丨 V1.0.md` → 去掉末尾 ` 丨 V1.0`（该文件已删，见 git 历史）
 - 口令 `【迁移整理｜2.1】` → `【迁移整理】`
 - 口令 `【编排者｜2.1开工】` → `【编排者｜开工】`
 - 口令 `【外部施工｜2.1】` → `【外部施工】`

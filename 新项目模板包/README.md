@@ -8,15 +8,15 @@
 
 ```text
 AGENTS.md                 → ORCA 分发版根目录 AGENTS.md
-USER_MODEL_OVERRIDE.md    → ORCA 分发版根目录 USER_MODEL_OVERRIDE.md
+USER_MODEL_OVERRIDE.md    → 软链指 ORCA 分发版根目录 USER_MODEL_OVERRIDE.md（禁拷实文件；改母版全项目同步；跨机器断链时拷实文件并记 HANDOFF）
 docs/roles/               → ORCA 分发版 docs/roles/
 docs/pm/                  → ORCA 分发版 docs/pm/
 docs/handoff/             → ORCA 分发版 docs/handoff/
 docs/model/               → ORCA 分发版 docs/model/
 docs/qa/                  → ORCA 分发版 docs/qa/
 docs/review/              → ORCA 分发版 docs/review/
+docs/sop/                 → ORCA 分发版 docs/sop/（docker.md、supabase.md、sqlite.md，去版本号引用）
 经验一句话.md             → ORCA 分发版根目录 经验一句话.md
-BRIDGE_INTEGRATION_CONTRACT.md → 项目根（包内已含原文）
 GOVERNANCE_VERSION                   → 项目根（包内已含原文）
 外部开发者提示词.md / 编排者提示词.md → 项目根（包内原位）
 Orca 通用编排者持续推进协议.md / Orca 编排治理监督者提示词.md → 项目 docs/prompts/（AGENTS 与编排者提示词按此路径引用，勿留根）

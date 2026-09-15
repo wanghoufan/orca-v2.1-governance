@@ -8,16 +8,16 @@
 
 ```text
 AGENTS.md
-USER_MODEL_OVERRIDE.md
+USER_MODEL_OVERRIDE.md（软链指母版真源，不拷实文件；改母版全项目同步；跨机器断链时拷实文件并记 HANDOFF）
 docs/roles/
 docs/pm/
 docs/handoff/
 docs/model/
 docs/qa/
 docs/review/
+docs/sop/（docker.md、supabase.md、sqlite.md） → 项目 docs/sop/（去版本号引用）
 迁移整理提示词.md
 归位表.template.md                   → 项目 docs/templates/
-BRIDGE_INTEGRATION_CONTRACT.md → 项目根（包内已含原文）
 GOVERNANCE_VERSION                   → 项目根（包内已含原文）
 外部开发者提示词.md / 编排者提示词.md / 迁移整理提示词.md → 项目根（包内原位；迁移整理含自举取包）
 Orca 通用编排者持续推进协议.md / Orca 编排治理监督者提示词.md → 项目 docs/prompts/（AGENTS 与编排者提示词按此路径引用，勿留根）
