@@ -14,31 +14,29 @@
 - 更新：2026-09-12，收编持续推进协议（§7）＋L3 watchdog 脚本进 `scripts/orchestration/`（§8），两包同步、zip 重建。
 - 更新：2026-09-11，开发暂停收尾（已推 `b84e61d`）。历史旧报告6份已删；`docs/history/` 新增审查报告3份（-y轮/现势/逐派，未提交，待定去留）。现行结论以包内文件＋本 HANDOFF §1-§3 为准。
 
-## 1. 当前工作进展（2026-09-13，现势；开发暂停封口完成，已冻结）
+## 1. 当前工作进展（2026-09-16，现势；今日 session 未 commit）
 
-- 分工表（`USER_MODEL_OVERRIDE.md` 纯表，标题＋单表4列：角色/模型精确ID/执行通道/调用方式，表外零文字）：TM＝开窗口时定｜supervisor＝`opencode-go/muse-spark-1.3-contributor`/opencode｜builder＝`codebuddy/deepseek-v4.1-flash`/codebuddy（限额切 codebuddy/glm-5.3-flash，再限额停派喊人）｜qa＝`codex/gpt-5.6-luna`/codex｜product-reviewer＝`codex/gpt-5.6-terra`/codex｜code-reviewer/recorder/neat＝FREE/本窗口｜planner/senior＝`codex/gpt-5.6-sol`/codex。表内无备用列；分工表软链制（各项目根表均为软链指母版真源，改母版即全项目同步）；换人用户直接改母版表。
-- 分工追审（`docs/review/GOVERNANCE_REVIEW-2026-09-13-分工追审.md`，P0=0/P1=3/P2=9/P3=4）：P1全闭（六卡去硬编码／命名锚点／AGENTS纯表语used恒主）＋Bridge退轻量＋P2/P3同批，均已落地同步两包。
-- 总监督（定名“总监督”，体系外独立不占9+1）：规范冻存 `docs/prompts/Orca 编排治理监督者提示词.md`（正文1879行冻结，顶部wake-only收编说明为准，三方md5 `7f97535e`）；AGENTS红线已收敛（平时只喊编排者，两次叫不醒才找用户一次）；极简上岗自举实测PASS（一句“你是总监督”即读对三件套、零问决策）。
-- Mac 通道诊断收口：CUA-MAC-1根因＝Orca provider scroll false-positive/no-op（最小复现包在位）；跨模型复测证实与模型/通道无关；正式真机QA维持未启用。
-- commit/push：两笔均已 push origin/main（追审＋总监督封口 `de20e13`；本笔 §23 迁移入口自举化＋文档对齐），工作区干净；两zip重建含新文件、无`.DS_Store`。最新提交以 Git 历史为准。
-- 对外：0907安卓项目迁移提示词已给（剪切板发出）；0910视频转文字项目迁移提示词已给（4461字节，纯表替换＋治理同步＋自验基线）；两边等回结果。
-- 账本：分发口径冻结，TASK/DISPATCH 均仅 `_example` 行（现行主用示例）。
-- 解冻一笔（2026-09-13，用户指令）：迁移入口自举化（并入《迁移整理提示词》，不新增文件）＋两包 README 路径对齐＋F-01 闭环，详见 §23；本笔完成后恢复冻结。
+- 分工表（`USER_MODEL_OVERRIDE.md` 纯表，10 行 4 列，表外零文字）：TM＝开窗口时定｜supervisor＝`opencode-go/muse-spark-1.3-contributor`/opencode｜builder＝`codebuddy/deepseek-v4.1-flash`/codebuddy（限额切 codebuddy/glm-5.3-flash，再限额停派喊人）｜qa＝`codex/gpt-5.6-luna`/本窗口（真机 adb/Expo 直驱，不记偏离）｜product-reviewer＝`codex/gpt-5.6-terra`/codex｜code-reviewer/recorder/neat＝FREE/本窗口｜planner/senior＝`codex/gpt-5.6-sol`/codex。表内无备用列；软链制（各项目根表软链指母版，改母版即同步）；改表必真调（AGENTS 模型节铁律）。
+- 本轮大项（均已落地未提交）：sop 三规范短名入位（docker/supabase/sqlite＋中央软链）／Contract×3 彻底删／复审 P0/P1/P2 全对齐＋check-sync.sh（exit 0）／product 换 Terra／builder 切 codebuddy 主备链／qa 切本窗口直驱。详见 §26–§32。
+- Luna 真机验证通过（2026-09-16，IN9LZTAYV4UGU4JF）：codex 沙箱 adb BLOCKED（前提证实）→无沙箱直驱 `adb devices` 通→`dumpsys`/截屏通（206KB 真图）→tap/swipe/HOME 全 exit 0（前后图不同，已复位）→`input text` 命令通（落字待目标框）→landedazi v1.0.4 安装 Success（包名 com.landedazi.app，versionName 却为 1.0.0，名实不符已 flag）→MainActivity 直起，PHOTO SPOT 首屏 TM 目检通过。输入落字＋Expo 全链路待续。
+- commit/push：`0ac6895`、`381a66f` 已推 origin/main；今日 §30–§33 及真调证据未提交，工作区非空。最新提交以 Git 历史为准。
+- 账本：TASK/DISPATCH 均仅 `_example` 行（现行主用示例）；经验 11 条。
 
-## 2. 下一步任务（冻结期：只跑项目、只攒单，不改模板）
+## 2. 下一步任务（按序）
 
-1. 跑项目攒问题：0907/0910等老项目按新表＋新治理跑，用户截图/描述发问题，编排者按F-编号记§22，不分析不修；P0才问是否插队。
-2. 出关：用户说“统一整改”时，按§22清单出分批计划，用户拍板才动手。
-3. CUA-MAC-1：等Orca侧修scroll，修复后另开单复测（先立正向对照＋零噪声面）；CUA-MAC-2另开单；Android/iPhone继续暂缓。
-4. 第一单业务：用户说`第一阶段，计划`才进Sol Planner链，否则不动。
+1. 输入落字验证：给 Luna 一个目标输入框（Expo 页指定），点框＋落字＋截屏比对。
+2. 装包收尾：versionName(1.0.0)与文件名(v1.0.4)不符，问 0907 项目方要说法；后续 Expo 出包按“装→验 version→直起→截屏”走。
+3. commit＋push 今日工作区（用户一句话即办）。
+4. Expo 安卓常态 QA：A 口径已生效（Luna 本窗口直驱＋note），后续真机单照此派，不记偏离。
+5. CUA-MAC-1：等 Orca 侧修 scroll，另开单；第一单业务仍等`第一阶段，计划`口令。
 
 ## 3. 注意事项及规矩（违反即打回）
 
-- **纯表为准**：`USER_MODEL_OVERRIDE.md`只有4列，无备用列、无额度语句；一切冲突以表为准；禁猜额度禁问额度（额度由用户改表体现）；codex实调用剥`codex/`前缀用短名。
-- **派工纪律归AGENTS**：同链续session、静态打头动态押后、换模型/换通道/升级即开新链；DISPATCH的used恒填主，supervisor抽查实派==表。
-- **总监督wake-only**：只做唤醒三件事（心跳断/transport丢/停摆），平时只喊编排者，禁主动问用户，两次叫不醒才找用户一次；质量判定走supervisor链。
-- **冻结**：无“统一整改”指令不改母版/两包/zip；只往§22攒单。
-- **不动旧版＋不擅自提交**：无明确指令（含分支名）不 commit 不 push；不碰 secrets；不覆盖未跟踪文件。
+- **表为准＋改表必真调**：冲突以 `USER_MODEL_OVERRIDE.md` 为准；改表后必须真调验证（只读验名免费先行，烧额度先批，不通即停表不动）；codex 剥前缀用短名，codebuddy 非交互必带 `-y`（看正文不看 rc）。
+- **派工纪律归AGENTS**：同链续 session、静态打头动态押后（含 sop 分支）、换模型/换通道/升级即开新链；DISPATCH 的 used 恒填主，supervisor 抽查实派==表。
+- **真机口径**：qa＝Luna＋本窗口直驱（adb/Expo），note 记原因不记偏离；builder 不动（codebuddy 主备链）；主备皆限额→停派喊人。
+- **总监督wake-only**：平时只喊编排者，两次叫不醒才找用户一次；质量走 supervisor 链。
+- **不动旧版＋不擅自提交**：无明确指令（含分支名，默认 main）不 commit 不 push；不碰 secrets。
 - **单点对接**：只有编排者找用户，总监督平时静默。
 - **开工前读**：`AGENTS.md`→角色卡→`USER_MODEL_OVERRIDE.md`→本 HANDOFF→`经验一句话.md`（11 条）→任务目标放最后。
 
@@ -226,9 +224,25 @@
 - 工具：`scripts/check-sync.sh` 一键核母版↔两包（预期差仅 AGENTS:36＋scripts README:3，其余零容忍），替代 HANDOFF 人工计数。
 - 两包同步＋两 zip 重建并验；sop/复审报告 git add 落盘；未 commit，等用户指令（含分支名才动）。
 
+## 30. product-reviewer 换 Terra 记一笔（2026-09-15，用户定）
+
+- 表 `:11`：product-reviewer＝`codex/gpt-5.6-terra`/codex（短名 `gpt-5.6-terra`，禁本窗口代做）；qa 留 Luna 不动。
+- 同步：母版 README:15＋HANDOFF §1 拆分；角色卡/AGENTS/TM 卡零改动（均以表为准）；两包同步；两 zip 重建并验。
+
 ## 31. builder 切 codebuddy 主备链记一笔（2026-09-16，用户定，A 方案）
 
 - 真调：主 `codebuddy --model deepseek-v4.1-flash` 名存在但 429 频率限制（2026-09-16 17:10 UTC+8 重置）；备 `codebuddy --model glm-5.3-flash` pong 通过。链：主→备→再限额停派喊人。
 - 表 builder 行改 codebuddy 主备备注式；codebuddy 重进 AGENTS/断言/builder 自测（仅 builder 相关）；README§1/HANDOFF§1 同步；两包同步；未 commit，等用户指令。
-- 表 `:11`：product-reviewer＝`codex/gpt-5.6-terra`/codex（短名 `gpt-5.6-terra`，禁本窗口代做）；qa 留 Luna 不动。
-- 同步：母版 README:15＋HANDOFF §1 拆分；角色卡/AGENTS/TM 卡零改动（均以表为准）；两包同步；未 commit，等用户指令。
+
+## 32. qa 真机走本窗口直驱记一笔（2026-09-16，用户定，builder 不动）
+
+- 表 qa 行：模型保持 `codex/gpt-5.6-luna`，通道 codex→本窗口；真机QA（adb/Expo）走本窗口 bash 直驱，note 记原因，supervisor 不记偏离。builder 维持 codebuddy 主备链不动。
+- qa 卡补真机直驱句；README/HANDOFF §1 同步；两包同步；未 commit，等用户指令。
+- 真调闭环（2026-09-16）：codex 沙箱（read-only）下 Luna 跑 `adb devices` BLOCKED（daemon 起不来，前提证实）；`-s danger-full-access`（等价本窗口无沙箱）下 Luna 回显设备 `IN9LZTAYV4UGU4JF device`，直驱可行，A 闭环。
+- 输入冒烟半过（2026-09-16）：HOME＋`input text ORCA-smoke-TEST123`＋截屏全 exit 0（824352 字节真图），未开应用；命令通路OK，文字落点未验（HOME 下无聚焦框，需目标输入框）。装包见 §33（已装上，落字待目标框）。
+
+## 33. 收工记一笔（2026-09-16，开发暂停，neat 已过）
+
+- 装包验证：用户手机点允许后重装，landedazi v1.0.4 `Success`（com.landedazi.app，versionName 却为 1.0.0，名实不符待问项目方）；monkey 误进系统设置页一次，改直起 MainActivity 成功，PHOTO SPOT 首屏 TM 目检通过；找参考页误触回桌面一次（搜索栏输入单被 abort，未完成）。
+- neat：同步脚本 exit 0、工作区仅今日变更、经验 11 条、/tmp 证据（luna-*.png＋ui*.xml，重启即清）留存未删。
+- §§1–3 已重写为 09-16 现势；今日工作区未 commit，等用户指令。

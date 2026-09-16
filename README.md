@@ -12,7 +12,7 @@
 
 ## 模型口径（一句话，以根 `USER_MODEL_OVERRIDE.md` 表为准）
 
-- supervisor 走 `opencode-go/muse-spark-1.3-contributor` via opencode；builder 走 `codebuddy/deepseek-v4.1-flash` via codebuddy（限额停工切 codebuddy/glm-5.3-flash，再限额停派喊人）；qa 走 `codex/gpt-5.6-luna` via codex、product-reviewer 走 `codex/gpt-5.6-terra` via codex；code-reviewer/经验/neat 走 FREE 本窗口；planner/senior 走 `codex/gpt-5.6-sol` via codex；TM 开窗口时定。
+- supervisor 走 `opencode-go/muse-spark-1.3-contributor` via opencode；builder 走 `codebuddy/deepseek-v4.1-flash` via codebuddy（限额停工切 codebuddy/glm-5.3-flash，再限额停派喊人）；qa 走 `codex/gpt-5.6-luna` via 本窗口（真机 adb/Expo 直驱）、product-reviewer 走 `codex/gpt-5.6-terra` via codex；code-reviewer/经验/neat 走 FREE 本窗口；planner/senior 走 `codex/gpt-5.6-sol` via codex；TM 开窗口时定。
 - 换人用户直接改母版真源表；表内无备用列。分工表软链制：各项目根表均为软链指母版真源，改母版即全项目同步（禁拷实文件；跨机器断链时拷实文件并记 HANDOFF）。
 
 ## 根目录（现行11）
