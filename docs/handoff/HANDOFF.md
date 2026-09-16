@@ -16,7 +16,7 @@
 
 ## 1. 当前工作进展（2026-09-13，现势；开发暂停封口完成，已冻结）
 
-- 分工表（`USER_MODEL_OVERRIDE.md` 纯表，标题＋单表4列：角色/模型精确ID/执行通道/调用方式，表外零文字）：TM＝开窗口时定｜supervisor＝`opencode-go/muse-spark-1.3-contributor`/opencode｜builder＝`opencode-go/deepseek-v4.1-flash`/opencode｜qa/product-reviewer＝`codex/gpt-5.6-luna`/codex｜code-reviewer/recorder/neat＝FREE/本窗口｜planner/senior＝`codex/gpt-5.6-sol`/codex。表内无备用列；分工表软链制（各项目根表均为软链指母版真源，改母版即全项目同步）；换人用户直接改母版表。
+- 分工表（`USER_MODEL_OVERRIDE.md` 纯表，标题＋单表4列：角色/模型精确ID/执行通道/调用方式，表外零文字）：TM＝开窗口时定｜supervisor＝`opencode-go/muse-spark-1.3-contributor`/opencode｜builder＝`codebuddy/deepseek-v4.1-flash`/codebuddy（限额切 codebuddy/glm-5.3-flash，再限额停派喊人）｜qa＝`codex/gpt-5.6-luna`/codex｜product-reviewer＝`codex/gpt-5.6-terra`/codex｜code-reviewer/recorder/neat＝FREE/本窗口｜planner/senior＝`codex/gpt-5.6-sol`/codex。表内无备用列；分工表软链制（各项目根表均为软链指母版真源，改母版即全项目同步）；换人用户直接改母版表。
 - 分工追审（`docs/review/GOVERNANCE_REVIEW-2026-09-13-分工追审.md`，P0=0/P1=3/P2=9/P3=4）：P1全闭（六卡去硬编码／命名锚点／AGENTS纯表语used恒主）＋Bridge退轻量＋P2/P3同批，均已落地同步两包。
 - 总监督（定名“总监督”，体系外独立不占9+1）：规范冻存 `docs/prompts/Orca 编排治理监督者提示词.md`（正文1879行冻结，顶部wake-only收编说明为准，三方md5 `7f97535e`）；AGENTS红线已收敛（平时只喊编排者，两次叫不醒才找用户一次）；极简上岗自举实测PASS（一句“你是总监督”即读对三件套、零问决策）。
 - Mac 通道诊断收口：CUA-MAC-1根因＝Orca provider scroll false-positive/no-op（最小复现包在位）；跨模型复测证实与模型/通道无关；正式真机QA维持未启用。
@@ -225,3 +225,10 @@
 - P2：TM:10 速记补后两项／AGENTS:38＋编排者:10 resume 明确含 opencode／builder 禁新建举例改通道无关／README（根 11 件、history 第三份、已删除补排名、对照空悬注记、账本措辞）／sop 三头部加自身版本注（冻结件旧提法豁免不改）／supervisor 五查改六查（加状态机合法性）。
 - 工具：`scripts/check-sync.sh` 一键核母版↔两包（预期差仅 AGENTS:36＋scripts README:3，其余零容忍），替代 HANDOFF 人工计数。
 - 两包同步＋两 zip 重建并验；sop/复审报告 git add 落盘；未 commit，等用户指令（含分支名才动）。
+
+## 31. builder 切 codebuddy 主备链记一笔（2026-09-16，用户定，A 方案）
+
+- 真调：主 `codebuddy --model deepseek-v4.1-flash` 名存在但 429 频率限制（2026-09-16 17:10 UTC+8 重置）；备 `codebuddy --model glm-5.3-flash` pong 通过。链：主→备→再限额停派喊人。
+- 表 builder 行改 codebuddy 主备备注式；codebuddy 重进 AGENTS/断言/builder 自测（仅 builder 相关）；README§1/HANDOFF§1 同步；两包同步；未 commit，等用户指令。
+- 表 `:11`：product-reviewer＝`codex/gpt-5.6-terra`/codex（短名 `gpt-5.6-terra`，禁本窗口代做）；qa 留 Luna 不动。
+- 同步：母版 README:15＋HANDOFF §1 拆分；角色卡/AGENTS/TM 卡零改动（均以表为准）；两包同步；未 commit，等用户指令。
