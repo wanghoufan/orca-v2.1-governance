@@ -16,7 +16,7 @@
 
 ## 1. 当前工作进展（2026-09-16，现势；今日 session 未 commit）
 
-- 分工表（`USER_MODEL_OVERRIDE.md` 纯表，10 行 4 列，表外零文字）：TM＝开窗口时定｜supervisor＝`opencode-go/muse-spark-1.3-contributor`/opencode｜builder＝`codebuddy/deepseek-v4.1-flash`/codebuddy（限额切 codebuddy/glm-5.3-flash，再限额停派喊人）｜qa＝`codex/gpt-5.6-luna`/本窗口（真机 adb/Expo 直驱，不记偏离）｜product-reviewer＝`codex/gpt-5.6-terra`/codex｜code-reviewer/recorder/neat＝FREE/本窗口｜planner/senior＝`codex/gpt-5.6-sol`/codex。表内无备用列；软链制（各项目根表软链指母版，改母版即同步）；改表必真调（AGENTS 模型节铁律）。
+- 分工表（`USER_MODEL_OVERRIDE.md` 纯表，10 行 4 列，表外零文字）：TM＝开窗口时定｜supervisor＝`opencode-go/muse-spark-1.3-contributor`/opencode｜builder＝`codebuddy/deepseek-v4.1-flash`/codebuddy（限额切 codebuddy/glm-5.3-flash，再限额停派喊人）｜qa＝`codex/gpt-5.6-luna`/codex（普通QA；真机 adb/Expo 走本窗口直驱，不记偏离）｜product-reviewer＝`codex/gpt-5.6-terra`/codex｜code-reviewer/recorder/neat＝FREE/本窗口｜planner/senior＝`codex/gpt-5.6-sol`/codex｜db-admin＝`opencode-go/deepseek-v4.1-flash`/opencode（专项，TM 直派直收）。表内无备用列；软链制（各项目根表软链指母版，改母版即同步）；改表必真调（AGENTS 模型节铁律）。
 - 本轮大项（均已落地未提交）：sop 三规范短名入位（docker/supabase/sqlite＋中央软链）／Contract×3 彻底删／复审 P0/P1/P2 全对齐＋check-sync.sh（exit 0）／product 换 Terra／builder 切 codebuddy 主备链／qa 切本窗口直驱。详见 §26–§32。
 - Luna 真机验证通过（2026-09-16，IN9LZTAYV4UGU4JF）：codex 沙箱 adb BLOCKED（前提证实）→无沙箱直驱 `adb devices` 通→`dumpsys`/截屏通（206KB 真图）→tap/swipe/HOME 全 exit 0（前后图不同，已复位）→`input text` 命令通（落字待目标框）→landedazi v1.0.4 安装 Success（包名 com.landedazi.app，versionName 却为 1.0.0，名实不符已 flag）→MainActivity 直起，PHOTO SPOT 首屏 TM 目检通过。输入落字＋Expo 全链路待续。
 - commit/push：`0ac6895`、`381a66f` 已推 origin/main；今日 §30–§33 及真调证据未提交，工作区非空。最新提交以 Git 历史为准。
@@ -242,7 +242,78 @@
 - 输入冒烟半过（2026-09-16）：HOME＋`input text ORCA-smoke-TEST123`＋截屏全 exit 0（824352 字节真图），未开应用；命令通路OK，文字落点未验（HOME 下无聚焦框，需目标输入框）。装包见 §33（已装上，落字待目标框）。
 
 ## 33. 收工记一笔（2026-09-16，开发暂停，neat 已过）
-
 - 装包验证：用户手机点允许后重装，landedazi v1.0.4 `Success`（com.landedazi.app，versionName 却为 1.0.0，名实不符待问项目方）；monkey 误进系统设置页一次，改直起 MainActivity 成功，PHOTO SPOT 首屏 TM 目检通过；找参考页误触回桌面一次（搜索栏输入单被 abort，未完成）。
 - neat：同步脚本 exit 0、工作区仅今日变更、经验 11 条、/tmp 证据（luna-*.png＋ui*.xml，重启即清）留存未删。
 - §§1–3 已重写为 09-16 现势；今日工作区未 commit，等用户指令。
+
+## 34. builder 回 opencode GO 记一笔（2026-09-16，用户定）
+- 真调：`opencode run -m opencode-go/deepseek-v4.1-flash "pong"` 回 pong，通过。
+- 表 builder 行回退 opencode GO 单通道，主备备注链删除；codebuddy 表述清零（AGENTS/断言/builder 自测）；README/HANDOFF §1 同步；两包同步；未 commit，等用户指令。
+
+## 35. 新增 db-admin 专项角色记一笔（2026-09-18，用户定增，Change C）
+
+- 需求：Supabase 入库审核免人工转送，TM 直派数据库管理员（Luna/codex，工作区固定本机 000-alw-数据库管理专家仓），收审查材料→回三态结论（§16/§16.2/§17），用户不中转。
+- 落位：新卡 `docs/roles/db-admin.md`＋表增 1 行（11 行）＋AGENTS（9+1＋1、角色行、谁写哪、审核 bullet、11 行）＋TM 卡直派句＋README（11 卡＋模型节）；Luna/codex 通道已验，免重复烧额度；两包同步；未 commit，等用户指令。
+
+## 36. db-admin 换 opencode GO 记一笔（2026-09-18，用户定，免检）
+
+- 表 db-admin 行：`codex/gpt-5.6-luna`/codex → `opencode-go/deepseek-v4.1-flash`/opencode（工作区句保留）；同 ID 当日 builder 已验 pong，用户定免检，不重复烧额度。
+- README 模型节、HANDOFF §1 同步；两包同步；未 commit，等用户指令。
+
+## 37. builder 重回 codebuddy 主备链记一笔（2026-09-18，用户定）
+- 真调：主 deepseek-v4.1-flash 429 已恢复 pong 通、备 glm-5.3-flash pong 通（两单）。
+- 表 builder 行恢复 §31 主备备注式；codebuddy 重进 AGENTS/断言/builder 自测（仅 builder 相关）；README/HANDOFF §1 同步；两包同步；未 commit，等用户指令。
+
+## 38. qa 双态分派记一笔（2026-09-18，用户定 B）
+
+- 根因：qa＝Luna＋本窗口互斥，本窗口只能跑开窗口模型，Luna 永不登场。
+- 真调：Luna codex 只读跑 check-sync＋DISPATCH 断言，双 exit 0 PASS，未改文件。
+- 表 qa 行回 codex＋双态备注（普通走 Luna，真机走本窗口直驱）；qa 卡/README/HANDOFF §1 同步；两包同步；未 commit，等用户指令。
+
+## 34. PC 本地 rules 软链落地记一笔（2026-09-16，本机环境）
+
+- 现状：本机（ZhuanZ/Windows）`C:\Users\ZhuanZ\.agents\rules` 原为空目录（AGENTS.md 第 5 节引用其下 docker/supabase/sqlite.md 实为悬空）；今按 §26 设计替换为 **Junction 目录软链**，指回坚果云从 Mac 同步来的母版副本：`E:\000coding\4.Templates（PC）\2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11\docs\sop`。验证：rules 内现可见 docker.md/supabase.md/sqlite.md 三规范，大小与真身一致。
+- 约定（用户确认）：规范只在 Mac 端改，坚果云同步到 PC；本机 rules 软链自动跟随，PC 端当只读入口。
+- 注意：软链位于 `~/.agents`（不在坚果云同步目录内），不会被同步/分发；换机须重建（符合 §27 软链制「跨机器断链时拷实文件并记 HANDOFF」）。向 `~/.agents/rules/` 写/改＝直接改母版真源（路径穿透），PC 端只读。
+- 方法：`Remove-Item` 删空目录 → `New-Item -ItemType Junction`（免管理员）；本环境 PowerShell stdout 回显为空（host 怪癖），用 Git Bash `ls` 验链接与内容。
+
+## 35. 华为 CodeArts Doer 软链落地记一笔（2026-09-16，本机环境）
+
+- 背景：华为桌面编程工具（CodeArts Doer）自有一套管理目录 `~/.codeartsdoer`，默认读不到中央 `.agents/AGENTS.md` 与中央技能仓库；本机（ZhuanZ/Windows）按用户要求以软链接入中央，统一「单一真源」。
+- rule（路径无效，已纠偏）：原 `~/.codeartsdoer/rule` 为空目录；曾误建 **Junction 目录软链** → `C:\Users\ZhuanZ\.agents`，文件系统可见中央 `AGENTS.md`+`rules/`，但**工具（opencode 内核）实际不读此目录**（日志坐实其只注入 `~/.claude\CLAUDE.md` 兜底，不取 `rule/`），故该链对"读规则"无效，留作备用/无害，勿误以为生效。
+- instructions（正确落地，2026-09-16 纠偏后）：在 `~/.config\opencode\opencode.jsonc` 加 `"instructions": ["C:\Users\ZhuanZ\.agents\AGENTS.md","C:\Users\ZhuanZ\.agents\rules\*.md"]`，opencode 启动即**叠加**加载中央全局准则 + docker/supabase/sqlite 三规范。**不顶替** `~/.claude\CLAUDE.md`（保留原有"不寒暄/编码前思考"等准则）。注：文件软链（方案 B 原意：建 `~/.config/opencode/AGENTS.md` 软链顶替 .claude）在本机普通用户下被拒（`mklink` 需管理员/开发者模式，目录 Junction 才免权限），故改走 config instructions。改 Mac 中央 → 坚果云同步 PC 真身 → 工具读最新，仍是单一真源。
+- skills：保留华为自带 3 个技能（codebase-crossrepo-pipeline / repo-simple-wiki / repo-simple-wiki-update）及 `UserSkillStatus.txt`/`.cb-skill-gen` 元数据不动；为中央 `~/.skills-manager/skills` 的 **34 个**技能逐个建 **Junction**（非整目录链，避免盖掉自带技能、避免工具装技能污染中央 git 仓库）。验证：华为侧 `skills/` 现共 38 条目（34 链 + 3 自带真目录 + 2 元数据），34 链全部穿透读中央真身成功。
+- 约定（用户确认）：规范/SKILL 只在 Mac 端改、坚果云同步到 PC 副本；本机软链自动跟随，PC 端当只读入口。
+- 注意：两条链均在 `~/.codeartsdoer`（不在坚果云同步目录内），换机/重装须重建。补链脚本：`relink-codeartsdoer-skills.ps1`（WorkBuddy 工作区 `2026-09-16-13-34-53\` 下；中央新增技能后跑一次即补齐）。向 `~/.codeartsdoer/rule` 或 `~/.codeartsdoer/skills/*` 写/改＝穿透改中央真源，PC 端只读。
+- 方法：`Remove-Item` 删空目录 → `New-Item -ItemType Junction`（免管理员）；本环境 PowerShell stdout 回显为空，用 Git Bash `ls` 验。
+
+## 36. `~/.claude/CLAUDE.md` 软链入中央（Claude Code 读中央，2026-09-16，本机环境）
+
+- 背景：`~/.claude/CLAUDE.md` 原是独立手写文件（1777 B，2026-08-03，内容为「全局工作准则」：不寒暄＋编码前思考／简洁优先／精准修改／目标驱动执行四节）。用户要求让真正的 Claude Code 也**读中央**，消除第二份真源。
+- 落地（已完成并验证）：`C:\Users\ZhuanZ\.claude\CLAUDE.md` 已替换为**符号链接** → `C:\Users\ZhuanZ\.agents\AGENTS.md`。验证：`readlink` 指向中央；`cmp` 与中央逐字节一致（2742 B）；`ls -la` 显示 `CLAUDE.md -> .agents/AGENTS.md`。
+- ⚠️ 内容缺口（待用户决策）：原 CLAUDE.md 那四节编码准则（编码前思考／简洁优先／精准修改／目标驱动执行）**不在中央 `AGENTS.md` 内**（逐词检索 0 处命中）。软链生效后，Claude Code 加载的是中央五节（回复与沟通／开发与交付／文件与敏感信息／Skill 创建与迁移／中央入口），**不再含那四节**。若要保留，须按中央治理流程（一线提案→中央审核→用户确认）并入 `AGENTS.md`。
+- 原文备份（未丢）：同源完整副本在 `C:\Users\ZhuanZ\.codex\AGENTS.md`（1776 B，2026-08-03 12:45）；另拷一份到 WorkBuddy 工作区 `2026-09-16-13-34-53\CLAUDE.md.原文备份-2026-09-16.md`。
+- 方法／坑（Windows 文件链接）：文件级**硬链/符号链一律需管理员或开发者模式**（目录 Junction 才免权限，见 §34/§35）。**仅开启开发者模式不够**——该权限要**注销重登／重启**取得新登录会话后才进令牌，否则仍报 `UnauthorizedAccessException`；本机两次探测均因此失败（探测即止，未动真文件）。最终以**管理员终端**执行 `cmd /c "del … && mklink C:\Users\ZhuanZ\.claude\CLAUDE.md C:\Users\ZhuanZ\.agents\AGENTS.md"` 一次建成。换机须重建（符合 §27 软链制）。
+
+## 37. TRAE（Trae CN）软链落地记一笔（2026-09-16，本机环境）
+
+- 背景：字节 Trae CN（VS Code 系 AI IDE，v3.3.100，build 2.3.83560）自带 `~/.trae-cn` 目录，默认读不到中央 `.agents/AGENTS.md` 与中央技能仓库；本机按用户「TRAE 帮我接入中央仓库和SKILL」要求以软链接入，统一「单一真源」。
+- 路径纠偏（关键）：用户截图误以为 TRAE 读 `~/.trae-cn/rule`；**逆向其打包 JS 证实实际读 `~/.trae-cn/user_rules/`（目录）＋ 旧式单文件 `~/.trae-cn/user_rules.md`**。`~/.trae-cn/rule` 目录根本不存在，链到那里无效，勿误以为生效。
+- 证据来源：`D:\000DevTools\Trae CN\resources\app\out\vs\workbench\workbench.desktop.main.js`（`userRulesDirPath="user_rules"`、`scanMdFiles` 递归扫 `*.md`、嵌套深度 ≤ 3、`legacyUserRuleFilePath="user_rules.md"`、`projectRulesDirPath="rules"`、`singleRuleProjectFileName="project_rules.md"`）＋ `AppData\Roaming\Trae CN\logs\20260916T125132\windowN\renderer.log`（`[RulesModeService] Initialized with mode: multi`、`[MultiRuleService] get all rules for scope: user` 反复出现，无 opencode 式 `Instructions from:` 注入——TRAE 无 `instructions` 配置键，仅靠目录扫描）。多规则模式（`multi`）默认开；项目级另读 `.trae/rules/*.md`、`project_rules.md`、`AGENTS.md`（默认开 `AI.rules.importAgentsMd`）、`CLAUDE.md`（默认关 `AI.rules.importClaudeMd`）。
+- rules 落地（已建＋验证）：`~/.trae-cn/user_rules/` 下建 4 个**文件符号链接**（本机开发者模式已生效，`mklink` 免管理员、exit 0）：`AGENTS.md`→`C:\Users\ZhuanZ\.agents\AGENTS.md`、`docker.md`/`supabase.md`/`sqlite.md`→`C:\Users\ZhuanZ\.agents\rules/*.md`。`cmp` 逐字节与真身一致。**刻意不建**旧式 `user_rules.md`（否则 AGENTS.md 会被加载两次）。
+- skills 落地（已建＋验证）：`~/.trae-cn/skills/` 由 3 条目扩至 **36 条目**，全部为 **Junction**（免管理员）。中央 36 个技能逐个建链；原先已有的同名 find-skills/grill-me/leader 本就是指向中央的 Junction，备份脚本识别 `LinkType=Junction` 后**跳过**、未删未覆盖（空备份目录已清，零数据丢失）。验证：36 链零缺失、全部穿透读中央真身成功。
+- 约定（用户确认）：规范/SKILL 只在 Mac 端改、坚果云同步到 PC 副本；本机软链自动跟随，PC 端当只读入口。向 `~/.trae-cn/user_rules/*` 或 `~/.trae-cn/skills/*` 写/改＝穿透改中央真源，PC 端只读。
+- ⚠️ 待最终确认（可见≠加载）：软链仅文件系统级生效，须**重启 TRAE** 后问它「你的用户级规则来自哪 / 你加载了哪些全局规则」做运行时确认。TRAE 无 opencode 式 `instructions` 配置键，确认只能来自工具自身回答或日志。
+- 注意：两条链均在 `~/.trae-cn`（不在坚果云同步目录内），换机/重装须重建（符合 §27 软链制）。本笔同步写进 `agent-central-mapping` 技能 `references/tool-matrix.md`（新增 TRAE 段），技能 zip 待 Mac 端重打包。
+
+## 38. agent-central-mapping 技能改造为可迁移/跨平台（2026-09-16，本机环境）
+
+- 起因：用户要求该技能不仅本机用，还要在 Mac / Windows 11 等多设备、以及交给别的智能体使用；须做到**路径不写死**、**资料打包即拷即用**、**按 skill-creator 规范**。
+- 改造（均已落盘，技能位于 `~/.workbuddy/skills/agent-central-mapping/`）：
+  - `scripts/map_central.sh` 改为**跨平台**：自动探测 OS；macOS/Linux 用 `ln -s`，Windows 11 用 `mklink /J`（目录 Junction 免管理员）＋ `mklink`（文件符号链接，需管理员/开发者模式），路径经 `cygpath -w` 转换；中央路径一律由 `--agents/--skills` 运行时传入，**零写死本机绝对路径**。新增 `trae` 工具分支（规则入 `~/.trae-cn/user_rules/`、技能入 `~/.trae-cn/skills/`）。
+  - `SKILL.md` 收斂：description 标明跨平台（macOS/Linux/Windows 11）；新增「Portable by design — no hardcoded paths」原则（原则 0）；指向新 `README.md`。
+  - 新增根目录 `README.md`：安装步骤（解压到 `~/.workbuddy/skills/`，Mac/Win/Linux 通用）＋**可直接复制的提示词模板**＋跨 OS 说明＋工作流＋铁律。这是"加提示词就能跑"的资料。
+  - `references/tool-matrix.md` 顶部加**可迁移声明**：✅ 里的 `C:\Users\ZhuanZ\...` 属本机验证示例，切勿照抄到别的机器；路径运行时询问取得。
+- 打包（按 skill-creator 规范）：官方 `package_skill.py` 校验 **✅ valid** 并产出 `agent-central-mapping.zip`（12404 B，含 README/SKILL/tool-matrix/map_central.sh 4 件），位于本次 WorkBuddy 工作区根。解压即装、按 README 提示词模板给路径即可跑。
+- 注意：HANDOFF 是坚果云从 Mac 同步来的 PC 副本；此笔写在 PC 副本，若 Mac 中央模板未含同样内容，下次以 Mac 端为准补 §38（或依赖双向同步）。换机部署只需拷 zip ＋ 按 README 给本机路径，无需同步链接本身。
+- 2026-09-21（Web QA 标准通道冻结）：BrowserOS neo 本机实测双 READY，冻结为 Web QA V1 标准链 Orca→OpenCode CLI→BrowserOS MCP；规则写入 docs/roles/qa.md（Web QA 标准通道 V1 九条：路由/静默/动态端口/操作口径/认证安全/输出标准/故障分层/Gate不变），同步两本地包qa.md一致（SYNC_OK，zip包未重打）；未新增 Gate，未动 MVP/V1 结构。
