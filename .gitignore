@@ -7,3 +7,6 @@
 qa-auth/
 .maestro/
 *.maestro-flow-screenshots/
+
+# Decision Sidecar 依赖目录禁入仓（lock 文件入仓）
+scripts/decision/node_modules/

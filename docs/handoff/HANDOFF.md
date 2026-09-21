@@ -317,3 +317,7 @@
 - 打包（按 skill-creator 规范）：官方 `package_skill.py` 校验 **✅ valid** 并产出 `agent-central-mapping.zip`（12404 B，含 README/SKILL/tool-matrix/map_central.sh 4 件），位于本次 WorkBuddy 工作区根。解压即装、按 README 提示词模板给路径即可跑。
 - 注意：HANDOFF 是坚果云从 Mac 同步来的 PC 副本；此笔写在 PC 副本，若 Mac 中央模板未含同样内容，下次以 Mac 端为准补 §38（或依赖双向同步）。换机部署只需拷 zip ＋ 按 README 给本机路径，无需同步链接本身。
 - 2026-09-21（Web QA 标准通道冻结）：BrowserOS neo 本机实测双 READY，冻结为 Web QA V1 标准链 Orca→OpenCode CLI→BrowserOS MCP；规则写入 docs/roles/qa.md（Web QA 标准通道 V1 九条：路由/静默/动态端口/操作口径/认证安全/输出标准/故障分层/Gate不变），同步两本地包qa.md一致（SYNC_OK，zip包未重打）；未新增 Gate，未动 MVP/V1 结构。
+## 39. 第三轮审查修复＋Decision Sidecar 接线记一笔（2026-09-22，用户定修对的项）
+- AGENTS 补 Decision Sidecar 授权句＋sop 清单加 webqa/decision-router＋角色标题 9+1+1＋used 切备记法（三处同步两包）；supervisor 卡加 sidecar 抽查位；母版协议十卡改十一卡；check-sync 白名单行号 :36 改 :37；scripts/decision 清掉未用 SDK 依赖。
+- sop 四件（android/webqa/decision-router）git 落盘＋进两包；经验 3 条同步两包；TASK 示例模型换现行主用；两包 README＋迁移清单补新构件去向。
+- 34–38 重号冻结不再重排，新节自 §39 起。T3 注释保留（用户回退口令用）。HANDOFF §1 日期与五代报告正典化以后单独立项。
