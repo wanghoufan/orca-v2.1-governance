@@ -206,6 +206,46 @@ const MODES = {
     stats: (a) => split(a.skill_route),
     extra: (a, _lv, ctx) => ({ classifier: "SKILL_FAMILY_CLASSIFIER", shadow: true, applied_threshold: null, skills: familySkills(a.skill_route?.choice, CLI_RUNNER || process.env.ORCA_RUNNER || null) }),
   },
+  pmmode: {
+    q: {
+      parallel_mode: { type: "choice", instructions: "Should this task run serial or parallel? Reply one key.", criteria: { SERIAL: "single shared state machine, migration, lockfile, or tightly coupled change: must stay serial", PARALLEL_DISCOVERY: "unknown root cause needing read-only investigation by 2 workers, no code changes", PARALLEL_IMPLEMENTATION: "two or more independent modules with no shared state, safe to build in parallel", PARTIAL: "must first change shared types/interface serially, then build independent modules in parallel" } },
+    },
+    need: ["parallel_mode"],
+    check: (a) => choiceOk(a.parallel_mode, ["SERIAL", "PARALLEL_DISCOVERY", "PARALLEL_IMPLEMENTATION", "PARTIAL"]),
+    pick: (a) => a.parallel_mode.choice,
+    stats: (a) => split(a.parallel_mode),
+    extra: () => ({ shadow: true, applied_threshold: null }),
+  },
+  fanout: {
+    q: {
+      fanout_width: { type: "choice", instructions: "How many parallel workers? Reply one key.", criteria: { W1: "serial, one worker", W2: "two workers" } },
+    },
+    need: ["fanout_width"],
+    check: (a) => choiceOk(a.fanout_width, ["W1", "W2"]),
+    pick: (a) => a.fanout_width.choice,
+    stats: (a) => split(a.fanout_width),
+    extra: () => ({ shadow: true, applied_threshold: null, max_parallel_builders: 2 }),
+  },
+  partchoice: {
+    q: {
+      partition_choice: { type: "choice", instructions: "Which candidate partition plan to use? Reply one key.", criteria: { PLAN_A: "candidate A", PLAN_B: "candidate B", PLAN_C: "candidate C", NONE: "no parallel, stay serial" } },
+    },
+    need: ["partition_choice"],
+    check: (a) => choiceOk(a.partition_choice, ["PLAN_A", "PLAN_B", "PLAN_C", "NONE"]),
+    pick: (a) => a.partition_choice.choice,
+    stats: (a) => split(a.partition_choice),
+    extra: () => ({ shadow: true, applied_threshold: null }),
+  },
+  mergerisk: {
+    q: {
+      merge_risk: { type: "choice", instructions: "Merge risk of the partition? Reply one key.", criteria: { LOW: "safe to parallel", MEDIUM: "shadow/advisory only", HIGH: "default serial" } },
+    },
+    need: ["merge_risk"],
+    check: (a) => choiceOk(a.merge_risk, ["LOW", "MEDIUM", "HIGH"]),
+    pick: (a) => a.merge_risk.choice,
+    stats: (a) => split(a.merge_risk),
+    extra: () => ({ shadow: true, applied_threshold: null }),
+  },
 };
 
 function choiceOk(c, keys) {
