@@ -16,7 +16,7 @@
 
 ## 1. 当前工作进展（2026-09-16，现势；今日 session 未 commit）
 
-- 分工表（`USER_MODEL_OVERRIDE.md` 纯表，10 行 4 列，表外零文字）：TM＝开窗口时定｜supervisor＝`opencode-go/muse-spark-1.3-contributor`/opencode｜builder＝`codebuddy/deepseek-v4.1-flash`/codebuddy（限额切 codebuddy/glm-5.3-flash，再限额停派喊人）｜qa＝`codex/gpt-5.6-luna`/codex（普通QA；真机 adb/Expo 走本窗口直驱，不记偏离）｜product-reviewer＝`codex/gpt-5.6-terra`/codex｜code-reviewer/recorder/neat＝FREE/本窗口｜planner/senior＝`codex/gpt-5.6-sol`/codex｜db-admin＝`opencode-go/deepseek-v4.1-flash`/opencode（专项，TM 直派直收）。表内无备用列；软链制（各项目根表软链指母版，改母版即同步）；改表必真调（AGENTS 模型节铁律）。
+- 分工表（`USER_MODEL_OVERRIDE.md`，11 行 4 列＋文末 T3 回退注释）：TM＝开窗口时定｜supervisor＝`opencode-go/muse-spark-1.3-contributor`/opencode｜builder＝`codebuddy/deepseek-v4.1-flash`/codebuddy（限额切 codebuddy/glm-5.3-flash，再限额停派喊人）｜qa＝`codex/gpt-5.6-luna`/codex（普通QA；真机 adb/Expo 走本窗口直驱，不记偏离）｜product-reviewer＝`codex/gpt-5.6-terra`/codex｜code-reviewer/recorder/neat＝`opencode/muse-spark-1.3-contributor-free`/本窗口｜planner/senior＝`codex/gpt-5.6-sol`/codex｜db-admin＝`opencode-go/deepseek-v4.1-flash`/opencode（专项，TM 直派直收）。表内无备用列；软链制（各项目根表软链指母版，改母版即同步）；改表必真调（AGENTS 模型节铁律）。
 - 本轮大项（均已落地未提交）：sop 三规范短名入位（docker/supabase/sqlite＋中央软链）／Contract×3 彻底删／复审 P0/P1/P2 全对齐＋check-sync.sh（exit 0）／product 换 Terra／builder 切 codebuddy 主备链／qa 切本窗口直驱。详见 §26–§32。
 - Luna 真机验证通过（2026-09-16，IN9LZTAYV4UGU4JF）：codex 沙箱 adb BLOCKED（前提证实）→无沙箱直驱 `adb devices` 通→`dumpsys`/截屏通（206KB 真图）→tap/swipe/HOME 全 exit 0（前后图不同，已复位）→`input text` 命令通（落字待目标框）→landedazi v1.0.4 安装 Success（包名 com.landedazi.app，versionName 却为 1.0.0，名实不符已 flag）→MainActivity 直起，PHOTO SPOT 首屏 TM 目检通过。输入落字＋Expo 全链路待续。
 - commit/push：`0ac6895`、`381a66f` 已推 origin/main；今日 §30–§33 及真调证据未提交，工作区非空。最新提交以 Git 历史为准。
@@ -321,3 +321,14 @@
 - AGENTS 补 Decision Sidecar 授权句＋sop 清单加 webqa/decision-router＋角色标题 9+1+1＋used 切备记法（三处同步两包）；supervisor 卡加 sidecar 抽查位；母版协议十卡改十一卡；check-sync 白名单行号 :36 改 :37；scripts/decision 清掉未用 SDK 依赖。
 - sop 四件（android/webqa/decision-router）git 落盘＋进两包；经验 3 条同步两包；TASK 示例模型换现行主用；两包 README＋迁移清单补新构件去向。
 - 34–38 重号冻结不再重排，新节自 §39 起。T3 注释保留（用户回退口令用）。HANDOFF §1 日期与五代报告正典化以后单独立项。
+## 40. QA/模型实测证据补记（2026-09-21/22，用户定留档）
+- Maestro＋ADB 真机 Flow 实测通过（2026-09-21，设置应用 6 步全绿 exit 0；未入规范，备用）。
+- 火山方舟 Coding Plan 接入 opencode 实测通过（2026-09-22，`volcengine-plan/ark-code-latest` 回包正常，reasoningEffort high；个人实验通道，未进分工表）。
+- `ORCA治理体系说明.md` 对外概览经 Sol 三轮审查（Gate/口径/证据逐条收敛）。
+## 41. Jev 直调 10/10 证据记一笔（2026-09-22）
+- 传输由 Vercel 网关改 TypeSafe 直调（POST /v1/systemone，jev-latest，实测 jev-1.13.0）。
+- Smoke＋T01-T10 全对（A/B/C/QA/PLANNER/DB_ADMIN/NO/YES_IRREVERSIBLE/false/true；概率以 Shadow 日志现势为准，P0-false 记 1-noul），累计输入约 8.5k tokens。
+- Sol 顾问复审通过（多轮收敛，唯剩说明文档入仓即闭环）。
+## 42. GLM 精确模型证据记一笔（2026-09-22）
+- 命令：`opencode run -m volcengine-plan/glm-5.3-flash "只回复：glm exact ok"`，exit 0，回包 `build · glm-5.3-flash`＋`glm exact ok`。
+- 此前 `ark-code-latest` 回包不记作 glm 证据；alias 切换 3~5 分钟内结果不采信。

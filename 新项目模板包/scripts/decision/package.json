@@ -3,12 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "ORCA Decision Sidecar CLI (Jev via Vercel AI Gateway). Advisory only.",
+  "description": "ORCA Decision Sidecar CLI (Jev via TypeSafe direct API). Advisory only.",
   "bin": {
     "orca-decide": "./orca-decide.mjs"
   },
-  "dependencies": {
-    "ai": "^7.0.107",
-    "@ai-sdk/gateway": "^4.0.87"
-  }
+  "dependencies": {}
 }

@@ -12,7 +12,7 @@
 
 ## 模型口径（一句话，以根 `USER_MODEL_OVERRIDE.md` 表为准）
 
-- supervisor 走 `opencode-go/muse-spark-1.3-contributor` via opencode；builder 走 `codebuddy/deepseek-v4.1-flash` via codebuddy（限额停工切 codebuddy/glm-5.3-flash，再限额停派喊人）；qa 走 `codex/gpt-5.6-luna` via 本窗口（真机 adb/Expo 直驱）、product-reviewer 走 `codex/gpt-5.6-terra` via codex；code-reviewer/经验/neat 走 FREE 本窗口；planner/senior 走 `codex/gpt-5.6-sol` via codex；TM 开窗口时定。
+- supervisor 走 `opencode-go/muse-spark-1.3-contributor` via opencode；builder 走 `codebuddy/deepseek-v4.1-flash` via codebuddy（限额停工切 codebuddy/glm-5.3-flash，再限额停派喊人）；qa 走 `codex/gpt-5.6-luna` via codex（普通QA；真机 adb/Expo 走本窗口直驱）、product-reviewer 走 `codex/gpt-5.6-terra` via codex、db-admin 走 `opencode-go/deepseek-v4.1-flash` via opencode；code-reviewer/经验/neat 走 `opencode/muse-spark-1.3-contributor-free` 本窗口；planner/senior 走 `codex/gpt-5.6-sol` via codex；TM 开窗口时定。
 - 换人用户直接改母版真源表；表内无备用列。分工表软链制：各项目根表均为软链指母版真源，改母版即全项目同步（禁拷实文件；跨机器断链时拷实文件并记 HANDOFF）。
 
 ## 根目录（现行11）
@@ -26,13 +26,14 @@
 
 ## docs/ 地图
 
-- `roles/`：10张角色卡（只看本次派的角色）
+- `roles/`：11张角色卡（只看本次派的角色）
 - `prompts/`：编排者/外部开发者/迁移整理三份提示词（迁移整理含自举取包＋冲突处理，可当老项目唯一入口）＋《Orca 通用编排者持续推进协议》（防停摆三层监督收编版；其动态角色论与十卡制冲突，不采用）＋《Orca 编排治理监督者提示词》（总监督wake-only收编版，平时只喊编排者）
 - `history/`：重塑说明、更新说明、ORCA 模型与双阶段治理整改方案（历史，看现行先看根）
 - `templates/`：归位表模板
 - `pm/` `qa/` `review/`：计划/测试/评审落盘（各照 template）
 - `handoff/`：交接（含模板）；`model/`：模型账本（TASK 首个真实任务前、DISPATCH 首个真实派工前删示例行）
-- `sop/`：基础设施规范（docker.md、supabase.md、sqlite.md，去版本号引用），新项目自建
+- `sop/`：基础设施规范（docker.md、supabase.md、sqlite.md、android.md、android-machine-profile.md、webqa.md、decision-router.md，去版本号引用），新项目自建
+- `scripts/decision/`：Decision Sidecar orca-decide（用法见其 README 与 docs/sop/decision-router.md）
 
 ## 已删除（用户令，结论均已落实）
 

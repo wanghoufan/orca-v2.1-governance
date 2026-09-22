@@ -29,7 +29,7 @@
 
 ## 五、认证安全
 
-- Agent 不输密码／不动 MFA／不绕风控／不导密码／不导入主 Chrome Profile；登录异常人工做。
+- Agent 不输密码／不动 MFA／不绕风控／不导密码／不导入主 Chrome Profile；登录异常人工做，认证失效需复登不算异常。
 - Profile／Cookie／Token／认证状态禁入 Git。
 
 ## 六、QA 输出

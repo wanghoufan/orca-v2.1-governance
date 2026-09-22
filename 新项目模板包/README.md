@@ -38,7 +38,7 @@ scripts/decision/                    → 项目 scripts/decision/（Decision Sid
 
 ## 初始化后
 
-1. 确认 `AGENTS.md` 和 `USER_MODEL_OVERRIDE.md` 已拷入项目根。
+1. 确认 `AGENTS.md` 已拷入项目根；`USER_MODEL_OVERRIDE.md` 建软链指母版真源（禁拷实文件，跨机器断链才拷实＋记 HANDOFF）。
 2. 建立项目本地 `docs/model/TASK-MODEL-LOG.jsonl`。
 3. 创建项目 `docs/handoff/HANDOFF.md`。
 4. 再开始第一项任务。
