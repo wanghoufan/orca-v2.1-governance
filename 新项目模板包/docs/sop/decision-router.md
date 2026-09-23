@@ -13,3 +13,10 @@
   Human Gate/删除/不可逆/付费/换模型永不自动批。
 - Secret：`~/.config/orca/decision.env`（TYPESAFE_API_KEY，600），禁入仓。
 - 用量：每次 usage.input_tokens 自行累计；402 即额度用尽，停用并找用户。
+
+## 并行四 Contract（Shadow）
+- pmmode：判定任务并行/串行/单跑，Shadow only，阈值 null。
+- fanout：判定并行路数（W1=串行单 worker / W2=两路并行，上限 2），Shadow only，阈值 null。
+- partchoice：从候选分区方案 PLAN_A/B/C/NONE 里选一套（NONE=保持串行），Shadow only，阈值 null。
+- mergerisk：评估合并冲突风险等级，Shadow only，阈值 null。
+- 调用失败回 V2.1 逻辑，永不自动批 Human Gate 相关项。

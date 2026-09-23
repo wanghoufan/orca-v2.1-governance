@@ -341,3 +341,13 @@
 - Parent：partition-validate 补边界测试；Discovery 双路只读并行（A边界7类/B覆盖缺口），挖出重复push＋单child自检缺失两真bug。
 - 实施串行单人完成：修两bug＋test-partition.mjs 12项全绿；反事实：串行22分钟，预估并行约18分钟（含双路Discovery并行省4分钟），gain有限因实施主体只有一人。
 - Jev pmmode仍弱（2/5），验证结论不变：deterministic预滤＋三选一，不开投票。日志：temp/PARALLEL-SHADOW-LOG.jsonl。
+## 45. 真双施工首跑记一笔（2026-09-22，分支 feat/parallel-builder-shadow）
+- Parent TASK-PAR-002：双 worktree 双 Runner 并行施工（A测试用例/B文档节），B 事实错误打回返工 1 次改对。
+- Integration 无冲突合入（异文件），test-partition 14/14，SYNC-OK，worktree/分支已清理。
+## 46. Advisory 升级＋网络抖动记一笔（2026-09-22）
+- Sol 终审：BLOCKER 无，可进 ADVISORY（运行模式正式切到 ADVISORY；自动路由仍禁）。
+- runner 加 JEV_NETWORK 重试＋retried_network 落账；TypeSafe 批量限流抖动 средой单发通，离线档＋间隔＋重试扛过去。
+- SYNC-OK。
+## 47. builder 峰谷分流记一笔（2026-09-22，用户定）
+- builder 改峰谷双路：空闲走 codebuddy/deepseek-v4.1-flash，高峰走 volcengine-plan/glm-5.3-flash；峰谷经 DeepSeek 官方＋Go 文档交叉验证（工作日 9-12/14-18 高峰）。
+- 分工表 T3→T4，两包同步。

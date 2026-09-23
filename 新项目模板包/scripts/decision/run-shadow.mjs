@@ -2,7 +2,7 @@
 // run-shadow.mjs — auto runner: executes all fixtures, writes full-trace JSONL.
 // Strict: expected missing => FAIL. F-cases assert fail-closed error codes.
 // Usage: node run-shadow.mjs [out.jsonl]
-import { execFileSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -61,7 +61,7 @@ function run(mode, fx, extraEnv) {
   let code = 0, body = null;
   try {
     // trusted harness classifies fixtures as PUBLIC synthetic content
-    const env = { ORCA_DATA_CLASS: "PUBLIC", ...process.env, ...(extraEnv || {}) };
+    const env = { ORCA_DATA_CLASS: "PUBLIC", ORCA_DECIDE_OFFLINE: "1", ...process.env, ...(extraEnv || {}) };
     const raw = execFileSync("node", ["scripts/decision/orca-decide.mjs", mode, fx], { encoding: "utf8", timeout: 90000, env });
     body = JSON.parse(raw);
   } catch (e) {
@@ -84,7 +84,15 @@ for (const [mode, name] of CASES) {
     e2eHashes = { s01_fixture: hashOf("scripts/decision/fixtures/S01.json"), s01_output: sha(JSON.stringify(up.body)), s08_input: sha(readFileSync(fx, "utf8")) };
   }
   const fxj = JSON.parse(readFileSync(fx, "utf8"));
-  const { fhash, code, body } = run(mode, fx, mode==="skill" ? { ORCA_RUNNER: "opencode" } : null);
+  let r = run(mode, fx, mode==="skill" ? { ORCA_RUNNER: "opencode" } : null);
+  let retried = false;
+  if (r.code !== 0 && r.body.error === "JEV_NETWORK") {
+    try { execSync("sleep 45", { stdio: "ignore" }); } catch { /* ignore */ }
+    r = run(mode, fx, mode==="skill" ? { ORCA_RUNNER: "opencode" } : null);
+    retried = true;
+  }
+  const { fhash, code, body } = r;
+  try { execSync("sleep 8", { stdio: "ignore" }); } catch { /* ignore */ }
   const exp = ("expected" in fxj) ? fxj.expected : "MISSING";
   let pass = false;
   if (code === 0 && body.ok === true && exp !== "MISSING") {
@@ -135,7 +143,7 @@ for (const [mode, name] of CASES) {
     contract_version: body.contract_version ?? null, policy_version: body.policy_version ?? null,
     applied_threshold: body.applied_threshold ?? null, e2e_upstream: e2eUpstream, e2e_hashes: e2eHashes, shadow: body.shadow ?? false,
     usage: body.usage ?? null, expected: exp, expected_note: fxj.expected_note ?? null, pass,
-    fixture_hash: fhash, runner: RUNNER, code_hash: codeHash, policy_hash: POLICY_HASH, runner_hash: RUNNER_HASH, manifest_hash: MANIFEST_HASH,
+    fixture_hash: fhash, runner: RUNNER, code_hash: codeHash, policy_hash: POLICY_HASH, runner_hash: RUNNER_HASH, retried_network: retried, manifest_hash: MANIFEST_HASH,
     advisory_only: body.advisory_only ?? null, error: body.error ?? null, fallback: body.fallback ?? null,
     dispatch: "shadow-no-dispatch",
   }));
@@ -155,7 +163,7 @@ for (const [mode, name, wantErr] of FAILCASES) {
     date: new Date().toISOString().slice(0, 10), case: name, mode, exit: code,
     ok: body.ok ?? false, error: body.error ?? null, decision: body.decision ?? null,
     expected: wantErr || "SKIP_DETERMINISTIC", advisory_only: body.advisory_only ?? null, contract_version: body.contract_version ?? null, policy_version: body.policy_version ?? null, pass,
-    fixture_hash: fhash, runner: RUNNER, code_hash: codeHash, policy_hash: POLICY_HASH, runner_hash: RUNNER_HASH, manifest_hash: MANIFEST_HASH,
+    fixture_hash: fhash, runner: RUNNER, code_hash: codeHash, policy_hash: POLICY_HASH, runner_hash: RUNNER_HASH, retried_network: false, manifest_hash: MANIFEST_HASH,
     fallback: body.fallback ?? null, dispatch: "shadow-no-dispatch",
   }));
 }

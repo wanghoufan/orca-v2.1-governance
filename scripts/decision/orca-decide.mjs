@@ -42,7 +42,8 @@ function filterTargets(ids, tg, up, need, binCheck = binOnPath, taskClass = "PUB
     const authMap = (POLICY && POLICY.provider_data_auth) || {};
     const allowed = authMap[t.provider] || [];
     let okData = allowed.includes(taskClass);
-    if (pol === "NEEDS_USER_POLICY" && taskClass === "PUBLIC" && t.provider === "volc-coding" && up.volc_personal_private_code === true) okData = true;
+    if (t.provider === "volc-coding" && up.volc_personal_private_code === true &&
+        ["PUBLIC", "PRIVATE_CODE", "PERSONAL_SENSITIVE"].includes(taskClass)) okData = true;
     if (!okData) reasons.push("data_policy:" + pol + "/task:" + taskClass);
     if (!(up.authorized_targets || []).includes(id)) reasons.push("unauthorized-target");
     (reasons.length ? excluded : eligible).push(reasons.length ? { route_target_id: id, excluded_reasons: reasons } : { route_target_id: id, availability: t.availability, quota_status: t.quota_status });

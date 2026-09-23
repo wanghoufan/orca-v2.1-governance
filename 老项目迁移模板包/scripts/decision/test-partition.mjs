@@ -30,6 +30,9 @@ expect(plan([K("A", ["src/api/profile/"], ["src/api/"])]), false, ["self-forbidd
 expect(plan([K("A", ["m/"]), K("B", ["n/"]), K("C", ["m/", "n/"])]), false, ["overlap:A/C", "overlap:B/C"], "three-pairwise");
 // missing-fields tolerance
 expect(plan([{ child_id: "A" }, { child_id: "B" }]), true, [], "missing-fields-tolerated");
+// Windows backslash separator behaviour (overlap is literal string-prefix, no normalization)
+expect(plan([K("A", ["src\\api\\"]), K("B", ["src/api/"])]), true, [], "backslash-separator-mismatch-no-overlap");
+expect(plan([K("A", ["src\\api\\"]), K("B", ["src\\api\\profile\\"])]), false, ["overlap:A/B"], "backslash-prefix-overlap");
 
 let fail = 0;
 for (const [label, ok, code, got] of T) if (!ok) { fail++; console.log("FAIL:", label, "exit=", code, got); }
