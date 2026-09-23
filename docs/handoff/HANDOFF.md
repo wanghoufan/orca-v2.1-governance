@@ -351,3 +351,6 @@
 ## 47. builder 峰谷分流记一笔（2026-09-22，用户定）
 - builder 改峰谷双路：空闲走 codebuddy/deepseek-v4.1-flash，高峰走 volcengine-plan/glm-5.3-flash；峰谷经 DeepSeek 官方＋Go 文档交叉验证（工作日 9-12/14-18 高峰）。
 - 分工表 T3→T4，两包同步。
+## 48. Android真机预检补记（2026-09-23，分支 feat/parallel-builder-shadow）
+- 规范补一节：每 session 预检→直驱，Maestro备用、scrcpy只看屏。
+- 现机预检：adb IN9LZTAYV4UGU4JF/无线双在线，get-state device，uiautomator dump通；断USB/授权失效分支未演练，暂为手工回退。

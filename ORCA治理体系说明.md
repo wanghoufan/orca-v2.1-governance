@@ -54,9 +54,8 @@ Jev 不是第 12 个角色，不进主链，是编排者旁边的机器判定器
 ```text
 QA Agent ──调用──→ MCP ──驱动──→ BrowserOS neo（独立后台浏览器）──→ Web/localhost
 （调用方向；数据回流反向。桥接：Orca → OpenCode CLI → BrowserOS MCP，Orca 无原生 MCP 面）
-Android真机：规范口径为本窗口 bash 直驱（adb/Expo），每 session 先过能力预检 PASS 才进正式；
-Maestro＋ADB 于 2026-09-21 做过一次真机 Flow 实测通过（6 步全绿，未入规范，仅备用）；
-本体系仅将 scrcpy 用于看屏，不作为自动化通道。
+Android真机：规范已入（每 session 先过能力预检 PASS 才进正式，本窗口 bash 直驱 adb/Expo，Maestro 备用、scrcpy 只看屏）；
+2026-09-21/23 双在线实测通。
 ```
 
 铁律：后台静默，不弹前台抢焦点；不用系统鼠标键盘；不碰用户主 Chrome；

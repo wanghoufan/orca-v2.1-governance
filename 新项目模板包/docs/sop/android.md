@@ -137,6 +137,7 @@ release 构建不等于正式发布包。发布前必须检查 release 签名、
 
 ## 8. 真机、验证与高风险操作
 
+每 session 真机 QA 前先过能力预检（scan→deps→preflight→smoke），预检不过不进正式，不计入账本；真机直驱走本窗口 bash（codex 沙箱必 BLOCKED），Maestro 为备用通道，scrcpy 只看屏。
 多设备在线时指定：
 
     export ANDROID_SERIAL=<设备序列号>
