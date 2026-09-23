@@ -8,7 +8,7 @@
     "PUBLIC": "ALLOW"
   },
   "user_policy": {
-    "volc_personal_private_code": false,
+    "volc_personal_private_code": true,
     "allow_unknown_quota": false,
     "authorized_targets": []
   },

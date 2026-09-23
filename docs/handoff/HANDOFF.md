@@ -332,3 +332,22 @@
 ## 42. GLM 精确模型证据记一笔（2026-09-22）
 - 命令：`opencode run -m volcengine-plan/glm-5.3-flash "只回复：glm exact ok"`，exit 0，回包 `build · glm-5.3-flash`＋`glm exact ok`。
 - 此前 `ark-code-latest` 回包不记作 glm 证据；alias 切换 3~5 分钟内结果不采信。
+## 43. 并行施工Shadow轮记一笔（2026-09-22，分支 feat/parallel-builder-shadow）
+- 双 Builder 真调用通（codebuddy deepseek-v4.1-flash／火山 glm-5.3-flash 精确 ID）；worktree 双建隔离验证后删除。
+- 4 窄 Contract（pmmode/fanout/partchoice/mergerisk）＋静态 Partition 校验器（GOOD过/BAD拦/坏文件错码）；Jev pmmode 两轮不收敛（2/5），结论：单选天然弱，正式方案走 deterministic 预滤＋候选三选一，不开投票。
+- 注入 PX1 未越界；Discovery 双路只读通；AGENTS/分工表零改动；SYNC-OK；Sol 审：BLOCKER 无，有条件通过 Shadow。
+- 日志：temp/PARALLEL-SHADOW-LOG.jsonl。
+## 44. 并行首个真实Parent闭环记一笔（2026-09-22，分支 feat/parallel-builder-shadow）
+- Parent：partition-validate 补边界测试；Discovery 双路只读并行（A边界7类/B覆盖缺口），挖出重复push＋单child自检缺失两真bug。
+- 实施串行单人完成：修两bug＋test-partition.mjs 12项全绿；反事实：串行22分钟，预估并行约18分钟（含双路Discovery并行省4分钟），gain有限因实施主体只有一人。
+- Jev pmmode仍弱（2/5），验证结论不变：deterministic预滤＋三选一，不开投票。日志：temp/PARALLEL-SHADOW-LOG.jsonl。
+## 45. 真双施工首跑记一笔（2026-09-22，分支 feat/parallel-builder-shadow）
+- Parent TASK-PAR-002：双 worktree 双 Runner 并行施工（A测试用例/B文档节），B 事实错误打回返工 1 次改对。
+- Integration 无冲突合入（异文件），test-partition 14/14，SYNC-OK，worktree/分支已清理。
+## 46. Advisory 升级＋网络抖动记一笔（2026-09-22）
+- Sol 终审：BLOCKER 无，可进 ADVISORY（运行模式正式切到 ADVISORY；自动路由仍禁）。
+- runner 加 JEV_NETWORK 重试＋retried_network 落账；TypeSafe 批量限流抖动 средой单发通，离线档＋间隔＋重试扛过去。
+- SYNC-OK。
+## 47. builder 峰谷分流记一笔（2026-09-22，用户定）
+- builder 改峰谷双路：空闲走 codebuddy/deepseek-v4.1-flash，高峰走 volcengine-plan/glm-5.3-flash；峰谷经 DeepSeek 官方＋Go 文档交叉验证（工作日 9-12/14-18 高峰）。
+- 分工表 T3→T4，两包同步。
