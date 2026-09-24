@@ -354,3 +354,20 @@
 ## 48. Android真机预检补记（2026-09-23，分支 feat/parallel-builder-shadow）
 - 规范补一节：每 session 预检→直驱，Maestro备用、scrcpy只看屏。
 - 现机预检：adb IN9LZTAYV4UGU4JF/无线双在线，get-state device，uiautomator dump通；断USB/授权失效分支未演练，暂为手工回退。
+## 49. 收工小交接（2026-09-23，开发暂停，用户令先到这里）
+### 1. 当前工作进展
+- 第四轮治理审查已落盘：`docs/review/GOVERNANCE_REVIEW-2026-09-23-第四轮审查.md`（现势正典，旧7份转历史）。结论 P0=3（T4峰谷分流未同步：README/ORCA说明/HANDOFF§1仍T3口径；DISPATCH runtime枚举无volc位；AGENTS禁套娃句漏volc）＋P1=9，均未修，只收问题不改文件。
+- 分工表现 T4（builder峰谷双路：空闲codebuddy/deepseek-v4.1-flash，高峰volcengine-plan/glm-5.3-flash）；Jev运行模式ADVISORY（自动路由仍禁）；并行施工Shadow分支实验收尾（worktree/分支已清理，SYNC-OK）。
+- 工作区非空未提交：`docs/review/GOVERNANCE-*09-21*`×3新文件、`docs/roles/db-admin.md`＋两包镜像、`skills-lock.json`、`.agents/`未跟踪；旧号§34–38重号冻结中，新节自§39起（本节§49）。
+### 2. 下一步任务（按序，恢复时逐条做）
+1. 跑`bash scripts/check-sync.sh`取exit码，落本HANDOFF一行（验证T4两包同步）。
+2. 修P0-1：README:15、ORCA说明§五、HANDOFF§1同步峰谷双路口径（或改“以表为准不复述ID”）。
+3. 修P0-2：DISPATCH runtime枚举加`volcengine-plan`（AGENTS＋supervisor卡＋校验脚本同步）。
+4. 修P0-3：AGENTS禁套娃句补volc通道（“非本窗口一律走通道直调”）。
+5. P1逐条修（used恒填主vs峰谷记法、总监督“不占9+1+1”、§1去手数、§34–38本地节移出、check-sync白名单去行号、decision endpoint统一、sidecar落盘位、TASK示例峰谷示范、T4版本号豁免）。
+6. 全修完重跑check-sync＋账本断言，SYNC-OK才报完工。
+### 3. 注意事项及规矩
+- 模板冻结期：只收问题不改文件，P0才问是否插队；无用户明确指令（含分支名）不commit不push。
+- 派工以母版`USER_MODEL_OVERRIDE.md`（T4）为准，README/说明/HANDOFF§1旧口径不得作为派工依据；高峰builder按表走volc，runtime暂填`opencode`＋note记`peak/volc`，等P0-2修完再按新枚举填。
+- 冲突听表；换模型用户定；supervisor抽查实派==表三处对账；总监督wake-only（只喊编排者，两次叫不醒才找用户一次）。
+- 恢复读盘顺序：AGENTS→角色卡→override表→本HANDOFF→经验一句话→任务目标放最后。
