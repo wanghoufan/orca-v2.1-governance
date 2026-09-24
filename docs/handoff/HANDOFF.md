@@ -371,3 +371,6 @@
 - 派工以母版`USER_MODEL_OVERRIDE.md`（T4）为准，README/说明/HANDOFF§1旧口径不得作为派工依据；高峰builder按表走volc，runtime暂填`opencode`＋note记`peak/volc`，等P0-2修完再按新枚举填。
 - 冲突听表；换模型用户定；supervisor抽查实派==表三处对账；总监督wake-only（只喊编排者，两次叫不醒才找用户一次）。
 - 恢复读盘顺序：AGENTS→角色卡→override表→本HANDOFF→经验一句话→任务目标放最后。
+## 49. 并行 W2 真 Implementation 演示记一笔（2026-09-24，分支 demo/par-w2）
+- Parent TASK-DEMO-PAR-003：两独立 docs（feature-a/b.md）分派 volc deepseek / radeon mimo 双 worktree 同写，allowed_paths 无重叠，Integration 两次无冲突合流（先 A 后 B）。
+- 验证：PV_GOOD 校验通，SYNC-OK，分支 demo/par-w2 保留，worktree 未删（演示用）。
