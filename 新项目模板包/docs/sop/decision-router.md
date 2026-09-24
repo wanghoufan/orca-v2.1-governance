@@ -5,7 +5,7 @@
 - 工具：`scripts/decision/orca-decide.mjs <change|route|user|p0|profile|bclass|skill> <state.json>`（直调 https://api.typesafe.ai/v1/systemone，jev-latest）。
 - 输出稳定 JSON（decision＋selected_probability＋confidence＋probabilities＋advisory_only＋requested/resolved＋contract/policy版本＋usage）；失败 exit 非 0＋fallback 回 V2.1 逻辑，绝不默认成功。
 - 七类：CHANGE_CLASS(A/B/C)、ISSUE_OWNER(6 枚举)、USER_REQUIRED(5 枚举)、P0_HARD(bool＋risk)、TASK_PROFILE(task_type/complexity分记)、BUILDER_CLASS(4 档＋route_targets)、SKILL_ROUTE(家族＋skills[0..2])；后三 Shadow only，阈值 null。
-- Hard Filter（`scripts/decision/policy.json`，hardfilter-v3）：availability/quota/runner/caps/data_policy/authorized_targets 六判；缺声明默认 NEEDS_USER_POLICY；两目标现全 excluded（如实记录；MiMo 2.6 已由用户移出候选）。
+- Hard Filter（`scripts/decision/policy.json`，hardfilter-v3）：availability/quota/runner/caps/data_policy/authorized_targets 六判；缺声明默认 NEEDS_USER_POLICY；两目标现全 excluded（如实记录；MiMo 默认 Harness 已定 **Claude Code**，OpenCode 作备，`radeon-mimo` 直连已验 `mimo ok`）。
 - 发送前门禁：字段白名单＋SECRET正则＋data_class门禁（网络调用前）。
 - 不调用：规则有唯一答案、rework 计数、Human Gate 已触发、watchdog、exit code、权限明文规定。
 - 置信（V1 历史默认，不继承给新 Contract）：≥0.85 可采用（先查规则冲突）；0.65–0.85 仅提示；<0.65 回退。新 Contract 阈值全为 null，采数后再校准：

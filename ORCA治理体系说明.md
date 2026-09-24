@@ -67,25 +67,24 @@ Google 登录等 Agent 不碰密码/MFA，登录异常交人工处理（认证�
 |---|---|---|
 | task-manager | 开窗口时定 | 本窗口直派 |
 | supervisor | opencode-go/muse-spark-1.3-contributor | opencode 直调 |
-| builder | 峰谷分流：空闲 codebuddy/deepseek-v4.1-flash；高峰 volcengine-plan/glm-5.3-flash（北京时间工作日 9-12/14-18 高峰，双路互备） | codebuddy/opencode |
-| planner | codex/gpt-5.6-sol | codex |
-| code-reviewer | opencode/muse-spark-1.3-contributor-free | 本窗口 |
-| qa | codex/gpt-5.6-luna（普通走 codex；真机走本窗口直驱） | codex 双态 |
+| builder | 火山 deepseek-flash（主） via volcengine-plan/ark-code-latest（控制台 deepseek-flash）＋ AMD mimo 备 via radeon-mimo/MiMo-V2.6-Flash | opencode |
+| planner | codex/gpt-6-sol | codex |
+| code-reviewer | codebuddy/glm-5.3-flash | codebuddy |
+| qa | AMD mimo via radeon-mimo/MiMo-V2.6-Flash | opencode |
 | product-reviewer | codex/gpt-5.6-terra | codex |
 | experience-recorder | opencode/muse-spark-1.3-contributor-free | 本窗口 |
 | neat-freak | opencode/muse-spark-1.3-contributor-free | 本窗口 |
-| senior-expert | codex/gpt-5.6-sol（只接升级） | codex |
-| db-admin | opencode-go/deepseek-v4.1-flash | opencode 直调 |
+| senior-expert | codex/gpt-6-sol（只接升级） | codex |
+| db-admin | codebuddy/glm-5.3-flash | codebuddy |
 
-另：火山方舟 Coding Plan（`volcengine-plan/glm-5.3-flash` 精确 ID 已真调，`ark-code-latest` 为控制台别名），
-私有代码已由用户批准走该通道；MiMo 2.6 已移出 Builder 候选。
+另：火山 `ark-code-latest` 已切 deepseek-flash 归一；MiMo 默认 Harness **Claude Code**（`https://developer.amd.com.cn/radeon/api`，Anthropic Messages，`ANTHROPIC_API_KEY=rc-`），OpenCode `radeon-mimo` 作备（双通道均 `mimo ok` 已验）；私有代码走火山已由用户批准。
 
 ## 六、规范在哪
 
 | 规范 | 位置 | 说明 |
 |---|---|---|
 | 总纲 | `AGENTS.md` | 两阶段、派工顺序、升级、账本、红线（全员遵守一页） |
-| 模型分工真相源 | `USER_MODEL_OVERRIDE.md` | 11 行精确ID；改表必真调；T4 现势（T1/T2/T3 快照在 `temp/`，回退由用户口头指定编号、按改表规则执行） |
+| 模型分工真相源 | `USER_MODEL_OVERRIDE.md` | 11 行精确ID；改表必真调；T7 现势（T1/T2/T3 快照在 `temp/`，回退由用户口头指定编号、按改表规则执行） |
 | 角色卡×11 | `docs/roles/` | 每角色职责＋写入位置；适用角色附输出模板 |
 | 开工提示词 | `docs/prompts/编排者提示词.md` | 一句话开工全文 |
 | 基础设施规范 | `docs/sop/` | docker/supabase/sqlite/android（＋android-machine-profile）/webqa/decision-router（去版本号引用） |
