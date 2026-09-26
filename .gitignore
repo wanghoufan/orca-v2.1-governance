@@ -14,3 +14,6 @@ scripts/decision/node_modules/
 # 本机 agent 技能安装态（不进模板仓）
 .agents/
 skills-lock.json
+
+# temp 工作区不入仓（全局规则：temp 及其内容不得上传）
+/temp/

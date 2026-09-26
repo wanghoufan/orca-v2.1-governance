@@ -50,6 +50,7 @@ Jev 不是第 12 个角色，不进主链，是编排者旁边的机器判定器
 - 确定性短路：supervisor 打回≥2 次、Human Gate 明确、不可逆删除，一律不问 Jev 直接走规则。
 - 发送前门禁：可信 data_class 由调用方给（任务 JSON 自带忽略），SECRET/未知等级拒发；密钥正则 16 类。
 - 不每个 Task 都调；supervisor 打回计数、watchdog 等确定性逻辑不经 Jev。
+- 决策流水（2026-09-26）：每次调用 best-effort 落项目内 `docs/model/JEV-DECISION-LOG.jsonl`（只非敏感元数据 mode/decision/confidence/model/policy_version/input_digest/latency；**不记 state 原文/Key；不改 Jev 权限与 Contract**）。
 
 ## 四、Web QA 通道怎么运转
 
@@ -69,7 +70,17 @@ Google 登录等 Agent 不碰密码/MFA，登录异常交人工处理（认证�
 
 模型／通道／调用方式**一律以根 `USER_MODEL_OVERRIDE.md` 表为准**（该表即唯一口径，改表必真调）；本说明**不复述模型 ID**，避免与表漂移。角色清单见 `docs/roles/` 11 张卡；task-manager 行模型开窗口时定。
 
-## 六、规范在哪
+## 六、Task Manager 资格测试（增量，2026-09-26）
+
+把 TM（编排者）正式纳入模型资格测试；**不新增第 12 角色**，不重做两阶段治理。
+- 最小评价单位＝**Orchestration Episode**（TM 接有效状态→判下一步→派对 Worker→收结果→推进到下一合法态；聊天轮数不计）。
+- 监督：supervisor 兼 **Task Manager Observer**（只标记异常、按现有机制提醒/唤醒/替喊一次；不评分/不接管/不改表/不跨 Gate）；评分汇总由 **Governance Steward**（治理管理层，非 9+1+1 角色，周期审计）做，只出主备**建议**；**主备由用户最终决定**，Steward 不自动改表。
+- 五维评分 100：派工/下一步 30＋持续推进 25＋治理遵守 20＋响应 15＋资源 10；响应阈值据 watchdog（`CONSUME_STALE_SEC=300`/`COOLDOWN_SEC=900`）分 NORMAL/SLOW/STALL；`infra_error` 不计入能力分。
+- Gate：`Score≥90 且 P0 治理违规=0 且 Human Gate 违规=0 → QUALIFIED`；**采样门槛**（有效 Episode <30 或项目 <3 保持 CANDIDATE，不得凭少量样本判通过）。
+- 证据（**不改现有账本 schema**）：事件日志 `docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`；评分 `scripts/model/tm-qualification.mjs`；测试 `scripts/model/tm-qualification.test.mjs`；规范 `docs/model/TASK-MANAGER-QUALIFICATION.md`。
+- 候选（真调已过）：`opencode-go/deepseek-v4.1-flash`、`opencode-go/mimo-v2.6-flash`（Runtime=opencode）；真实多项目 A/B 数据由用户后续在真实项目跑。
+
+## 七、规范在哪
 
 | 规范 | 位置 | 说明 |
 |---|---|---|
@@ -80,16 +91,19 @@ Google 登录等 Agent 不碰密码/MFA，登录异常交人工处理（认证�
 | 基础设施规范 | `docs/sop/` | docker/supabase/sqlite/android（＋android-machine-profile）/webqa/decision-router（去版本号引用） |
 | 中央规则（散兵读） | `~/.agents/rules/`＋`~/.agents/AGENTS.md` | docker 等为软链指本仓库 sop；散兵按任务按需读 |
 | 账本 | `docs/model/TASK-MODEL-LOG.jsonl`、`DISPATCH-LOG.jsonl` | 换模型决策的重要依据（先读账本，最终用户定）；`model` 精确写法，含可选 `executed_by`/`chain_status`；校验 `scripts/model/check-ledger.mjs`（FAIL 拦、WARN 供抽查） |
-| 交接 | `docs/handoff/HANDOFF.md` | 状态源（新节顺延，现至 §50；旧号冻结不重排） |
+| TM 资格 | `docs/model/TASK-MANAGER-QUALIFICATION.md`＋`TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`；评分 `scripts/model/tm-qualification.mjs` | Episode/五维评分/Gate＋采样门槛；证据不改账本；主备由用户批准 |
+| Jev 决策流水 | `docs/model/JEV-DECISION-LOG.jsonl` | 每次 orca-decide 调用一行（非敏感元数据；不记原文/Key） |
+| 交接 | `docs/handoff/HANDOFF.md` | 状态源（新节顺延，现至 §54；旧号冻结不重排） |
 | 迁移入口 | `docs/prompts/迁移整理提示词.md`（老包根同名） | 自举取包＋冲突处理＋5.7 登记检查（迁移即登记，`LEDGER-OK` 才算完成） |
 | 新项目脚手架 | `新项目模板包/`（按包内 README 铺入项目根，提示词/模板按清单落位，`USER_MODEL_OVERRIDE.md` 建软链指母版） | 老项目用 `老项目迁移模板包/`＋迁移提示词 |
 
-## 七、给审查者的检查点
+## 八、给审查者的检查点
 
 1. 进 WAITING 条件全满足：Readiness≥90、P0=0、blocking P1=0、关键事实已验证、核心假设已合理验证；Human Gate 是否被绕过。
 2. 派工实绩是否与分工表一致（supervisor 抽查三处对账）。
-3. Jev 是否只出现在模糊分叉、有无越权自动批。
+3. Jev 是否只出现在模糊分叉、有无越权自动批；决策流水是否落盘且不含密。
 4. QA 是否后台静默、有无碰主 Chrome；普通 QA 沙箱解禁是否仅限 QA 且记账。
 5. Secret（API Key、Cookie、Token）有无入仓。
 6. 账本是否记全（`model` 精确写法、新字段；无账本项目是否按要求记账）。
 7. 老项目迁移是否过登记检查（`check-ledger.mjs` 得 `LEDGER-OK`）。
+8. TM 资格：Episode 是否记账、采样门槛/Gate 是否遵守、主备是否经用户批准（未自动改表）。

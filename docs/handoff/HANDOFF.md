@@ -17,13 +17,12 @@
 
 ## 1. 当前工作进展（2026-09-26，现势）
 
-- 阶段/状态：模板冻结期继续；本日完成"派工审计→治理迭代第一批"（用户拍板 A+B），工作区已改待提交（见 §50）。
-- 模型分工：以根 `USER_MODEL_OVERRIDE.md`（现 T18）为准，**本 HANDOFF 不复述 ID**（表即唯一口径）；本批 qa 行加 QA 专用沙箱解禁 `-s danger-full-access`（仅限 QA、须记账）。
-- 本批落地（母版＋两包 SYNC-OK）：①QA 沙箱解禁；②账本加可选 `executed_by`/`chain_status`＋model 精确写法规范，`check-ledger.mjs` 收紧（结构错=FAIL／写法不规范=WARN）；③迁移提示词加 5.7 登记检查（LEDGER-OK 才算迁移完成）；④README/ORCA说明模型口径改"以表为准、不复述 ID"（根治漂移）；⑤`check-sync.sh` 补迁移提示词检查。详见 §50。
-- 派工审计（1.Active 全项目）：报告与整改任务书经 Sol 多轮审查定稿，存 `1.Active/`；结论"历史不追溯补录"，前进路线＝治理迭代→老项目迁移→迁移即登记。
+- 阶段/状态：模板冻结期继续；本日完成"派工审计 → 治理迭代"多批（用户拍板）：第一批 QA 沙箱解禁/账本字段/模型 ID 规范/迁移即登记（§50）、第二批 升级口径＋TM 代做边界＋builder 超时（§51）、第三批 证据质量规则＋校验（§52）、T19 分工（§53 前后）、TM 资格测试（§53）、Jev 决策流水（§54）。
+- 模型分工：以根 `USER_MODEL_OVERRIDE.md`（现 **T19**）为准，**本 HANDOFF 不复述 ID**；本日：qa 行加 QA 专用沙箱解禁 `-s danger-full-access`（仅限 QA、须记账）；neat-freak/db-admin 切 `opencode-go/space-bunny-free`；override 加 TM 资格候选注释（TM 行仍"开窗口时定"）。
+- 落地：AGENTS/override/qa卡/HANDOFF；账本加 `executed_by`/`chain_status`＋model 精确写法，`check-ledger` 收紧（结构错=FAIL/写法不规范=WARN）＋证据质量 WARN；`scripts/model/tm-qualification.mjs`＋事件日志（TM 资格）；`orca-decide.mjs` 落 `JEV-DECISION-LOG.jsonl`；`check-sync` 扩覆盖。母版＋两包常驻 SYNC-OK。
+- 派工审计（1.Active）：报告与整改任务书经 Sol 多轮审；结论"历史不追溯"，路线＝治理迭代→老项目迁移→迁移即登记。逐项目待办清单存 `1.Active/ORCA派工账本-逐项目待办清单.md`（4 项目 HANDOFF 已挂待办，未提交，留各自 TM）。
 - 上一真实业务链为 028 等（详见 §33–§49 历史节）；最新提交以 Git 历史为准。
-- 账本：母版 TASK/DISPATCH 均仅 `_example` 行；经验 13 条。
-
+- 账本：母版 TASK/DISPATCH 均仅 `_example` 行；经验 18 条。
 ## 2. 下一步任务（按序）
 
 1. commit＋push 本批治理迭代（用户一句话即办）。
@@ -358,11 +357,15 @@
 - 规范补一节：每 session 预检→直驱，Maestro备用、scrcpy只看屏。
 - 现机预检：adb IN9LZTAYV4UGU4JF/无线双在线，get-state device，uiautomator dump通；断USB/授权失效分支未演练，暂为手工回退。
 ## 49. 收工小交接（2026-09-23，开发暂停，用户令先到这里）
-### 1. 当前工作进展
-- 第四轮治理审查已落盘：`docs/review/GOVERNANCE_REVIEW-2026-09-23-第四轮审查.md`（现势正典，旧7份转历史）。结论 P0=3（T4峰谷分流未同步：README/ORCA说明/HANDOFF§1仍T3口径；DISPATCH runtime枚举无volc位；AGENTS禁套娃句漏volc）＋P1=9，均未修，只收问题不改文件。
-- 分工表现 T4（builder峰谷双路：空闲codebuddy/deepseek-v4.1-flash，高峰volcengine-plan/glm-5.3-flash）；Jev运行模式ADVISORY（自动路由仍禁）；并行施工Shadow分支实验收尾（worktree/分支已清理，SYNC-OK）。
-- 工作区非空未提交：`docs/review/GOVERNANCE-*09-21*`×3新文件、`docs/roles/db-admin.md`＋两包镜像、`skills-lock.json`、`.agents/`未跟踪；旧号§34–38重号冻结中，新节自§39起（本节§49）。
-### 2. 下一步任务（按序，恢复时逐条做）
+### 1. 当前工作进展（2026-09-26，现势）
+
+- 阶段/状态：模板冻结期继续；本日完成"派工审计 → 治理迭代"多批（用户拍板）：第一批 QA 沙箱解禁/账本字段/模型 ID 规范/迁移即登记（§50）、第二批 升级口径＋TM 代做边界＋builder 超时（§51）、第三批 证据质量规则＋校验（§52）、T19 分工（§53 前后）、TM 资格测试（§53）、Jev 决策流水（§54）。
+- 模型分工：以根 `USER_MODEL_OVERRIDE.md`（现 **T19**）为准，**本 HANDOFF 不复述 ID**；本日：qa 行加 QA 专用沙箱解禁 `-s danger-full-access`（仅限 QA、须记账）；neat-freak/db-admin 切 `opencode-go/space-bunny-free`；override 加 TM 资格候选注释（TM 行仍"开窗口时定"）。
+- 落地：AGENTS/override/qa卡/HANDOFF；账本加 `executed_by`/`chain_status`＋model 精确写法，`check-ledger` 收紧（结构错=FAIL/写法不规范=WARN）＋证据质量 WARN；`scripts/model/tm-qualification.mjs`＋事件日志（TM 资格）；`orca-decide.mjs` 落 `JEV-DECISION-LOG.jsonl`；`check-sync` 扩覆盖。母版＋两包常驻 SYNC-OK。
+- 派工审计（1.Active）：报告与整改任务书经 Sol 多轮审；结论"历史不追溯"，路线＝治理迭代→老项目迁移→迁移即登记。逐项目待办清单存 `1.Active/ORCA派工账本-逐项目待办清单.md`（4 项目 HANDOFF 已挂待办，未提交，留各自 TM）。
+- 上一真实业务链为 028 等（详见 §33–§49 历史节）；最新提交以 Git 历史为准。
+- 账本：母版 TASK/DISPATCH 均仅 `_example` 行；经验 18 条。
+## 2. 下一步任务（按序，恢复时逐条做）
 1. 跑`bash scripts/check-sync.sh`取exit码，落本HANDOFF一行（验证T4两包同步）。
 2. 修P0-1：README:15、ORCA说明§五、HANDOFF§1同步峰谷双路口径（或改“以表为准不复述ID”）。
 3. 修P0-2：DISPATCH runtime枚举加`volcengine-plan`（AGENTS＋supervisor卡＋校验脚本同步）。
