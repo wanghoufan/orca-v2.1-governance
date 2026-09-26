@@ -55,7 +55,7 @@ const ROLES = ["task-manager", "supervisor", "planner", "builder", "code-reviewe
   "product-reviewer", "experience-recorder", "neat-freak", "senior-expert", "db-admin",
   "迁移整理工", "orchestrator"];
 
-function check(file, need, enums) {
+function check(file, need, enums, evidence) {
   const p = join(dir, file);
   if (!existsSync(p)) { fails.push(`${file}: MISSING`); return; }
   const lines = readFileSync(p, "utf8").split("\n").filter((l) => l.trim());
@@ -78,6 +78,12 @@ function check(file, need, enums) {
     if ("chain_status" in d && d.chain_status !== null && !CHAIN_STATUS.includes(d.chain_status)) {
       fails.push(`${file}#${ln}: bad chain_status=${d.chain_status}`);
     }
+    // 证据质量（仅 TASK 账；启发式、advisory）：result=PASS 但备注含未闭环字样且未标 OPEN → WARN
+    if (evidence && d.result === "PASS" && typeof d.note === "string"
+        && /待评审|待复验|待验证|未验证|产品阻塞|待用户验收|未闭环|未完成/.test(d.note)
+        && d.chain_status !== "OPEN") {
+      warns.push(`${file}#${ln}: WARN result=PASS 但备注含未闭环字样，建议 chain_status=OPEN`);
+    }
   }
   const nex = lines.filter((l) => { try { return JSON.parse(l)._example === true; } catch { return false; } }).length;
   if (n === 0 && nex > 0) fails.push(`${file}: _example 行未删（首个真实任务前删除示例行）`);
@@ -86,7 +92,7 @@ function check(file, need, enums) {
 }
 check("TASK-MODEL-LOG.jsonl",
   ["task", "project", "date", "role", "model", "result", "rework", "escalated", "escalation_reason", "tokens", "cost_cny"],
-  { result: ["PASS", "FAIL"], escalated: ["YES", "NO"] });
+  { result: ["PASS", "FAIL"], escalated: ["YES", "NO"] }, true);
 check("DISPATCH-LOG.jsonl",
   ["date", "task", "role", "model", "used", "runtime", "result"],
   { result: ["PASS", "FAIL"] });

@@ -1,0 +1,18 @@
+你是资深治理审查员（Sol）。第三批治理迭代草案（未应用，在 temp）请审查。只读，不改文件。
+
+仓库根：/Users/zzymima0000/Developer/coding/4.Templates（PC）/2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11
+草案：temp/governance-draft-batch3/AGENTS.md、temp/governance-draft-batch3/check-ledger.mjs
+对照现行：AGENTS.md、scripts/model/check-ledger.mjs
+
+## 本批意图
+1. AGENTS 账本节新增 `chain_status` 使用口径（DELIVERED/ACCEPTED/OPEN；PASS 但未闭环记 OPEN；不得把角色交付 PASS 当整链验收）。
+2. check-ledger 新增"证据质量"WARN：result=PASS 且 note 含 待评审/待复验/未验证/产品阻塞/未闭环/未完成 且 chain_status≠OPEN → WARN。
+
+## 请自行验证
+- diff 草案 vs 现行
+- 用草案 check-ledger 跑 028 账本（应命中 TASK#60 WARN）；跑模板 docs/model（应因示例行 FAIL）
+- 检查 WARN 逻辑有无误伤（正常 PASS 记录会不会被命中）、正则是否过宽/过窄
+- 口径与 AGENTS 其它节（升级/派工/TM 边界）是否冲突
+
+## 输出（中文 Markdown，800字内）
+【草案核对】【validator 复核】【是否与现有条款冲突】【硬伤】【结论：可用/需再修/不可用】
