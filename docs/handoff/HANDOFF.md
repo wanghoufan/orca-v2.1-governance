@@ -15,32 +15,35 @@
 - 更新：2026-09-12，收编持续推进协议（§7）＋L3 watchdog 脚本进 `scripts/orchestration/`（§8），两包同步、zip 重建。
 - 更新：2026-09-11，开发暂停收尾（已推 `b84e61d`）。历史旧报告6份已删；`docs/history/` 新增审查报告3份（-y轮/现势/逐派，未提交，待定去留）。现行结论以包内文件＋本 HANDOFF §1-§3 为准。
 
-## 1. 当前工作进展（2026-09-26，现势）
+## 1. 当前工作进展（2026-09-26，现势；用户令开发暂告一段落）
 
-- 阶段/状态：模板冻结期继续；本日完成"派工审计 → 治理迭代"多批（用户拍板）：第一批 QA 沙箱解禁/账本字段/模型 ID 规范/迁移即登记（§50）、第二批 升级口径＋TM 代做边界＋builder 超时（§51）、第三批 证据质量规则＋校验（§52）、T19 分工（§53 前后）、TM 资格测试（§53）、Jev 决策流水（§54）。
-- 模型分工：以根 `USER_MODEL_OVERRIDE.md`（现 **T19**）为准，**本 HANDOFF 不复述 ID**；本日：qa 行加 QA 专用沙箱解禁 `-s danger-full-access`（仅限 QA、须记账）；neat-freak/db-admin 切 `opencode-go/space-bunny-free`；override 加 TM 资格候选注释（TM 行仍"开窗口时定"）。
-- 落地：AGENTS/override/qa卡/HANDOFF；账本加 `executed_by`/`chain_status`＋model 精确写法，`check-ledger` 收紧（结构错=FAIL/写法不规范=WARN）＋证据质量 WARN；`scripts/model/tm-qualification.mjs`＋事件日志（TM 资格）；`orca-decide.mjs` 落 `JEV-DECISION-LOG.jsonl`；`check-sync` 扩覆盖。母版＋两包常驻 SYNC-OK。
-- 派工审计（1.Active）：报告与整改任务书经 Sol 多轮审；结论"历史不追溯"，路线＝治理迭代→老项目迁移→迁移即登记。逐项目待办清单存 `1.Active/ORCA派工账本-逐项目待办清单.md`（4 项目 HANDOFF 已挂待办，未提交，留各自 TM）。
-- 上一真实业务链为 028 等（详见 §33–§49 历史节）；最新提交以 Git 历史为准。
-- 账本：母版 TASK/DISPATCH 均仅 `_example` 行；经验 18 条。
+- 主线：以"派工审计"驱动的治理迭代 ＋ 两套新档案；全部落地、常驻 SYNC-OK、已 commit+push（最新以 Git 历史为准）。
+- 治理迭代（母版＋两包）：第一批 QA 沙箱解禁／账本 `executed_by`+`chain_status`／模型 ID 规范／迁移即登记（§50）；第二批 升级口径（自动升/不打扰）＋TM 代做边界＋builder 超时（§51）；第三批 证据质量规则＋校验（§52）。
+- 分工表：现 **T20**（experience-recorder／neat-freak／db-admin 切 `opencode-go/space-bunny-free`；qa 普通 QA 走 `-s danger-full-access`；TM 行仍"开窗口时定"，加资格候选注释）。
+- 三套档案齐：①TASK/DISPATCH 账本 ②TM 资格（`TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`＋评分器 `tm-qualification.mjs`／测试，Sol PASS）③Jev 决策流水（`JEV-DECISION-LOG.jsonl`＋测试，Sol PASS）。
+- 派工审计：报告＋整改任务书（Sol 多轮审）＋逐项目待办清单 `1.Active/ORCA派工账本-逐项目待办清单.md`；4 项目（028/022/020/015）HANDOFF 已挂待办（未提交，留各自 TM）。
+- 各项目编排者执行提示词：`temp/2026-09-26 丨 MAC 丨 ORCA 丨 各项目编排者-治理同步与登记-执行提示词 - V1.0.md`（temp 不入仓）。
+- 真实项目 A/B（TM 资格）：框架就位、2 个测试项目已验证可跑；真实数据待用户后续在真实项目跑。
+- 账本：母版 TASK/DISPATCH 仅 `_example` 行；经验 19 条。
+
 ## 2. 下一步任务（按序）
 
-1. commit＋push 本批治理迭代（用户一句话即办）。
-2. 治理迭代后续批（按整改任务书）：升级口径复核、TM 代做边界成文、逐项核验清单。
-3. 老项目迁移（按《迁移整理提示词》，含 5.7 登记检查）。
-4. 逐项核验：028 ChangeB 打回链（P0-1）、QA 混合项、TM 接管记录。
-5. 第一单业务仍等用户`第一阶段，计划`口令。
+1. 各老项目编排者执行《治理同步与登记》提示词（在 `temp/`）；核心产出＝各项目账本 `LEDGER-OK`（迁移即登记）。
+2. 真实项目 A/B（TM 资格：≥30 Episode/候选、≥3 项目）；主备建议由 Governance Steward 出，用户批准才改表。
+3. 治理迭代尾巴：028 打回链已核；余 028 `chain_status` 回填、022 D10 授权、020/015 账本清理已挂各项目 HANDOFF，随其下次开工处理。
+4. 第一单业务仍等用户 `第一阶段，计划` 口令。
 
 ## 3. 注意事项及规矩（违反即打回）
 
-- **表为准＋改表必真调**：模型/通道一律以 `USER_MODEL_OVERRIDE.md` 为准（README/说明/HANDOFF 不复述 ID）；改表后必须真调验证（只读验名免费先行，烧额度先批，不通即停表不动）。
-- **派工纪律归AGENTS**：同链续 session、静态打头动态押后（含 sop 分支）、换模型/换通道/升级即开新链；DISPATCH 的 used 恒填主，supervisor 抽查实派==表。
-- **QA 沙箱**：codex 普通QA 走 `-s danger-full-access`（仅限QA、须记账）；真机 adb/Expo 走本窗口直驱。
-- **账本**：model 用 provider/model 精确写法；新字段 executed_by/chain_status 可选；跑 `node scripts/model/check-ledger.mjs docs/model`（FAIL 拦、WARN 供抽查）。
-- **总监督wake-only**：平时只喊编排者，两次叫不醒才找用户一次；质量走 supervisor 链。
-- **不动旧版＋不擅自提交**：无明确指令（含分支名，默认 main）不 commit 不 push；不碰 secrets。
-- **单点对接**：只有编排者找用户，总监督平时静默。
-- **开工前读**：`AGENTS.md`→角色卡→`USER_MODEL_OVERRIDE.md`→本 HANDOFF→`经验一句话.md`（13 条）→任务目标放最后。
+- **表为准＋改表必真调**；**同一模型已真调通过后换角色复用证据、不重复真调**（经验第 19 条），仅新模型/新写法才真调。README/说明/HANDOFF 不复述 ID。
+- **派工纪律归 AGENTS**：同链续 session、静态打头动态押后、换模型/通道/升级即开新链；DISPATCH `used` 恒填"主"，supervisor 抽查实派==表。
+- **QA**：普通 QA 走 `codex -s danger-full-access`（仅限 QA、DISPATCH note 记账）；真机 adb/Expo 走本窗口直驱。
+- **账本**：`model` 用 `provider/model` 精确写法；`executed_by`/`chain_status` 可选；跑 `node scripts/model/check-ledger.mjs docs/model`（结构错=FAIL 拦、写法不规范=WARN 供抽查）；**角色交付 PASS≠整链验收**（未闭环记 `OPEN`）。
+- **TM 资格**：Episode 记账；Gate `≥90 ＋ P0=0 ＋ HumanGate=0`；**采样 <30 Episode 或 <3 项目保持 CANDIDATE**；主备由用户定、不自动改表；Supervisor 兼 Observer（不评分/不接管）。
+- **Jev**：advisory only；每次调用自动落 `JEV-DECISION-LOG.jsonl`（best-effort，不记原文/Key）；不改权限/Contract。
+- **temp 不入仓**（`.gitignore` 已加 `/temp/`）；测试残留随手清（本日清过 worker 误落仓根的 `artifact-*.txt`）。
+- **总监督 wake-only**；单点对接；无明确指令（含分支名，默认 main）不 commit 不 push；不碰 secrets。
+- **开工前读**：`AGENTS.md`→角色卡→`USER_MODEL_OVERRIDE.md`→本 HANDOFF→`经验一句话.md`（19 条）→任务目标放最后。
 
 ## 4. 2026-09-09 两轮审查修复记录
 
