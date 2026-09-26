@@ -34,7 +34,7 @@ task-manager=编排者（唯一对人说话）｜supervisor=监督者（只对�
 
 ## 派工顺序（Phase-aware；旧单线默认链已废止）
 
-Phase1（PLAN）：planner（Sol）→product-reviewer（Research Reviewer）→planner→…→Readiness Gate→Human Gate（禁 builder／code-reviewer／qa／业务改动／Release）。Phase2（DEVELOP）：builder 写→code-reviewer 复核→qa 测→supervisor 复检→编排者收齐找人（默认主链，模型以 override 表为准；product-reviewer 默认不派）。真机QA每session先过能力预检PASS才进正式，否则停（详情见qa卡）。经验/neat-freak 只在收尾派一次。本窗口内派 subagent，全自动（默认派工口；执行通道按 override『执行通道/Runtime』列，表定通道（codebuddy/codex/opencode）的走通道直调，禁套娃）。三类例外（人肉调试/外部施工/迁移基线）可起终端，见 docs/prompts/编排者提示词 :10。基础设施活必带 docs/sop/ 对应规范（DB 带 supabase.md 或 sqlite.md，部署带 docker.md，Android 打包带 android.md），supervisor 抽查。
+Phase1（PLAN）：planner（Sol）→product-reviewer（Research Reviewer）→planner→…→Readiness Gate→Human Gate（禁 builder／code-reviewer／qa／业务改动／Release）。Phase2（DEVELOP）：builder 写→code-reviewer 复核→qa 测→supervisor 复检→编排者收齐找人（默认主链，模型以 override 表为准；product-reviewer 默认不派）。真机QA每session先过能力预检PASS才进正式，否则停（详情见qa卡）；codex 普通QA 派工带 `-s danger-full-access`（仅限QA，关闭沙箱解端口/网络限制，须记账）。经验/neat-freak 只在收尾派一次。本窗口内派 subagent，全自动（默认派工口；执行通道按 override『执行通道/Runtime』列，表定通道（codebuddy/codex/opencode）的走通道直调，禁套娃）。三类例外（人肉调试/外部施工/迁移基线）可起终端，见 docs/prompts/编排者提示词 :10。基础设施活必带 docs/sop/ 对应规范（DB 带 supabase.md 或 sqlite.md，部署带 docker.md，Android 打包带 android.md），supervisor 抽查。
 跳步：单文件小修可跳 planner/product，不可跳 code-reviewer+qa+supervisor；跳了记一句原因。分歧听谁的：技术分歧听 code-reviewer，范围分歧听 Task Manager。
 - Decision Sidecar（非角色，不占 9+1+1）：TM 仅规则无唯一答案时调 `scripts/decision/orca-decide.mjs`（照 docs/sop/decision-router.md），advisory only，失败回 V2.1 逻辑；supervisor 抽查调用点合规。
 续 session：同一功能/Bug 链（开发→QA→返工→再 QA）尽量续上一个 session（codex/opencode 用 resume），不要每轮新开；返工派必须续。用完不急着关，关了重开更贵。resume 由派工基础设施保持，编排者不手动开终端；升级换 senior-expert 时开新链，不续旧 session。
@@ -55,10 +55,10 @@ Phase1（PLAN）：planner（Sol）→product-reviewer（Research Reviewer）→
 ## 任务账本（换模型的依据，一个项目一个文件）
 
 - 文件：`docs/model/TASK-MODEL-LOG.jsonl`，一行一任务，跨项目同名同 schema，分析时拼起来直接统计。模板自带的 `{"_example":true}` 行不参与统计，首个真实任务前删除。example 行由迁移整理工/首个 TM 在首个真实任务前删除。
-- schema（全单行，枚举锁死：11 必需键＋note 可选扩展键）：`{"task","project","date","role","model","result":"PASS/FAIL","rework":数字,"escalated":"YES/NO","escalation_reason":null或一句,"tokens":数字或null,"cost_cny":数字或null,"note":可选}`。`cost_cny` 与 `tokens` 拿不到填 `null`，不许编；`project`=仓库根目录名（HANDOFF Stage ID 括号备注，如 radar-live），`date` 取 `YYYY-MM-DD`。
+- schema（全单行，枚举锁死：11 必需键＋note/executed_by/chain_status 可选扩展键）：`{"task","project","date","role","model","result":"PASS/FAIL","rework":数字,"escalated":"YES/NO","escalation_reason":null或一句,"tokens":数字或null,"cost_cny":数字或null,"note":可选,"executed_by":可选,"chain_status":可选}`。`model` 用 `provider/model` 精确写法（如 `codebuddy/deepseek-v4.1-flash`），禁裸名与自由拼接，合法写法白名单见 `scripts/model/check-ledger.mjs`；`executed_by`=实际执行者（派工角色与实际执行者不一致时填，如 TM 兜底代做；一致留 null）；`chain_status`=任务链状态（`DELIVERED` 角色交付／`ACCEPTED` 已验收／`OPEN` 未完）。`cost_cny` 与 `tokens` 拿不到填 `null`，不许编；`project`=仓库根目录名（HANDOFF Stage ID 括号备注，如 radar-live），`date` 取 `YYYY-MM-DD`。
 - 分工：builder/senior 写一行初版→supervisor 校验 JSON 合法+返工数→编排者判结果落盘。
 - `result`=任务级 PASS/FAIL（按表派单成功仍可 PASS；FAIL 须配 escalation_reason/备注说明是任务挂还是模型挂）。
-- 逐派记录：每次派工收工编排者往 `docs/model/DISPATCH-LOG.jsonl` 记一行（schema：date/task/role/model/used恒填主/runtime（本窗口/codebuddy/codex/opencode/—）/result PASS或FAIL/note（切备时used仍填主＋note记切备原因，HANDOFF补一句）；示例行不参与统计，首个真实派前删除；tokens/cost不记；寿命随任务账本归档）；与派工显式两行互验；supervisor抽查实派==表三处对得上。
+- 逐派记录：每次派工收工编排者往 `docs/model/DISPATCH-LOG.jsonl` 记一行（schema：date/task/role/model/used恒填主/runtime（本窗口/codebuddy/codex/opencode/—）/result PASS或FAIL/note（切备时used仍填主＋note记切备原因，HANDOFF补一句）/executed_by 可选（同 TASK，派工角色≠实际执行者时填）；示例行不参与统计，首个真实派前删除；tokens/cost不记；寿命随任务账本归档）；与派工显式两行互验；supervisor抽查实派==表三处对得上。
 - 两包同步：母版治理改动提交后同步两本地包（`新项目模板包/`、`老项目迁移模板包/`）并在 HANDOFF 记一行；`diff` 非预期差零容忍（常驻同步，用户定）。
 - 换模型决策先读账本：返工多、常升级的任务类型优先换强模型。
 

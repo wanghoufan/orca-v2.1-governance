@@ -10,10 +10,9 @@
 - `第二阶段，开发`：Human Gate 批准后进 Phase2（DEVELOP，锁定 DEV_BASELINE），默认主链开发（模型以override表为准）。
 - `变更请求：……`：开发中反馈统一入口，TM 按 A（小改留 DEVELOP）/ B（局部功能改留 DEVELOP 不召 Sol）/ C（产品架构变 Controlled Reopen）分类。
 
-## 模型口径（一句话，以根 `USER_MODEL_OVERRIDE.md` 表为准）
+## 模型口径（一句话）
 
-- supervisor 走 `opencode-go/muse-spark-1.3-contributor` via opencode；builder 走 `codebuddy/deepseek-v4.1-flash` via codebuddy（限额停工切 codebuddy/glm-5.3-flash，再限额停派喊人）；qa 走 `codex/gpt-5.6-luna` via codex（普通QA；真机 adb/Expo 走本窗口直驱）、product-reviewer 走 `codex/gpt-5.6-terra` via codex、db-admin 走 `opencode-go/deepseek-v4.1-flash` via opencode；code-reviewer/经验/neat 走 `opencode/muse-spark-1.3-contributor-free` 本窗口；planner/senior 走 `codex/gpt-5.6-sol` via codex；TM 开窗口时定。
-- 换人用户直接改母版真源表；表内无备用列。分工表软链制：各项目根表均为软链指母版真源，改母版即全项目同步（禁拷实文件；跨机器断链时拷实文件并记 HANDOFF）。
+模型／通道／调用方式**一律以根 `USER_MODEL_OVERRIDE.md` 表为准**（唯一口径，改表必真调，精确 ID 照抄执行）；本 README 不复述模型 ID，避免与表漂移。换人用户直接改母版真源表；表内无备用列。分工表软链制：各项目根表均为软链指母版真源，改母版即全项目同步（禁拷实文件；跨机器断链时拷实文件并记 HANDOFF）。
 
 ## 根目录（现行11）
 

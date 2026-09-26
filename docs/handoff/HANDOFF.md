@@ -2,6 +2,7 @@
 
 > 本文件为实例，拷进新项目时清空第 1-2 节照模板重写。
 
+- 更新：2026-09-26，派工审计驱动治理迭代第一批（QA沙箱解禁＋账本新字段＋模型ID规范＋迁移即登记）；README/ORCA说明模型口径改“以表为准不复述ID”；§50。
 - 更新：2026-09-13，修第0步无效判据（不再靠"项目已有治理文件"跳过取包，改无条件取包），老包zip重建（§25）。
 - 更新：2026-09-13，迁移入口自举化（并入《迁移整理提示词》，不新增文件）＋两包 README 路径对齐＋F-01 闭环（§23）。
 - 更新：2026-09-13，开发暂停封口（追审修复＋总监督wake-only收编＋neat-freak对齐＋§§1-3现势重写；已 push `de20e13`；即日起模板冻结，只收问题不改文件，攒单见§22）。
@@ -14,31 +15,33 @@
 - 更新：2026-09-12，收编持续推进协议（§7）＋L3 watchdog 脚本进 `scripts/orchestration/`（§8），两包同步、zip 重建。
 - 更新：2026-09-11，开发暂停收尾（已推 `b84e61d`）。历史旧报告6份已删；`docs/history/` 新增审查报告3份（-y轮/现势/逐派，未提交，待定去留）。现行结论以包内文件＋本 HANDOFF §1-§3 为准。
 
-## 1. 当前工作进展（2026-09-16，现势；今日 session 未 commit）
+## 1. 当前工作进展（2026-09-26，现势）
 
-- 分工表（`USER_MODEL_OVERRIDE.md`，11 行 4 列＋文末 T3 回退注释）：TM＝开窗口时定｜supervisor＝`opencode-go/muse-spark-1.3-contributor`/opencode｜builder＝`codebuddy/deepseek-v4.1-flash`/codebuddy（限额切 codebuddy/glm-5.3-flash，再限额停派喊人）｜qa＝`codex/gpt-5.6-luna`/codex（普通QA；真机 adb/Expo 走本窗口直驱，不记偏离）｜product-reviewer＝`codex/gpt-5.6-terra`/codex｜code-reviewer/recorder/neat＝`opencode/muse-spark-1.3-contributor-free`/本窗口｜planner/senior＝`codex/gpt-5.6-sol`/codex｜db-admin＝`opencode-go/deepseek-v4.1-flash`/opencode（专项，TM 直派直收）。表内无备用列；软链制（各项目根表软链指母版，改母版即同步）；改表必真调（AGENTS 模型节铁律）。
-- 本轮大项（均已落地未提交）：sop 三规范短名入位（docker/supabase/sqlite＋中央软链）／Contract×3 彻底删／复审 P0/P1/P2 全对齐＋check-sync.sh（exit 0）／product 换 Terra／builder 切 codebuddy 主备链／qa 切本窗口直驱。详见 §26–§32。
-- Luna 真机验证通过（2026-09-16，IN9LZTAYV4UGU4JF）：codex 沙箱 adb BLOCKED（前提证实）→无沙箱直驱 `adb devices` 通→`dumpsys`/截屏通（206KB 真图）→tap/swipe/HOME 全 exit 0（前后图不同，已复位）→`input text` 命令通（落字待目标框）→landedazi v1.0.4 安装 Success（包名 com.landedazi.app，versionName 却为 1.0.0，名实不符已 flag）→MainActivity 直起，PHOTO SPOT 首屏 TM 目检通过。输入落字＋Expo 全链路待续。
-- commit/push：`0ac6895`、`381a66f` 已推 origin/main；今日 §30–§33 及真调证据未提交，工作区非空。最新提交以 Git 历史为准。
-- 账本：TASK/DISPATCH 均仅 `_example` 行（现行主用示例）；经验 11 条。
+- 阶段/状态：模板冻结期继续；本日完成"派工审计→治理迭代第一批"（用户拍板 A+B），工作区已改待提交（见 §50）。
+- 模型分工：以根 `USER_MODEL_OVERRIDE.md`（现 T18）为准，**本 HANDOFF 不复述 ID**（表即唯一口径）；本批 qa 行加 QA 专用沙箱解禁 `-s danger-full-access`（仅限 QA、须记账）。
+- 本批落地（母版＋两包 SYNC-OK）：①QA 沙箱解禁；②账本加可选 `executed_by`/`chain_status`＋model 精确写法规范，`check-ledger.mjs` 收紧（结构错=FAIL／写法不规范=WARN）；③迁移提示词加 5.7 登记检查（LEDGER-OK 才算迁移完成）；④README/ORCA说明模型口径改"以表为准、不复述 ID"（根治漂移）；⑤`check-sync.sh` 补迁移提示词检查。详见 §50。
+- 派工审计（1.Active 全项目）：报告与整改任务书经 Sol 多轮审查定稿，存 `1.Active/`；结论"历史不追溯补录"，前进路线＝治理迭代→老项目迁移→迁移即登记。
+- 上一真实业务链为 028 等（详见 §33–§49 历史节）；最新提交以 Git 历史为准。
+- 账本：母版 TASK/DISPATCH 均仅 `_example` 行；经验 13 条。
 
 ## 2. 下一步任务（按序）
 
-1. 输入落字验证：给 Luna 一个目标输入框（Expo 页指定），点框＋落字＋截屏比对。
-2. 装包收尾：versionName(1.0.0)与文件名(v1.0.4)不符，问 0907 项目方要说法；后续 Expo 出包按“装→验 version→直起→截屏”走。
-3. commit＋push 今日工作区（用户一句话即办）。
-4. Expo 安卓常态 QA：A 口径已生效（Luna 本窗口直驱＋note），后续真机单照此派，不记偏离。
-5. CUA-MAC-1：等 Orca 侧修 scroll，另开单；第一单业务仍等`第一阶段，计划`口令。
+1. commit＋push 本批治理迭代（用户一句话即办）。
+2. 治理迭代后续批（按整改任务书）：升级口径复核、TM 代做边界成文、逐项核验清单。
+3. 老项目迁移（按《迁移整理提示词》，含 5.7 登记检查）。
+4. 逐项核验：028 ChangeB 打回链（P0-1）、QA 混合项、TM 接管记录。
+5. 第一单业务仍等用户`第一阶段，计划`口令。
 
 ## 3. 注意事项及规矩（违反即打回）
 
-- **表为准＋改表必真调**：冲突以 `USER_MODEL_OVERRIDE.md` 为准；改表后必须真调验证（只读验名免费先行，烧额度先批，不通即停表不动）；codex 剥前缀用短名，codebuddy 非交互必带 `-y`（看正文不看 rc）。
+- **表为准＋改表必真调**：模型/通道一律以 `USER_MODEL_OVERRIDE.md` 为准（README/说明/HANDOFF 不复述 ID）；改表后必须真调验证（只读验名免费先行，烧额度先批，不通即停表不动）。
 - **派工纪律归AGENTS**：同链续 session、静态打头动态押后（含 sop 分支）、换模型/换通道/升级即开新链；DISPATCH 的 used 恒填主，supervisor 抽查实派==表。
-- **真机口径**：qa＝Luna＋本窗口直驱（adb/Expo），note 记原因不记偏离；builder 不动（codebuddy 主备链）；主备皆限额→停派喊人。
+- **QA 沙箱**：codex 普通QA 走 `-s danger-full-access`（仅限QA、须记账）；真机 adb/Expo 走本窗口直驱。
+- **账本**：model 用 provider/model 精确写法；新字段 executed_by/chain_status 可选；跑 `node scripts/model/check-ledger.mjs docs/model`（FAIL 拦、WARN 供抽查）。
 - **总监督wake-only**：平时只喊编排者，两次叫不醒才找用户一次；质量走 supervisor 链。
 - **不动旧版＋不擅自提交**：无明确指令（含分支名，默认 main）不 commit 不 push；不碰 secrets。
 - **单点对接**：只有编排者找用户，总监督平时静默。
-- **开工前读**：`AGENTS.md`→角色卡→`USER_MODEL_OVERRIDE.md`→本 HANDOFF→`经验一句话.md`（11 条）→任务目标放最后。
+- **开工前读**：`AGENTS.md`→角色卡→`USER_MODEL_OVERRIDE.md`→本 HANDOFF→`经验一句话.md`（13 条）→任务目标放最后。
 
 ## 4. 2026-09-09 两轮审查修复记录
 
@@ -374,3 +377,11 @@
 ## 49. 并行 W2 真 Implementation 演示记一笔（2026-09-24，分支 demo/par-w2）
 - Parent TASK-DEMO-PAR-003：两独立 docs（feature-a/b.md）分派 volc deepseek / radeon mimo 双 worktree 同写，allowed_paths 无重叠，Integration 两次无冲突合流（先 A 后 B）。
 - 验证：PV_GOOD 校验通，SYNC-OK，分支 demo/par-w2 保留，worktree 未删（演示用）。
+
+## 50. 派工审计驱动的治理迭代第一批记一笔（2026-09-26，用户拍板 A+B）
+- 起因：1.Active 全项目派工日志审计（报告+整改任务书经 Sol 多轮审查可用）暴露：QA 反复"环境失败"、模型 ID 写法混乱、TM 代做不可审计、迁移不登记。
+- 本批改动（母版＋两包同步，check-sync SYNC-OK）：①QA 沙箱解禁：override qa 行命令加 `-s danger-full-access`（仅限 QA、须记账；实测可绑端口）/qa 卡双态分派补口径/AGENTS 派工顺序补一句；②模型 ID 规范化＋账本新字段：AGENTS 账本 schema 加可选 `executed_by`/`chain_status`＋model 精确写法规范，DISPATCH schema 加 `executed_by`，两本账示例行更新，`scripts/model/check-ledger.mjs` 加 model 白名单与字段枚举（结构错=FAIL、写法不规范=WARN）；③迁移即登记：迁移提示词新增 5.7 登记检查（跑 check-ledger 得 LEDGER-OK 才算迁移完成）。
+- 用户决策：QA 解禁限 QA；新字段设可选（兼容旧账本）；chain_status 用英文三态 DELIVERED/ACCEPTED/OPEN；model 白名单特殊值分两类（本窗口类合法、"未派/未记录"类 WARN）。
+- 明确定向（用户 2026-09-26）：历史账本不追溯补录；改为"治理迭代→老项目迁移→迁移即登记"往前做。
+- Sol 落地复审后修（2026-09-26）：①老包迁移提示词误删恢复——以老包版为真源（含 android/webqa/decision-router 与 scripts 子目录清单），母版同步；②`check-ledger.mjs` 收紧（空 model/未知模型/非法 JSON 行判定）；③`check-sync.sh` 补"迁移提示词母版↔老包"检查；④QA 解禁措辞校正为"关闭沙箱＝完整访问权"。
+- 状态：工作区已改未 commit（母版 8 件含本 HANDOFF＋新包 6 件＋老包 7 件＋母版 `scripts/check-sync.sh`），SYNC-OK；等用户明确指令（含分支名）再 commit/push。

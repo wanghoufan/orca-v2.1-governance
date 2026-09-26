@@ -10,3 +10,7 @@ qa-auth/
 
 # Decision Sidecar 依赖目录禁入仓（lock 文件入仓）
 scripts/decision/node_modules/
+
+# 本机 agent 技能安装态（不进模板仓）
+.agents/
+skills-lock.json

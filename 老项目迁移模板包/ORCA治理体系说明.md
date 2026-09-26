@@ -61,30 +61,16 @@ Android真机：规范已入（每 session 先过能力预检 PASS 才进正式�
 铁律：后台静默，不弹前台抢焦点；不用系统鼠标键盘；不碰用户主 Chrome；
 Google 登录等 Agent 不碰密码/MFA，登录异常交人工处理（认证可能失效，需复登不算异常）；MCP 端口重启会变，每次重读配置。
 
-## 五、模型与分工（T8 现势，11 行；下表用精确 ID，task-manager 行开窗口时定除外）
+## 五、模型与分工（11 行，以根 `USER_MODEL_OVERRIDE.md` 表为准）
 
-| 角色 | 模型（精确ID） | 通道 |
-|---|---|---|
-| task-manager | 开窗口时定 | 本窗口直派 |
-| supervisor | opencode-go/muse-spark-1.3-contributor | opencode 直调 |
-| builder | 火山 deepseek-flash（主） via volcengine-plan/ark-code-latest（控制台 deepseek-flash）＋ AMD mimo 备 via radeon-mimo/MiMo-V2.6-Flash | opencode |
-| planner | codex/gpt-6-sol | codex |
-| code-reviewer | codebuddy/glm-5.3-flash | codebuddy |
-| qa | AMD mimo via radeon-mimo/MiMo-V2.6-Flash | opencode |
-| product-reviewer | radeon-mimo/MiMo-V2.6-Flash | claude |
-| experience-recorder | opencode/muse-spark-1.3-contributor-free | 本窗口 |
-| neat-freak | opencode/muse-spark-1.3-contributor-free | 本窗口 |
-| senior-expert | codex/gpt-6-sol（只接升级） | codex |
-| db-admin | codebuddy/glm-5.3-flash | codebuddy |
-
-另：火山 `ark-code-latest` 已切 deepseek-flash 归一；MiMo 默认 Harness **Claude Code**（`https://developer.amd.com.cn/radeon/api`，Anthropic Messages，`ANTHROPIC_API_KEY=rc-`），OpenCode `radeon-mimo` 作备（双通道均 `mimo ok` 已验）；私有代码走火山已由用户批准。
+模型／通道／调用方式**一律以根 `USER_MODEL_OVERRIDE.md` 表为准**（该表即唯一口径，改表必真调）；本说明**不复述模型 ID**，避免与表漂移。角色清单见 `docs/roles/` 11 张卡；task-manager 行模型开窗口时定。
 
 ## 六、规范在哪
 
 | 规范 | 位置 | 说明 |
 |---|---|---|
 | 总纲 | `AGENTS.md` | 两阶段、派工顺序、升级、账本、红线（全员遵守一页） |
-| 模型分工真相源 | `USER_MODEL_OVERRIDE.md` | 11 行精确ID；改表必真调；T8 现势（T1/T2/T3 快照在 `temp/`，回退由用户口头指定编号、按改表规则执行） |
+| 模型分工真相源 | `USER_MODEL_OVERRIDE.md` | 11 行精确ID；改表必真调；现势以本表内容为准（历史快照在 `temp/`，回退由用户口头指定编号、按改表规则执行） |
 | 角色卡×11 | `docs/roles/` | 每角色职责＋写入位置；适用角色附输出模板 |
 | 开工提示词 | `docs/prompts/编排者提示词.md` | 一句话开工全文 |
 | 基础设施规范 | `docs/sop/` | docker/supabase/sqlite/android（＋android-machine-profile）/webqa/decision-router（去版本号引用） |
