@@ -22,7 +22,7 @@ const KNOWN_MODELS = [
   "opencode/muse-spark-1.3-contributor-free", "opencode/muse-spark-1.3-contributor",
   "opencode/mimo-v2.5-free",
   "opencode-go/muse-spark-1.3-contributor", "opencode-go/deepseek-v4.1-flash",
-  "opencode-go/glm-5.3-flash",
+  "opencode-go/glm-5.3-flash", "opencode-go/space-bunny-free",
   "opencode-free/mimo-v2.5-free", "opencode-free/muse-spark-1.3-contributor-free",
   "volcengine-plan/ark-code-latest",
   "radeon-mimo/MiMo-V2.6-Flash",
