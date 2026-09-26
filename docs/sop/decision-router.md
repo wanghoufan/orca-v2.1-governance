@@ -13,6 +13,7 @@
   Human Gate/删除/不可逆/付费/换模型永不自动批。
 - Secret：`~/.config/orca/decision.env`（TYPESAFE_API_KEY，600），禁入仓。
 - 用量：每次 usage.input_tokens 自行累计；402 即额度用尽，停用并找用户。
+- 决策流水（2026-09-26）：每次调用 best-effort 追加一行到项目内 `docs/model/JEV-DECISION-LOG.jsonl`（env `JEV_DECISION_LOG` 可覆盖）；只记非敏感元数据（mode/decision/confidence/model/requested+resolved/policy_version/input_digest/latency_ms/fallback/deterministic_shortcut/ok），**不记 state 原文、不记 Key**；目录不存在则跳过；**不改 Jev 权限与 Contract**；回归 `scripts/decision/test-decision-log.mjs`。
 
 ## 并行四 Contract（Shadow）
 - pmmode：判定任务并行/串行/单跑，Shadow only，阈值 null。

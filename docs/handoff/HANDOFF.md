@@ -404,3 +404,9 @@
 - 候选（真调已过）：`opencode-go/deepseek-v4.1-flash`、`opencode-go/mimo-v2.6-flash`（Runtime=opencode）。
 - 不破坏：现有账本/validator 未改语义；Human Gate/Phase/升级规则不动；Web/Android QA、Jev 边界未动。
 - 端到端验证（2026-09-26，测试目录已清理）：开 2 个小测试项目 proj-a(TM=`opencode-go/deepseek-v4.1-flash`)/proj-b(TM=`opencode-go/mimo-v2.6-flash`)，各跑 3 Episode（TM 真调决策＋worker `opencode-go/space-bunny-free` 真干活）；TASK/DISPATCH 两本账＋资格事件均落盘，`check-ledger` LEDGER-OK，`tm-qualification` Score=90/CANDIDATE（采样不足自动保持）。真实项目 A/B 待用户在真实项目内跑。
+
+## 54. Jev 决策流水记一笔（2026-09-26，用户定）
+- 缺口：Jev（decision sidecar）此前只在 stdout 输出、不落盘；生产里每次裁判无档案。
+- 落位（母版＋两包 SYNC-OK）：①`orca-decide.mjs` 每次调用 best-effort 追加一行到项目内 `docs/model/JEV-DECISION-LOG.jsonl`（env `JEV_DECISION_LOG` 覆盖；目录不存在静默跳过；`fail()` 与确定性短路也留痕；`input_digest` 哈希实际输入）；②新日志文件 `docs/model/JEV-DECISION-LOG.jsonl`（含 `_example`）；③回归 `scripts/decision/test-decision-log.mjs`（5 断言：落盘/不泄密/无目录不建文件/fail 留痕/选项在前的 mode 识别）；④`decision-router.md`/`AGENTS`/decision `README` 补说明。
+- 边界：**只记非敏感元数据**（mode/decision/confidence/model/requested+resolved/policy_version/input_digest/latency/fallback/deterministic_shortcut/ok），**不记 state 原文、不记 Key**；**不改 Jev 权限与 Contract**；advisory-only 不变。
+- 复核：Sol 两轮审（fail 缺 mode／确定性 digest 不追踪实际输入／argv 选项在前）逐条修复，终审 **PASS**。

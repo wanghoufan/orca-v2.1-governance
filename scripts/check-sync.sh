@@ -19,6 +19,7 @@ for pkg in "新项目模板包" "老项目迁移模板包"; do
            docs/handoff/HANDOFF.template.md docs/handoff/EXT-WORKLOG.template.md \
            docs/model/TASK-MODEL-LOG.jsonl docs/model/DISPATCH-LOG.jsonl \
            docs/model/TASK-MANAGER-QUALIFICATION.md docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl \
+           docs/model/JEV-DECISION-LOG.jsonl \
            scripts/model/tm-qualification.mjs scripts/model/tm-qualification.test.mjs \
            经验一句话.md ORCA治理体系说明.md; do
     check "$f" "$pkg/$f"
