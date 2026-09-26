@@ -65,6 +65,17 @@ Phase1（PLAN）：planner（Sol）→product-reviewer（Research Reviewer）→
 - 两包同步：母版治理改动提交后同步两本地包（`新项目模板包/`、`老项目迁移模板包/`）并在 HANDOFF 记一行；`diff` 非预期差零容忍（常驻同步，用户定）。
 - 换模型决策先读账本：返工多、常升级的任务类型优先换强模型。
 
+## Task Manager Qualification（增量；不新增角色，2026-09-26）
+
+- 目标：把 TM（编排者）正式纳入模型资格测试；MODEL QUALIFICATION＝Builder 实绩 ＋ Task Manager Qualification。**不新增第 12 角色**，不重做两阶段治理。
+- 最小评价单位＝**Orchestration Episode**：TM 接有效状态→判下一步→派正确 Worker→收结果→正确推进到下一合法态；聊天轮数不计。
+- 监督：supervisor 兼 **Task Manager Observer**（只标记异常、按现有机制提醒/唤醒/替喊一次；不评分、不接管、不改表、不跨 Gate）。评分汇总由 **Governance Steward**（治理管理层，非 9+1+1 角色，周期审计）做，只出**主备建议**；**Human 最终决定主备**；Steward 不得自动改 `USER_MODEL_OVERRIDE.md`。
+- 五维评分 100：派工/下一步 30＋持续推进 25＋治理遵守 20＋响应速度 15＋资源效率 10；**响应阈值据 watchdog**（`CONSUME_STALE_SEC=300`/`COOLDOWN_SEC=900`）分 NORMAL/SLOW/STALL；**`infra_error` 不计入能力分**。
+- Gate：`Score>=90 且 P0 治理违规=0 且 Human Gate 违规=0 → QUALIFIED`（否则 NOT_QUALIFIED；默认 CANDIDATE）。`PRIMARY/BACKUP` 非自动状态，须用户批准后按"改表→真调→记账"处理。
+- 证据（**不改现有账本 schema**）：事件日志 `docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`（Qualification evidence only，不取代 HANDOFF/ledger）；评分 `scripts/model/tm-qualification.mjs`；测试 `scripts/model/tm-qualification.test.mjs`；规范 `docs/model/TASK-MANAGER-QUALIFICATION.md`。
+- 枚举——异常：`TM_STALL/WRONG_ROUTE/DUPLICATE_DISPATCH/GATE_VIOLATION/UNNECESSARY_ESCALATION/MISSED_ESCALATION/NO_NEXT_ACTION/HUMAN_RESCUE_REQUIRED`；切换原因：`QUALIFICATION_TEST/PRIMARY_LIMIT/PRIMARY_ERROR/PRIMARY_STALL/USER_OVERRIDE`（区分正常 A/B 与被动 failover）。
+- A/B：真实多项目轮换、每候选首轮 ≥30 Episode、覆盖 ≥3 项目；Jev `TASK_PROFILE` 可作难度分层参考，但 Jev 不评分/不决定主备；每个项目仍只能有一个 TM 对人。
+
 ## 缓存五条（各家通用，够用就行；本窗口 subagent 链适用，External Runtime 走 builder 通道，换 Runtime/换模型/升级即开新链，见编排者 :10-11；外部施工见外部提示词）
 
 - 静态打头：派工先读同一批文件，顺序全体系唯一：AGENTS→角色卡→override 表→HANDOFF→经验一句话→（涉基础设施加 docs/sop/ 对应规范）→任务目标放最后。prefix 稳定命中，谁也不许自创顺序。

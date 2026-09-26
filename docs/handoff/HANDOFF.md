@@ -397,3 +397,9 @@
 - 主题：把审计发现的"角色交付 PASS ≠ 整链验收"落成规则与机器校验。
 - 改动（母版＋两包 SYNC-OK）：①`AGENTS.md` 账本节新增 `chain_status` 使用口径——按"当前交付"三取一、互斥、判不准取 `OPEN`：①整链通过=`ACCEPTED` ②本条当前交付有待办/阻塞=`OPEN`（待办须属本条，正常下游流转不计）③角色已交付、本条无待办、链正常推进=`DELIVERED`；不得因角色 PASS 记 `ACCEPTED`。②`check-ledger.mjs` 加证据质量 WARN（**仅 TASK 账**）：`result=PASS` 但备注含未闭环字样且未标 `OPEN` → WARN。
 - 复核：Sol 两轮审（口径重叠/validator 误扫 DISPATCH/关键词不一致/待办归属）逐条修复；实跑 028 精确命中 TASK#60、022 DISPATCH 不误报、模板示例行仍 FAIL。
+
+## 53. Task Manager Qualification 增量治理记一笔（2026-09-26，提示词 V1.2）
+- 目标：把 TM 纳入模型资格测试，不新增第 12 角色、不重做两阶段治理。
+- 落位（母版＋两包 SYNC-OK）：①`docs/model/TASK-MANAGER-QUALIFICATION.md`（Episode 定义/监督/五维评分/Gate/A-B/报告）；②事件证据 `docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`（Qualification evidence only，不改现有账本 schema）；③评分器 `scripts/model/tm-qualification.mjs`（只读派生）；④测试 `scripts/model/tm-qualification.test.mjs`＋fixtures（12 断言全绿：Ledger 回归/正常 Episode/Stall/Human Gate/错误路由/切换区分/基础设施分离/确定性）；⑤`AGENTS.md` 加"Task Manager Qualification"节；⑥`supervisor.md` 加 Task Manager Observer（职责扩展非新角色）；⑦`task-manager.md` 加 Episode 记账；⑧override 加 A/B 候选注释（TM 行仍"开窗口时定"）。
+- 候选（真调已过）：`opencode-go/deepseek-v4.1-flash`、`opencode-go/mimo-v2.6-flash`（Runtime=opencode）。
+- 不破坏：现有账本/validator 未改语义；Human Gate/Phase/升级规则不动；Web/Android QA、Jev 边界未动。

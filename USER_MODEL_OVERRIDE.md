@@ -15,3 +15,4 @@
 | db-admin | opencode-go/space-bunny-free | opencode | 派工基础设施走opencode直调：`opencode run -m opencode-go/space-bunny-free "任务"`（限时免费模型，真调已过）；表内记全ID；工作区固定本机 000-alw-数据库管理专家仓，禁本窗口代做 |
 
 <!-- 分工表版本：T19（2026-09-26，neat-freak 与 db-admin 切 opencode-go/space-bunny-free（限时免费，真调已过）；其余不变；用户回退存档，模型忽略此行） -->
+<!-- TM 资格测试候选（A/B，2026-09-26；真调已过）：opencode-go/deepseek-v4.1-flash 与 opencode-go/mimo-v2.6-flash，Runtime=opencode；TM 行仍"开窗口时定"，主备由用户批准后按"改表→真调→记账"处理（见 docs/model/TASK-MANAGER-QUALIFICATION.md）。 -->
