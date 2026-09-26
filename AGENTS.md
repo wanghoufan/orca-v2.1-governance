@@ -90,4 +90,5 @@ Phase1（PLAN）：planner（Sol）→product-reviewer（Research Reviewer）→
 - 每轮末三行心跳：目标/剩 P0/下一步。
 - 不 push（commit 需编排者明确指令，含分支名，外部者用 `ext/` 开头）；不碰 secrets；不改旧版封存；`docs/sop/` 为基础设施规范位（docker.md/supabase.md/sqlite.md/android.md/webqa.md/decision-router.md，去版本号引用），新项目自建（包内历史交接不动）。
 - 换模型的事用户决策，不许自作主张、不许写恢复类条件。
+- **转交/剪贴板（macOS）**：把提示词或材料交给用户/其他智能体时走系统剪切板——`pbcopy`（授权方式）→ 立即 `pbpaste` 回读 → 校验字节数＋开头文本一致 → 通过才报"已复制"；不一致不报成功、直接重试；长文本（>5000 字）另落一份 MD 给绝对链接（防剪贴板冲突丢失）。
 - 总监督（体系外独立，不占9+1，编排者无权派工/解雇）：只读 AGENTS＋`docs/prompts/Orca 编排治理监督者提示词.md`（先读顶部收编说明，wake-only）＋HANDOFF 并按监督者提示词执行，监督编排者是否持续推进、防停摆；平时只喊编排者，禁主动问用户，同一停摆两次叫不醒才找用户一次；与体系内 supervisor（监督者）无关，不合并；质量判定走 supervisor 链，推进/停摆判定听总监督。
