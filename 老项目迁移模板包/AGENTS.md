@@ -36,6 +36,7 @@ task-manager=编排者（唯一对人说话）｜supervisor=监督者（只对�
 
 Phase1（PLAN）：planner（Sol）→product-reviewer（Research Reviewer）→planner→…→Readiness Gate→Human Gate（禁 builder／code-reviewer／qa／业务改动／Release）。Phase2（DEVELOP）：builder 写→code-reviewer 复核→qa 测→supervisor 复检→编排者收齐找人（默认主链，模型以 override 表为准；product-reviewer 默认不派）。真机QA每session先过能力预检PASS才进正式，否则停（详情见qa卡）；codex 普通QA 派工带 `-s danger-full-access`（仅限QA，关闭沙箱解端口/网络限制，须记账）。经验/neat-freak 只在收尾派一次。本窗口内派 subagent，全自动（默认派工口；执行通道按 override『执行通道/Runtime』列，表定通道（codebuddy/codex/opencode）的走通道直调，禁套娃）。三类例外（人肉调试/外部施工/迁移基线）可起终端，见编排者提示词 :10。基础设施活必带 docs/sop/ 对应规范（DB 带 supabase.md 或 sqlite.md，部署带 docker.md，Android 打包带 android.md），supervisor 抽查。
 跳步：单文件小修可跳 planner/product，不可跳 code-reviewer+qa+supervisor；跳了记一句原因。分歧听谁的：技术分歧听 code-reviewer，范围分歧听 Task Manager。
+- TM 代做边界（2026-09-26 定）：TM（编排者）原则上不代做角色活，三类区分——①**真机QA直驱**＝合规（qa 卡允许，note 记原因）；②**通道兜底**＝通道超时/沙箱阻塞致角色派不出，TM 可临时补位，但须①账本记 `executed_by=task-manager`、②note 写原因与通道、③同一任务兜底≥2 次即上报用户定通道；③**越权代做**＝TM 亲自写业务代码/跑 QA 并当角色交付且不记 `executed_by`，视为违规打回。
 - Decision Sidecar（非角色，不占 9+1+1）：TM 仅规则无唯一答案时调 `scripts/decision/orca-decide.mjs`（照 docs/sop/decision-router.md），advisory only，失败回 V2.1 逻辑；supervisor 抽查调用点合规。
 续 session：同一功能/Bug 链（开发→QA→返工→再 QA）尽量续上一个 session（codex/opencode 用 resume），不要每轮新开；返工派必须续。用完不急着关，关了重开更贵。resume 由派工基础设施保持，编排者不手动开终端；升级换 senior-expert 时开新链，不续旧 session。
 - External Builder Runtime 通用插座：builder 仍是 builder（9+1＋1 不新增），Runtime 仅为执行通道（本窗口 subagent / codex / opencode / External Runtime），由 override「执行通道/Runtime」列或口头指定、派工基础设施自动调用；Runtime 自带 internal reviewer/QA/self-check 仅为自检证据，不能替代 code-reviewer/qa/product-reviewer/supervisor；permission_request 走机器可读→ORCA/TM 审批单点→用户定→回 runtime，builder 不直聊用户；禁把通道角色包进本窗口subagent套娃调用（表定codebuddy/codex/opencode的角色必须走通道直调），违者打回。
@@ -47,8 +48,9 @@ Phase1（PLAN）：planner（Sol）→product-reviewer（Research Reviewer）→
 
 ## 升级（普通→高级，只对当次任务）
 
-- 触发：① 同一 Task 累计被 supervisor 打回 2 次自动升（QA 挂不算，只算 supervisor 打回） ② 编排者判定 P0-hard 手动升。满足一条即升。
-- 计数口径：rework=被 supervisor 打回次数；QA 挂/自修好不计数，不断链也累计。
+- 触发：① 同一 Task 累计被 supervisor 打回 2 次自动升 ② 编排者判定 P0-hard 手动升。满足一条即升。
+- 计数口径（防歧义，2026-09-26 定）：计数单元＝**同一 task id（含其返工子任务，不按角色拆分）**；只数 **supervisor 判 FAIL/打回该 Task 交付**的次数（逐次在 DISPATCH 账以 `role=supervisor,result=FAIL` 记行，可机器计数）；**QA 自身任务判 FAIL 不计**，但若 supervisor 因 QA 证据问题打回并要求该 Task 返工，则计 1 次；自修好不计数，不断链也累计。
+- 升与打扰（2026-09-26 用户定）：**达 2 次即自动升 senior，不打断用户**；不得以"原因消除"为由免升，也不得为此询问用户——升级是编排者的自动动作，少中断。
 - 只升当次，不永久转正。换模型/换 Runtime 即开新链（旧链结论进 HANDOFF，缓存不跨链）。升级原因 + 返工次数记进任务账本。senior 接手后不再计数升级，被 supervisor 打回 2 次即停线找人（列阻塞＋要拍的板，不再升，无更高角色）。
 - senior 模型读 `USER_MODEL_OVERRIDE.md` 的 senior-expert 行。
 
