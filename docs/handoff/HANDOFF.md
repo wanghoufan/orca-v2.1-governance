@@ -2,6 +2,7 @@
 
 > 本文件为实例，拷进新项目时清空第 1-2 节照模板重写。
 
+- 更新：2026-09-26 收工交接（用户令开发暂时结束）：§§1-3 刷新为收工现势（治理迭代五批全部落地已 push；**老项目不归本窗口管**、**真实项目 A/B 用户自己跑**；本轮只改本 HANDOFF，未 commit；§55）。
 - 更新：2026-09-26，派工审计驱动治理迭代第一批（QA沙箱解禁＋账本新字段＋模型ID规范＋迁移即登记）；README/ORCA说明模型口径改“以表为准不复述ID”；§50。
 - 更新：2026-09-13，修第0步无效判据（不再靠"项目已有治理文件"跳过取包，改无条件取包），老包zip重建（§25）。
 - 更新：2026-09-13，迁移入口自举化（并入《迁移整理提示词》，不新增文件）＋两包 README 路径对齐＋F-01 闭环（§23）。
@@ -15,23 +16,24 @@
 - 更新：2026-09-12，收编持续推进协议（§7）＋L3 watchdog 脚本进 `scripts/orchestration/`（§8），两包同步、zip 重建。
 - 更新：2026-09-11，开发暂停收尾（已推 `b84e61d`）。历史旧报告6份已删；`docs/history/` 新增审查报告3份（-y轮/现势/逐派，未提交，待定去留）。现行结论以包内文件＋本 HANDOFF §1-§3 为准。
 
-## 1. 当前工作进展（2026-09-26，现势；用户令开发暂告一段落）
+## 1. 当前工作进展（2026-09-26 收工现势；用户令开发暂时结束）
 
-- 主线：以"派工审计"驱动的治理迭代 ＋ 两套新档案；全部落地、常驻 SYNC-OK、已 commit+push（最新以 Git 历史为准）。
-- 治理迭代（母版＋两包）：第一批 QA 沙箱解禁／账本 `executed_by`+`chain_status`／模型 ID 规范／迁移即登记（§50）；第二批 升级口径（自动升/不打扰）＋TM 代做边界＋builder 超时（§51）；第三批 证据质量规则＋校验（§52）。
+- 主线：以"派工审计"驱动的治理迭代 ＋ 三套新档案；**全部落地、常驻 SYNC-OK、已 commit+push**（最新以 Git 历史为准；本轮收尾只改本 HANDOFF，未 commit）。
+- 治理迭代（母版＋两包）：第一批 QA 沙箱解禁／账本 `executed_by`+`chain_status`／模型 ID 规范／迁移即登记（§50）；第二批 升级口径（自动升/不打扰）＋TM 代做边界＋builder 超时（§51）；第三批 证据质量规则＋校验（§52）；第四批 TM 资格（§53）；第五批 Jev 决策流水（§54）。
 - 分工表：现 **T20**（experience-recorder／neat-freak／db-admin 切 `opencode-go/space-bunny-free`；qa 普通 QA 走 `-s danger-full-access`；TM 行仍"开窗口时定"，加资格候选注释）。
-- 三套档案齐：①TASK/DISPATCH 账本 ②TM 资格（`TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`＋评分器 `tm-qualification.mjs`／测试，Sol PASS）③Jev 决策流水（`JEV-DECISION-LOG.jsonl`＋测试，Sol PASS）。
-- 派工审计：报告＋整改任务书（Sol 多轮审）＋逐项目待办清单 `1.Active/ORCA派工账本-逐项目待办清单.md`；4 项目（028/022/020/015）HANDOFF 已挂待办（未提交，留各自 TM）。
-- 各项目编排者执行提示词：`temp/2026-09-26 丨 MAC 丨 ORCA 丨 各项目编排者-治理同步与登记-执行提示词 - V1.0.md`（temp 不入仓）。
-- 真实项目 A/B（TM 资格）：框架就位、2 个测试项目已验证可跑；真实数据待用户后续在真实项目跑。
-- 账本：母版 TASK/DISPATCH 仅 `_example` 行；经验 19 条。
+- 三套档案齐：①TASK/DISPATCH 账本 ②TM 资格（`TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`＋`tm-qualification.mjs`／测试，Sol PASS，2 个测试项目跑通 Score=90/CANDIDATE）③Jev 决策流水（`JEV-DECISION-LOG.jsonl`＋回归测试，Sol PASS）。
+- 派工审计：报告＋整改任务书＋逐项目待办清单 `1.Active/ORCA派工账本-逐项目待办清单.md`（**清单在，不入仓**）。
+- 各项目编排者执行提示词：`temp/2026-09-26 丨 MAC 丨 ORCA 丨 各项目编排者-治理同步与登记-执行提示词 - V1.0.md`（temp 不入仓，**未派出去**）。
+- 本次收工前的未竟动作：曾尝试派 neat-freak 处理 028/022/020/015，第一次被 opencode 外部目录权限拦（`external_directory` auto-reject），改到父目录重派的第二趟**被用户中止**；四项目同步与登记**零改动**，待办原样保留。
+- 账本：母版 TASK/DISPATCH 仅 `_example` 行（母版预期状态）；经验 19 条。
 
-## 2. 下一步任务（按序）
+## 2. 下一步任务（按序；1、2 已明确不由本窗口做）
 
-1. 各老项目编排者执行《治理同步与登记》提示词（在 `temp/`）；核心产出＝各项目账本 `LEDGER-OK`（迁移即登记）。
-2. 真实项目 A/B（TM 资格：≥30 Episode/候选、≥3 项目）；主备建议由 Governance Steward 出，用户批准才改表。
-3. 治理迭代尾巴：028 打回链已核；余 028 `chain_status` 回填、022 D10 授权、020/015 账本清理已挂各项目 HANDOFF，随其下次开工处理。
-4. 第一单业务仍等用户 `第一阶段，计划` 口令。
+1. **老项目治理同步与登记（028/022/020/015，外加 001/010/014/007 确认）——用户 2026-09-26 定："老项目你别管"。** 治理仓**不再主动派工**；提示词留在 `temp/` 备用，各项目 TM 自行开工时按提示词做即可（跑 `node scripts/model/check-ledger.mjs docs/model` 得 `LEDGER-OK` 才算登记完成）。
+2. **真实项目 A/B（TM 资格）——用户定"我自己后续自己跑真实项目"。** 治理仓只提供框架与评分器，不参与执行；跑满 ≥30 Episode/候选、≥3 项目后由 Governance Steward 出主备建议，用户批准才改表。
+3. 治理尾巴（挂各项目 HANDOFF，随其各自开工处理）：028 TASK#60 回填 `chain_status=OPEN`＋修 HANDOFF「DISPATCH-LOG（空）」表述；022 D10 补授权或标"未记录"；020 两本账 0 字节补建/标未开工；015 补建 DISPATCH 账或确认不需要。**历史 WARN 一律不追溯**（用户 2026-09-26 定）。
+4. **第一单业务等用户口令`第一阶段，计划`**（唯一由本窗口编排者承接的活）。
+5. 若日后要恢复 §2-1，先解决 opencode 通道的跨目录权限（改 opencode 权限配置或授权），否则通道直调会再被拦。
 
 ## 3. 注意事项及规矩（违反即打回）
 
@@ -42,8 +44,10 @@
 - **TM 资格**：Episode 记账；Gate `≥90 ＋ P0=0 ＋ HumanGate=0`；**采样 <30 Episode 或 <3 项目保持 CANDIDATE**；主备由用户定、不自动改表；Supervisor 兼 Observer（不评分/不接管）。
 - **Jev**：advisory only；每次调用自动落 `JEV-DECISION-LOG.jsonl`（best-effort，不记原文/Key）；不改权限/Contract。
 - **temp 不入仓**（`.gitignore` 已加 `/temp/`）；测试残留随手清（本日清过 worker 误落仓根的 `artifact-*.txt`）。
+- **派工通道的已知阻塞（2026-09-26 实测）**：`opencode run` 读本仓以外目录（如 `1.Active`）会被 `external_directory` 权限自动拒；派跨仓任务时把工作目录设到两仓共同父目录，或先取得用户授权。禁反复盲试烧额度。
+- **用户已划界（2026-09-26）**：老项目不归本窗口管；真实项目 A/B 用户自己跑。TM 不得自行把这些活揽回本窗口。
 - **总监督 wake-only**；单点对接；无明确指令（含分支名，默认 main）不 commit 不 push；不碰 secrets。
-- **开工前读**：`AGENTS.md`→角色卡→`USER_MODEL_OVERRIDE.md`→本 HANDOFF→`经验一句话.md`（19 条）→任务目标放最后。
+- **开工前读**：`AGENTS.md`→角色卡→`USER_MODEL_OVERRIDE.md`→本 HANDOFF→`经验一句话.md`（20 条）→任务目标放最后。
 
 ## 4. 2026-09-09 两轮审查修复记录
 
@@ -416,3 +420,30 @@
 - 落位（母版＋两包 SYNC-OK）：①`orca-decide.mjs` 每次调用 best-effort 追加一行到项目内 `docs/model/JEV-DECISION-LOG.jsonl`（env `JEV_DECISION_LOG` 覆盖；目录不存在静默跳过；`fail()` 与确定性短路也留痕；`input_digest` 哈希实际输入）；②新日志文件 `docs/model/JEV-DECISION-LOG.jsonl`（含 `_example`）；③回归 `scripts/decision/test-decision-log.mjs`（5 断言：落盘/不泄密/无目录不建文件/fail 留痕/选项在前的 mode 识别）；④`decision-router.md`/`AGENTS`/decision `README` 补说明。
 - 边界：**只记非敏感元数据**（mode/decision/confidence/model/requested+resolved/policy_version/input_digest/latency/fallback/deterministic_shortcut/ok），**不记 state 原文、不记 Key**；**不改 Jev 权限与 Contract**；advisory-only 不变。
 - 复核：Sol 两轮审（fail 缺 mode／确定性 digest 不追踪实际输入／argv 选项在前）逐条修复，终审 **PASS**。
+
+## 55. 收工交接记一笔（2026-09-26，用户令开发暂时结束）
+- 本轮动作：仅重写 §§1-3（现势／下一步／规矩）＋顶部更新行；另派 neat-freak 尝试治理同步被权限拦、用户中止，**四老项目零改动**。
+- 开工自检结果：`bash scripts/check-sync.sh` → **SYNC-OK**；`node scripts/model/check-ledger.mjs docs/model` → 仅两本 `_example` 未删（母版预期，母版不记实绩）；`git status` 收工前干净，最新 commit `2a763f1` 已 push。
+- 未 commit：本 HANDOFF 三处改动在工作区，等用户指令（含分支名，默认 main）再 commit/push。
+- 未派/未做清单：§2-1 老项目同步登记（用户划出界外）、§2-2 真实 A/B（用户自跑）、§2-3 治理尾巴（挂各项目）。
+- 已知坑留档：`opencode run` 跨目录读 `1.Active` 会被 `external_directory` 自动拒；改到共同父目录派工的方案未验证完（被中止），下次要恢复先解决权限。
+
+## 56. db-admin 切火山方舟（ark-code-latest 模式）记一笔（2026-09-26，用户指令）
+- 用户指令：db-admin 换成火山方舟的 deepseek-v4.1-flash；用户已在控制台切换模型，要求"以我的为准"。
+- 调研：火山方舟 Coding Plan 支持两种配置方式——①配置文件指定 Model Name（如 `deepseek-v4-flash`／`glm-5.3-flash`）②配置 `ark-code-latest`（控制台管理，实际模型由控制台切换，3-5 分钟生效）。用户明确"不用写模型 id"＝选 ②。
+- 真调：`volcengine-plan/ark-code-latest` exit 0（pong 通）。对比：`deepseek-v4.1-flash` 不存在、`deepseek-flash` 不支持 coding plan 功能、`glm-5.3-flash` 可用但用户指定用 deepseek 系。
+- 落地：三份 override（母版＋两包）db-admin 行改为 `volcengine-plan/ark-code-latest`，版本注释 T20→T21；check-sync override 部分 md5 三方一致。
+- 未 commit：等用户明确指令（含分支名，默认 main）。
+
+## 57. neat-freak 切火山方舟（ark-code-latest 模式）记一笔（2026-09-26，用户指令）
+- 用户指令：neat-freak 切火山方舟。
+- 沿用 §56 结论：ark-code-latest 模式（不写具体模型 ID，实际模型由控制台管理）；`volcengine-plan/ark-code-latest` 已在 db-admin 真调通过，复用证据不重复真调。
+- 落地：三份 override neat-freak 行改为 `volcengine-plan/ark-code-latest`，版本注释 T21→T22；check-sync override 部分 md5 三方一致。
+- 未 commit：等用户明确指令（含分支名，默认 main）。
+
+## 58. neat-freak＋db-admin 增加备用 AMD MiMo 记一笔（2026-09-26，用户指令）
+- 用户指令：neat-freak 和 db-admin 增加备用 AMD 的 mimo-v2.6-flash。
+- 调研：从 `scripts/decision/policy.json` 找到配置——provider `radeon-mimo`，模型 ID `radeon-mimo/MiMo-V2.6-Flash`，通过 Claude Code 调用（`runner_bin: "claude"`）；decision-router.md 记载"radeon-mimo 直连已验 mimo ok"；check-ledger.mjs 白名单已含 `radeon-mimo/MiMo-V2.6-Flash`。
+- 真调：`opencode run -m radeon-mimo/MiMo-V2.6-Flash "pong"` exit 0（pong 通）。
+- 落地：三份 override neat-freak＋db-admin 行增加备用 `radeon-mimo/MiMo-V2.6-Flash`（via Claude Code，真调已过），版本注释 T22→T23；check-sync override 部分 md5 三方一致。
+- 未 commit：等用户明确指令（含分支名，默认 main）。
