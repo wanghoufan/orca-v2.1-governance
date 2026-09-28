@@ -33,5 +33,12 @@ done
 echo "--- 预期差确认（应仅 2 处） ---"
 diff AGENTS.md "新项目模板包/AGENTS.md" | grep -c "^[<>]" || true
 diff scripts/orchestration/README.md "新项目模板包/scripts/orchestration/README.md" | grep -c "^[<>]" || true
+# 概览新鲜度（2026-09-29 起，只跑一次、不放在上方 for pkg 循环内）：
+# 维护约定——将来新增/改动影响体系对外表述的机制（Gate、完成口径、账本字段、通道、验收制度等）时，
+# 必须把该机制的对外必现关键词补进下方清单，并同步更新 ORCA治理体系说明.md；否则该机制漏检。
+# 母版 1 次即可（两包一致性已由上方白名单保证）。
+for kw in "产品验收" "关键 AC" "首次发布" "签收"; do
+  grep -q "$kw" ORCA治理体系说明.md || { echo "OVERVIEW-STALE: 概览缺 $kw"; fail=1; }
+done
 [ "$fail" -eq 0 ] && echo "SYNC-OK" || echo "SYNC-FAIL"
 exit "$fail"

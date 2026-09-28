@@ -493,3 +493,25 @@
   - §五 边界遵守：Web QA 通道**仍为 BrowserOS**（`docs/sop/webqa.md` BrowserOS 命中 4 处，未因参考 Playwright 文档而更换）；`qa.md` 视觉验收最小覆盖含"符合 WCAG ≠ 整体体验通过""禁把视觉偏好伪装成 WCAG 条款"两条边界。
   - §六 交付物 5 项：①差异判断＝`docs/review/CODE_REVIEW-2026-09-28`＋`docs/qa/BUGS-2026-09-28-产品验收治理规则核验`＋`docs/review/RESEARCH_REVIEW-2026-09-28-外部审查`（Sol 逐条对账）②最小变更清单＝本节与 §60 ③完整草案＝**未出**（用户后续把任务单升级为"直接整改并跑完全流程"，按升级授权直接实施，实施差异以三份报告＋本节为准）④验证计划＝`docs/qa/BUGS-2026-09-28-产品验收实测-最小回归.md`（真实浏览器实测，判 `FAIL`，含未覆盖项）⑤开放决策＝**已决**：用户 2026-09-28 定签收仅限「类别 1 首次发布」，其余不强制（已落 P1-4）。
   - 仍未覆盖（不冒充已做）：真机 375px 窄屏实测；`037-ing-AI 编程训练营网站` 未访问未复现（用户划界老项目不归本窗口管），其「查看具体」故障**仍是用户报告状态**；SPA 路由/异步/登录态/接口失败形态。
+
+## 61. 体系更新三件套（概览纳入常驻一环）记一笔（2026-09-29，用户指令）
+
+- 用户指令（大白话）：**每次体系更新，`ORCA治理体系说明.md` 必须跟着更新，和同步两包一样是固定一环，不能漏**；并问"写在规则里还是沉淀成 skill"。
+- **编排者裁决：写进规则 ＋ 加脚本可判定检查，不建 skill。** 理由：①强制要靠规则——skill 只在被触发时才跑，无法保证"每次都做"；②skill 本身要母版＋两包＋中央库三处同步，反而多一份会漂移的资产；③机械性检查能靠脚本兜住就该靠脚本，不靠自觉。用户未另指定，采纳此方案。
+- 落地三处（builder，母版）：
+  1. `AGENTS.md`「两包同步」扩写为「**体系更新三件套**」（2026-09-29 定）：①同步两包 ②**同步对外概览**（影响对外表述的机制变更——Gate／完成口径／派工链职责／账本字段／通道／验收制度等——概览必须更新；漏更新概览＝体系更新未完成）③跑 `check-sync.sh` 须 `SYNC-OK`；保留原 `diff` 非预期差零容忍与 HANDOFF 记一行。**红线节新增一条**「体系更新未同步两包与概览，或概览检查未过，不得收工。」
+  2. `docs/roles/neat-freak.md` 收尾清单加：体系更新场景对齐清单必须含「两包已同步 ＋ 概览已同步」，缺项只报告不擅自改概览内容。
+  3. `scripts/check-sync.sh` 新增「**概览新鲜度**」检查（母版跑一次，不在 pkg 循环内）：对 `ORCA治理体系说明.md` 逐个 grep「对外必现机制」关键词 `产品验收`／`关键 AC`／`首次发布`／`签收`，缺项报 `OVERVIEW-STALE: 概览缺 X` 并 `fail=1`。**脚本内注释写明维护约定**：将来新增影响对外表述的机制时须把关键词补进该清单，否则漏检。既有输出行与 `exit "$fail"` 语义原样保留。
+- **本轮概览补更新**（neat-freak，早于规则落地即按用户指令先做）：`ORCA治理体系说明.md` 更新日期 2026-09-26→2026-09-29；§一核心规矩加"完成来自用户可见要求被逐条验过"；§二 Readiness Gate 条件追加"视觉与交互验收标准非空且逐条可测"；§二完工口径扩为小段（计划里写 AC ＋ 关键 AC 集合非空／证据落 `docs/qa/` 追踪矩阵／三种不许放行的情形／首次发布需用户签收且属 Human Gate 非新关卡）；§四补产品验收走已冻结 Web QA 通道与视觉验收覆盖要点（不写列名/像素值）；§七规范表新增「产品验收」一行并**修正过时数字**（HANDOFF "现至 §54"→"现至 §60"）；§八新增第 9 条审查检查点。概览保持一页纸性质：未复述矩阵列名、模型 ID、像素值。
+- **机械闸真实验证（编排者亲自跑）**：正常态 `bash scripts/check-sync.sh` → `SYNC-OK` EXIT=0；负例（临时把概览 4 个关键词全部替换掉）→ 输出 4 行 `OVERVIEW-STALE: 概览缺 产品验收／关键 AC／首次发布／签收` 且 `SYNC-FAIL` EXIT=1；恢复后回到 `SYNC-OK`、概览 `git diff --numstat` 仍 12/3 未被污染。
+- 逐派记录（本节，用例）：#18 builder `codebuddy/deepseek-v4.1-flash`(codebuddy) **主用撞 429 限额（20:31 重置）→ 当次切备用 `codebuddy/glm-5.3-flash`(codebuddy) PASS**（used 仍填主、note 记切备原因；下次仍优先主用）；#19 neat-freak `volcengine-plan/ark-code-latest`(opencode) PASS（两包同步 2 文件；其第 4 步负例验证因 `opencode run` 写 `/tmp` 被 `external_directory` 权限自动拒，**编排者另行亲跑补上**，已知坑复现一次）。
+- 未 commit（本轮 6 个文件在工作区，等用户指令含分支名默认 main）。
+
+## 62. 洁癖收尾记一笔（2026-09-29，用户令「洁癖一下」）
+
+- 清理（真跑，逐个 `rm` 具体路径，未用通配符、未用 `git clean`）：删 8 个 `.DS_Store` —— `./.DS_Store`、`./.git/.DS_Store`（仅删该文件，`.git/` 内其余未动）、`./docs/.DS_Store`、`./scripts/.DS_Store`、`./temp/.DS_Store`、`新项目模板包/.DS_Store`、`新项目模板包/docs/.DS_Store`、`老项目迁移模板包/.DS_Store`。理由：全部未跟踪本地垃圾；其中 3 个落在两包内会被打进分发包，历史交付要求「ZIP 内无 `.DS_Store`」。复查 `find . -name ".DS_Store"` 已零命中（grep 后无输出、exit 1）。
+- 保留并说明理由（逐一未动）：`scripts/decision/evals/glm-exact-smoke.log`／`slow-test.log`／`skill-manifest.json` 三件是 `check-sync.sh` 白名单内跟踪文件、属决策评估证据；`temp/` 历史留存（已 gitignore、不入仓）；`docs/qa/`／`docs/review/` 四份 09-28 报告属入仓交付物。
+- `/tmp` 本仓相关残留为 0：编排者盘点结论，本轮未触碰（读/写均被 `external_directory` 拒），仅核对不改动。
+- 机械复查（真实输出）：`bash scripts/check-sync.sh` → `SYNC-OK` EXIT=0；`git status --short` 仅 11 个 `M`（无删除/新增，`.DS_Store` 删的是未跟踪件故不体现）；`node scripts/model/check-ledger.mjs docs/model` → LEDGER_EXIT=1，仅报两本账 `_example` 行未删（母版不记实绩、示例行按设计保留，非本轮引入）。
+- 本轮工作区 11 个文件性质一句话：**体系更新三件套**规则（`AGENTS.md`＋`docs/roles/neat-freak.md`＋`scripts/check-sync.sh`）＋概览补更新（`ORCA治理体系说明.md`）＋两包同步（`新项目模板包/`、`老项目迁移模板包/` 各 3 文件），等编排者 commit。
+- 未决：无新增。

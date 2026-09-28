@@ -62,7 +62,7 @@ Phase1（PLAN）：planner（Sol）→product-reviewer（Research Reviewer）→
 - 分工：builder/senior 写一行初版→supervisor 校验 JSON 合法+返工数→编排者判结果落盘。
 - `result`=任务级 PASS/FAIL（按表派单成功仍可 PASS；FAIL 须配 escalation_reason/备注说明是任务挂还是模型挂）。
 - 逐派记录：每次派工收工编排者往 `docs/model/DISPATCH-LOG.jsonl` 记一行（schema：date/task/role/model/used恒填主/runtime（本窗口/codebuddy/codex/opencode/—）/result PASS或FAIL/note（切备时used仍填主＋note记切备原因，HANDOFF补一句）/executed_by 可选（同 TASK，派工角色≠实际执行者时填）；示例行不参与统计，首个真实派前删除；tokens/cost不记；寿命随任务账本归档）；与派工显式两行互验；supervisor抽查实派==表三处对得上。
-- 两包同步：母版治理改动提交后同步两本地包（`新项目模板包/`、`老项目迁移模板包/`）并在 HANDOFF 记一行；`diff` 非预期差零容忍（常驻同步，用户定）。
+- 体系更新三件套（2026-09-29 定；原「两包同步」扩写）：①母版治理改动提交后同步两本地包（`新项目模板包/`、`老项目迁移模板包/`）；②**同步对外概览 `ORCA治理体系说明.md`**——任何影响体系对外表述的机制变更（新增/改动 Gate、完成口径、派工链角色职责、账本字段、通道、验收制度等），概览必须同步更新；概览只写结论与入口，不复述字段/模型 ID/列名，保持一页纸概览性质；**漏更新概览＝体系更新未完成**；③跑 `bash scripts/check-sync.sh`，须得 `SYNC-OK`（exit 0）——该脚本同时做概览新鲜度检查（「对外必现机制」关键词清单），缺项报 `OVERVIEW-STALE` 打回。`diff` 非预期差零容忍（常驻同步，用户定）；HANDOFF 记一行。
 - 换模型决策先读账本：返工多、常升级的任务类型优先换强模型。
 
 ## Task Manager Qualification（增量；不新增角色，2026-09-26）
@@ -89,6 +89,7 @@ Phase1（PLAN）：planner（Sol）→product-reviewer（Research Reviewer）→
 - P0 没完+人没喊停，不准收工，不准“先到这里”。
 - 产品验收未落盘或关键 AC 未测，不得报完工/收工。
 - 首次发布未取得用户签收，不得报完工/收工。
+- 体系更新未同步两包与概览，或概览检查未过，不得收工。
 - 每轮末三行心跳：目标/剩 P0/下一步。
 - 不 push（commit 需编排者明确指令，含分支名，外部者用 `ext/` 开头）；不碰 secrets；不改旧版封存；`docs/sop/` 为基础设施规范位（docker.md/supabase.md/sqlite.md/android.md/webqa.md/decision-router.md，去版本号引用），新项目自建（包内历史交接不动）。
 - 换模型的事用户决策，不许自作主张、不许写恢复类条件。

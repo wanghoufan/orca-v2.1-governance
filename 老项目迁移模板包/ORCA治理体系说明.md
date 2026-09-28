@@ -1,4 +1,4 @@
-# ORCA V2.1 治理体系说明（对外版，2026-09-26）
+# ORCA V2.1 治理体系说明（对外版，2026-09-28）
 
 > 一页纸讲清：这套体系是什么、怎么运转、模型怎么分工、规范都在哪。
 > 本文件是概览，不能替代真相源做合规审计（完整 Gate、精确派工、验证证据以 AGENTS.md、分工表、HANDOFF 为准）。版本真相以 Git 历史为准。
@@ -9,13 +9,14 @@ ORCA V2.1 是一套多智能体编程治理体系：固定 **9 常驻＋1 升级
 核心规矩：task-manager 是唯一对人说话的编排者；supervisor 只对编排者说话、独立复检
 （编排者失联时替喊人一次）；
 Human Gate 必须用户亲口放行；模型怎么切，用户说了算，任何智能体不得自作主张。
+完成的判断来自用户看得见的部分有没有被逐条验过，不靠测试数量多、构建过、代码审查过。
 
 ## 二、运转流程
 
 ```text
 用户说「第一阶段，计划」
   → Phase1（PLAN）：planner（Sol）↔ product-reviewer 多轮打磨计划
-  → Readiness ≥90 且 P0=0 且 blocking P1=0 且关键事实已验证且核心假设已合理验证 → WAITING_HUMAN_APPROVAL（停下找人一次）
+  → Readiness ≥90 且 P0=0 且 blocking P1=0 且关键事实已验证且核心假设已合理验证且视觉与交互验收标准非空且逐条可测 → WAITING_HUMAN_APPROVAL（停下找人一次）
 用户说「第二阶段，开发」
   → Phase2（DEVELOP，锁定计划基线）
   → Builder 写 → Code-Reviewer 复核 → QA 测 → Supervisor 复检 → 编排者收齐找人
@@ -27,6 +28,10 @@ Human Gate 必须用户亲口放行；模型怎么切，用户说了算，任何
 升级规则：同一 Task 被 supervisor 打回 2 次，当次升 senior-expert；senior 再被打回 2 次停线找人。
 
 Phase2 完工口径（不改主链、不新增 Gate）：完成＝角色交付＋`docs/qa/` 产品验收追踪矩阵关键 AC 全有证据；产品验收走已冻结的 Web QA 通道。
+- 验收标准写在计划里：计划阶段就要给每条用户可见要求编一条可观察、可测的验收条目（AC），并标出哪些是"关键的"（关键 AC 集合不得为空）。
+- 证据落在哪：验收结果逐条记进 `docs/qa/` 的产品验收追踪矩阵（对象、步骤、预期、实际、状态、证据位置）。
+- 什么情况不许放行：关键项没测、核心路径上的控件没真点过并观察到变化、证据缺失——三者任一即不得判通过。
+- 用户签收：发布类型为**首次发布**的，用户签收通过才算完成（签收前状态记未完成）；迭代更新与局部修复不强制签收。这是用户参与的那一步，不是新加的关卡。
 
 全程账本：每次派工记 `docs/model/DISPATCH-LOG.jsonl`、每任务记 `TASK-MODEL-LOG.jsonl`（`model` 用 `provider/model` 精确写法；含可选 `executed_by`=实际执行者、`chain_status`=角色交付/已验收/未完）；校验 `scripts/model/check-ledger.mjs`（结构错=FAIL、写法不规范=WARN）。老项目迁移后须过**登记检查**（该脚本得 `LEDGER-OK`）才算迁移完成——迁移即登记。
 
@@ -66,6 +71,8 @@ Android真机：规范已入（每 session 先过能力预检 PASS 才进正式�
 铁律：后台静默，不弹前台抢焦点；不用系统鼠标键盘；不碰用户主 Chrome；
 Google 登录等 Agent 不碰密码/MFA，登录异常交人工处理（认证可能失效，需复登不算异常）；MCP 端口重启会变，每次重读配置。
 
+网页／本地页面的**产品验收就走这条已冻结通道**，不另起浏览器基础设施；视觉验收要覆盖关键用户任务逐条走通、桌面与窄屏、边界样本（奇偶条目数、长标题、空状态）下的对齐／换行／裁切／溢出／可读性，并留真实浏览器截图。
+
 普通 QA（codex）：派工带 `-s danger-full-access` 关闭沙箱，解端口绑定/网络限制（历史“沙箱禁端口/EPERM”经查为假失败）；**仅限 QA 场景、须在账本 note 记账**，其他角色禁带。
 
 ## 五、模型与分工（11 行，以根 `USER_MODEL_OVERRIDE.md` 表为准）
@@ -87,6 +94,7 @@ Google 登录等 Agent 不碰密码/MFA，登录异常交人工处理（认证�
 | 规范 | 位置 | 说明 |
 |---|---|---|
 | 总纲 | `AGENTS.md` | 两阶段、派工顺序、升级、账本、红线（全员遵守一页） |
+| 产品验收 | `docs/qa/BUGS.template.md`（产品验收追踪矩阵节）＋`docs/roles/qa.md`（第八查/不可放行情形/视觉验收最小覆盖）＋`docs/pm/PRODUCT_PLAN.template.md`（验收标准与关键 AC 集合） | 用户可见要求的验收标准写在计划，证据落矩阵，QA 与 Supervisor 同源判放行 |
 | 模型分工真相源 | `USER_MODEL_OVERRIDE.md` | 11 行精确ID；改表必真调；现势以本表内容为准（历史快照在 `temp/`，回退由用户口头指定编号、按改表规则执行） |
 | 角色卡×11 | `docs/roles/` | 每角色职责＋写入位置；适用角色附输出模板 |
 | 开工提示词 | `docs/prompts/编排者提示词.md` | 一句话开工全文 |
@@ -95,7 +103,7 @@ Google 登录等 Agent 不碰密码/MFA，登录异常交人工处理（认证�
 | 账本 | `docs/model/TASK-MODEL-LOG.jsonl`、`DISPATCH-LOG.jsonl` | 换模型决策的重要依据（先读账本，最终用户定）；`model` 精确写法，含可选 `executed_by`/`chain_status`；校验 `scripts/model/check-ledger.mjs`（FAIL 拦、WARN 供抽查） |
 | TM 资格 | `docs/model/TASK-MANAGER-QUALIFICATION.md`＋`TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`；评分 `scripts/model/tm-qualification.mjs` | Episode/五维评分/Gate＋采样门槛；证据不改账本；主备由用户批准 |
 | Jev 决策流水 | `docs/model/JEV-DECISION-LOG.jsonl` | 每次 orca-decide 调用一行（非敏感元数据；不记原文/Key） |
-| 交接 | `docs/handoff/HANDOFF.md` | 状态源（新节顺延，现至 §54；旧号冻结不重排） |
+| 交接 | `docs/handoff/HANDOFF.md` | 状态源（新节顺延，现至 §60；旧号冻结不重排） |
 | 迁移入口 | `docs/prompts/迁移整理提示词.md`（老包根同名） | 自举取包＋冲突处理＋5.7 登记检查（迁移即登记，`LEDGER-OK` 才算完成） |
 | 新项目脚手架 | `新项目模板包/`（按包内 README 铺入项目根，提示词/模板按清单落位，`USER_MODEL_OVERRIDE.md` 建软链指母版） | 老项目用 `老项目迁移模板包/`＋迁移提示词 |
 
@@ -109,3 +117,4 @@ Google 登录等 Agent 不碰密码/MFA，登录异常交人工处理（认证�
 6. 账本是否记全（`model` 精确写法、新字段；无账本项目是否按要求记账）。
 7. 老项目迁移是否过登记检查（`check-ledger.mjs` 得 `LEDGER-OK`）。
 8. TM 资格：Episode 是否记账、采样门槛/Gate 是否遵守、主备是否经用户批准（未自动改表）。
+9. 产品验收：追踪矩阵是否落盘、关键 AC 是否都有证据、核心路径上的控件是否真点过并观察到变化、首次发布类交付是否已取得用户签收。
