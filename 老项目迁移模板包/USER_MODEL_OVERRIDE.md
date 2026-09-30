@@ -11,10 +11,10 @@
 | product-reviewer | opencode/muse-spark-1.3-contributor-free | 本窗口 | — | — | 本窗口subagent直派 |
 | experience-recorder | opencode-go/space-bunny-free | opencode | — | — | 派工基础设施走opencode直调：`opencode run -m opencode-go/space-bunny-free "任务"`（限时免费模型，真调已过）；表内记全ID，禁本窗口代做 |
 | neat-freak | volcengine-plan/ark-code-latest | opencode | radeon-mimo/MiMo-V2.6-Flash | Claude Code | 派工基础设施走opencode直调：`opencode run -m volcengine-plan/ark-code-latest "任务"`（ark-code-latest模式，实际模型由控制台管理）；表内记全ID，禁本窗口代做 |
-| senior-expert | codex/gpt-6-sol | codex | — | — | 派工基础设施走codex直调；CLI用短名`gpt-6-sol`：`codex exec -m "gpt-6-sol" --skip-git-repo-check "任务" </dev/null`；表内记全ID，只接升级任务，禁本窗口代做 |
+| senior-expert | codex/gpt-6.1-sol | codex | — | — | 派工基础设施走codex直调；CLI用短名`gpt-6.1-sol`：`codex exec -m "gpt-6.1-sol" --skip-git-repo-check "任务" </dev/null`；**需 Codex CLI ≥0.159.2**（0.155.1 拿不到该模型目录，会报 `not supported when using Codex with a ChatGPT account`）；表内记全ID，只接升级任务，禁本窗口代做 |
 | db-admin | volcengine-plan/ark-code-latest | opencode | radeon-mimo/MiMo-V2.6-Flash | Claude Code | 派工基础设施走opencode直调：`opencode run -m volcengine-plan/ark-code-latest "任务"`（ark-code-latest模式，实际模型由控制台管理）；表内记全ID；工作区固定本机 000-alw-数据库管理专家仓，禁本窗口代做 |
 
-<!-- 分工表版本：T23（2026-09-26，neat-freak＋db-admin 增加备用 radeon-mimo/MiMo-V2.6-Flash（via Claude Code，真调已过）；其余不变；用户回退存档，模型忽略此行） -->
+<!-- 分工表版本：T24（2026-09-29，senior-expert 换 codex/gpt-6.1-sol，真调已过：需 Codex CLI ≥0.159.2，旧版 0.155.1 报 not supported；planner 仍 codex/gpt-6-sol 未动；其余不变；用户回退存档，模型忽略此行） -->
 <!-- TM 资格测试候选（A/B，2026-09-26；真调已过）：opencode-go/deepseek-v4.1-flash 与 opencode-go/mimo-v2.6-flash，Runtime=opencode；TM 行仍"开窗口时定"，主备由用户批准后按"改表→真调→记账"处理（见 docs/model/TASK-MANAGER-QUALIFICATION.md）。 -->
 
 ## 模型调用档案（2026-09-26，集中记录，便于回溯）
@@ -39,6 +39,7 @@
 | 15 | 📦 | `opencode/mimo-v2.5-free` | `opencode run -m opencode/mimo-v2.5-free "任务"` | 历史（HANDOFF-2026-09-11 存档） | — |
 | 16 | 📦 | `codex/gpt-5.6-terra` | `codex exec -m "gpt-5.6-terra" --skip-git-repo-check "任务" </dev/null>` | 历史 product-reviewer | — |
 | 17 | 📦 | `codex/gpt-5.6-luna` | `codex exec -m "gpt-5.6-luna" --skip-git-repo-check "任务" </dev/null>` | 历史 qa/builder/product-reviewer | — |
+| 18 | ✅ | `codex/gpt-6.1-sol` | `codex exec -m "gpt-6.1-sol" --skip-git-repo-check "任务" </dev/null>` | senior-expert（2026-09-29 由 gpt-6-sol 切） | 2026-09-29 真调 exit 0 回 pong（需 CLI ≥0.159.2） |
 
 ### 调用通道说明
 - **本窗口**：opencode 内 subagent 直派（TM/product-reviewer）

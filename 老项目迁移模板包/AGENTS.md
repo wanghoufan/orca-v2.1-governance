@@ -38,6 +38,8 @@ Phase1（PLAN）：planner（Sol）→product-reviewer（Research Reviewer）→
 跳步：单文件小修可跳 planner/product，不可跳 code-reviewer+qa+supervisor；跳了记一句原因。分歧听谁的：技术分歧听 code-reviewer，范围分歧听 Task Manager。
 - TM 代做边界（2026-09-26 定）：TM（编排者）原则上不代做角色活，三类区分——①**真机QA直驱**＝合规（qa 卡允许，note 记原因）；②**通道兜底**＝通道超时/沙箱阻塞致角色派不出，TM 可临时补位，但须①账本记 `executed_by=task-manager`、②note 写原因与通道、③同一任务兜底≥2 次即上报用户定通道；③**越权代做**＝TM 亲自写业务代码/跑 QA 并当角色交付且不记 `executed_by`，视为违规打回。
 - Decision Sidecar（非角色，不占 9+1+1）：TM 仅规则无唯一答案时调 `scripts/decision/orca-decide.mjs`（照 docs/sop/decision-router.md），advisory only，失败回 V2.1 逻辑；supervisor 抽查调用点合规；每次调用落决策流水 `docs/model/JEV-DECISION-LOG.jsonl`（best-effort，只记非敏感元数据，不记原文/Key；不改 Jev 权限与 Contract）。
+- 派工前通道预检（2026-09-29 定）：派任何角色前跑 `bash scripts/check-channel-preflight.sh`（拿分工表**在用**模型与三条通道实际目录对账：codex `codex debug models`／codebuddy `--help` 列表／opencode `opencode models`）。报 `CHANNEL-STALE`＝**表里有、通道目录里没有**，该角色**禁派**（先人工升客户端 `codex update` 再重跑预检，或改用该角色备用模型）。**禁自动装更新**（升级连带改目录/认证/沙箱默认，可能打翻整表）；**换模型或升客户端后必须重跑预检**（目录会变）。实证 2026-09-29：codex 0.155.1 目录无 `gpt-6.1-sol` → 派 senior-expert 必报 `not supported`，升到 0.159.2 才通。
+- opencode 通道跨目录禁令（2026-09-29 定）：派 opencode 通道角色（supervisor／neat-freak／experience-recorder）时，任务里读写本仓以外目录（如 `/tmp`、`1.Active/` 等）会被 `external_directory` 权限自动拒、步骤静默失败，可能让角色误报已做也易反复盲试烧额度（禁盲试）；派单前处置二选一——①临时文件改到仓内已 gitignore 的 `temp/`，②先取得用户授权；codebuddy／codex 通道无此限制（照旧用 `/tmp` 无妨）。
 续 session：同一功能/Bug 链（开发→QA→返工→再 QA）尽量续上一个 session（codex/opencode 用 resume），不要每轮新开；返工派必须续。用完不急着关，关了重开更贵。resume 由派工基础设施保持，编排者不手动开终端；升级换 senior-expert 时开新链，不续旧 session。
 - External Builder Runtime 通用插座：builder 仍是 builder（9+1＋1 不新增），Runtime 仅为执行通道（本窗口 subagent / codex / opencode / External Runtime），由 override「执行通道/Runtime」列或口头指定、派工基础设施自动调用；Runtime 自带 internal reviewer/QA/self-check 仅为自检证据，不能替代 code-reviewer/qa/product-reviewer/supervisor；permission_request 走机器可读→ORCA/TM 审批单点→用户定→回 runtime，builder 不直聊用户；禁把通道角色包进本窗口subagent套娃调用（表定codebuddy/codex/opencode的角色必须走通道直调），违者打回。
 
@@ -62,7 +64,7 @@ Phase1（PLAN）：planner（Sol）→product-reviewer（Research Reviewer）→
 - 分工：builder/senior 写一行初版→supervisor 校验 JSON 合法+返工数→编排者判结果落盘。
 - `result`=任务级 PASS/FAIL（按表派单成功仍可 PASS；FAIL 须配 escalation_reason/备注说明是任务挂还是模型挂）。
 - 逐派记录：每次派工收工编排者往 `docs/model/DISPATCH-LOG.jsonl` 记一行（schema：date/task/role/model/used恒填主/runtime（本窗口/codebuddy/codex/opencode/—）/result PASS或FAIL/note（切备时used仍填主＋note记切备原因，HANDOFF补一句）/executed_by 可选（同 TASK，派工角色≠实际执行者时填）；示例行不参与统计，首个真实派前删除；tokens/cost不记；寿命随任务账本归档）；与派工显式两行互验；supervisor抽查实派==表三处对得上。
-- 体系更新三件套（2026-09-29 定；原「两包同步」扩写）：①母版治理改动提交后同步两本地包（`新项目模板包/`、`老项目迁移模板包/`）；②**同步对外概览 `ORCA治理体系说明.md`**——任何影响体系对外表述的机制变更（新增/改动 Gate、完成口径、派工链角色职责、账本字段、通道、验收制度等），概览必须同步更新；概览只写结论与入口，不复述字段/模型 ID/列名，保持一页纸概览性质；**漏更新概览＝体系更新未完成**；③跑 `bash scripts/check-sync.sh`，须得 `SYNC-OK`（exit 0）——该脚本同时做概览新鲜度检查（「对外必现机制」关键词清单），缺项报 `OVERVIEW-STALE` 打回。`diff` 非预期差零容忍（常驻同步，用户定）；HANDOFF 记一行。
+- 体系更新三件套（2026-09-29 定；原「两包同步」扩写）：①母版治理改动提交后同步两本地包（`新项目模板包/`、`老项目迁移模板包/`）；②**同步对外概览 `ORCA治理体系说明.md`**——任何影响体系对外表述的机制变更（新增/改动 Gate、完成口径、派工链角色职责、账本字段、通道、验收制度等），概览必须同步更新；概览只写结论与入口，不复述字段/模型 ID/列名，保持一页纸概览性质；**漏更新概览＝体系更新未完成**；③跑 `bash scripts/check-sync.sh`，须得 `SYNC-OK`（exit 0)；**若本轮动过分工表/通道模型，另跑 `bash scripts/check-channel-preflight.sh` 须 `CHANNEL-OK`**——该脚本同时做概览新鲜度检查（「对外必现机制」关键词清单），缺项报 `OVERVIEW-STALE` 打回。`diff` 非预期差零容忍（常驻同步，用户定）；HANDOFF 记一行。
 - 换模型决策先读账本：返工多、常升级的任务类型优先换强模型。
 
 ## Task Manager Qualification（增量；不新增角色，2026-09-26）
