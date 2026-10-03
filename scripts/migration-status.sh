@@ -26,7 +26,7 @@ for dir in "$PROJECTS_ROOT"/*/; do
   fi
   grep -q "ORCA-RULES-BLOCK:BEGIN" "$d/AGENTS.md" 2>/dev/null && block="有"
 
-  rows=0; [ -f "$d/docs/model/TASK-MODEL-LOG.jsonl" ] && rows=$(( $(wc -l < "$d/docs/model/TASK-MODEL-LOG.jsonl" | tr -d ' ') - 1 ))
+  rows=0; if [ -f "$d/docs/model/TASK-MODEL-LOG.jsonl" ]; then rows=$(wc -l < "$d/docs/model/TASK-MODEL-LOG.jsonl" | tr -d ' '); [ -z "$rows" ] && rows=0; fi
 
   led="-"
   if [ -f "$d/docs/model/TASK-MODEL-LOG.jsonl" ] && [ -f "$d/scripts/model/check-ledger.mjs" ]; then

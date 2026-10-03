@@ -2,6 +2,7 @@
 
 > 本文件为实例，拷进新项目时清空第 1-2 节照模板重写。
 
+- 更新：2026-10-03 **小交接（用户令开发暂时结束）**：产品验收治理整改＋体系更新三件套＋通道预检制度＋每周自动检查＋老项目 32 个全量迁移全部落地并入库（`e73e4af`/`227636d`）；§§1-3 重写为 10-03 现势；§67。
 - 更新：2026-09-28 产品验收治理整改落地：builder×4→reviewer→返工→qa 规则核验(DEGRADED)→返工→neat 同步×3→supervisor(PASS 0/2)→GPT-6 Sol 外部审查(PASS_WITH_FIXES)→返工 P1-1/2/3→neat 同步→experience-recorder(+2)→neat 同步；**实测 FAIL**（自建样例抓到 037 同类两类缺陷）；母版＋两包 **SYNC-OK**；P1-4 用户签收**挂起待用户拍板**；**未 commit**；§60。
 - 更新：2026-09-26 小交接（用户令开发暂时结束）：§§1-3 刷新为小交接现势（治理迭代五批全部落地＋分工表 T23 已 push `c5408ba`；**老项目不归本窗口管**、**真实项目 A/B 用户自己跑**；§59）。
 - 更新：2026-09-26，派工审计驱动治理迭代第一批（QA沙箱解禁＋账本新字段＋模型ID规范＋迁移即登记）；README/ORCA说明模型口径改“以表为准不复述ID”；§50。
@@ -17,38 +18,36 @@
 - 更新：2026-09-12，收编持续推进协议（§7）＋L3 watchdog 脚本进 `scripts/orchestration/`（§8），两包同步、zip 重建。
 - 更新：2026-09-11，开发暂停收尾（已推 `b84e61d`）。历史旧报告6份已删；`docs/history/` 新增审查报告3份（-y轮/现势/逐派，未提交，待定去留）。现行结论以包内文件＋本 HANDOFF §1-§3 为准。
 
-## 1. 当前工作进展（2026-09-28 产品验收治理整改落地）
+## 1. 当前工作进展（2026-10-03 小交接现势；用户令开发暂时结束）
 
-- 主线：**「产品验收」接入既有 QA Gate 的治理整改已全链落地**（builder×4 → code-reviewer → 返工 → qa 规则核验 → 返工 → neat-freak 同步×3 → supervisor → GPT-6 Sol 外部审查 → 返工 P1-1/2/3 → neat-freak 同步 → experience-recorder → neat-freak 同步 → 编排者直驱实测）。母版＋两包 **check-sync SYNC-OK**（exit 0），**未 commit**（最新 commit 仍 `c5408ba`），等用户指令。
-- 整改起因：用户报告「开发＋技术 QA 通过就算完成，但网页效果/按钮可用性的产品验收一直没落实」。真实案例 `037-ing-AI 编程训练营网站` 139 项测试＋构建＋布局脚本全绿，仍有「窄列内两位编号与标题被拆成上下两行」「查看具体点击不跳转」两类缺陷。
-- 改了什么（母版 9 文件 ＋ 两包同步）：`AGENTS.md`（Phase2 完成口径＋新红线）、`docs/pm/PRODUCT_PLAN.template.md`（新增「视觉与交互验收标准（AC 编号）」「关键 AC 集合」＋ User Flow/DoD 可测限定＋Gate 追加条件）、`docs/qa/BUGS.template.md`（新增「产品验收追踪矩阵」11 列＋状态分层声明）、`docs/roles/qa.md`（七查→八查＋不可 PASS 三情形＋落盘要求＋通道/Research Reviewer 边界＋视觉验收最小覆盖＋DEGRADED 收紧）、`docs/roles/supervisor.md`（抽查第 7 条，凭矩阵判放行）、`docs/roles/product-reviewer.md`（研究评审≠产品验收）、`docs/handoff/HANDOFF.template.md`（产品验收字段）、`docs/sop/webqa.md`（§六 DEGRADED 口径与 qa.md 对齐，编排者解冻该句）、`ORCA治理体系说明.md`（对外概览补完工口径）。**未新增角色、未新增第二条派工链、未新增独立 QA Gate、未动分工表/决策脚本。**
-- 三份角色报告（母版，不进包）：`docs/review/CODE_REVIEW-2026-09-28-产品验收治理整改.md`（PASS，P1×2＋P2×5 已修）、`docs/qa/BUGS-2026-09-28-产品验收治理规则核验.md`（DEGRADED，P1「关键 AC 无标记」＋P2「User Flow 兜底歧义」已修）、`docs/review/RESEARCH_REVIEW-2026-09-28-产品验收治理整改-外部审查.md`（GPT-6 Sol，PASS_WITH_FIXES，P1×4）。
-- 实测（编排者直驱浏览器 QA，BrowserOS 通道）：自建样例 `temp/qa-test-产品验收/`（已删）含两处故意植入缺陷，**判 `FAIL`** —— ① 卡片 01-06 编号与标题实测错位 27–33px 且拆成上下两行（07-12 为 0px），与 037 现象同类；② 12 个「查看具体」`href` 全存在但真实点击 3 个后 `#detail`/URL/hash 全部零变化。**证明新规则拦得住 037 两类问题**，且实测证实「只验 `href` 存在不算已验」这条必要。报告：`docs/qa/BUGS-2026-09-28-产品验收实测-最小回归.md`。
-- 经验：`经验一句话.md` ＋2 条（造样例自测要量像素/状态三元组；check-sync 白名单只按 marker 行数、AGENTS 内容差会被掩盖）→ 已同步两包。
-- 账本：母版 TASK/DISPATCH 仍仅 `_example` 行（母版不记实绩，HANDOFF §1 既有口径；本轮逐派记录落本节）。**未 commit**。
+- **主线：本轮四件事全部落地、已 commit＋push（最新 `227636d`，另 `e73e4af`）**，母版工作区干净。
+- **① 产品验收治理整改（`36e94ae`）**：把"产品验收"接入**既有 QA Gate**（未新增角色/派工链/Gate）。`PRODUCT_PLAN.template` 增「视觉与交互验收标准（AC 编号）」「关键 AC 集合」（关键不得为空）＋「发布类型」；`BUGS.template` 增 **11 列产品验收追踪矩阵**；`qa.md` 七查→八查＋**不可放行三情形**＋逐个可见操作控件＋落盘要求＋视觉验收最小覆盖；`supervisor.md` 增抽查第 7 条（凭同一矩阵判放行）；`AGENTS.md` 完成口径＋红线；`webqa.md` DEGRADED 口径对齐（唯一解冻项）；`product-reviewer.md` 边界句。**用户签收范围已定（用户 2026-09-28「类别 1」）：仅「首次发布」必须用户点头，按发布类型自动判定，迭代更新/局部修复不强制。**
+- **② 体系更新三件套（`d19a6c2`）**：概览 `ORCA治理体系说明.md` 纳入常驻一环（①同步两包 ②同步概览 ③`check-sync` 必须过，"漏更新概览＝未完成"）；`check-sync.sh` 增**概览新鲜度**检查（缺对外必现机制关键词报 `OVERVIEW-STALE`，负例实测 4 项全拦下）；`neat-freak` 卡增对齐清单项；`AGENTS.md` 红线增一条。
+- **③ 通道失配制度（`e73e4af`）**：**senior-expert 换 `codex/gpt-6.1-sol`（T24，真调 exit 0）**——首真调失败根因＝**Codex CLI 0.155.1 模型目录无该模型**，已升 0.159.2（用户 `~/.codex/config.toml` 默认模型随之恢复可用）。新增 `scripts/check-channel-preflight.sh`（表内**在用**模型 ↔ 三通道真实目录对账，缺失报 `CHANNEL-STALE` ＋ exit 1 禁派；假表负例实测 exit=1）+ `scripts/weekly-channel-check.sh` 与 `~/Library/LaunchAgents/com.orca.channel-check.plist`（每周一 09:00，只检查+提醒，**绝不自动升级客户端**；脚本内安全闸自扫 update/install/upgrade 命中即拒运行，**opencode 零更新**）。`AGENTS.md` 派工顺序节增「派工前通道预检」，三件套第 3 步补"动过分工表/通道模型须预检过"。
+- **④ 老项目全量迁移（`e73e4af`，用户令"全部统一改、不许逐个来"）**：**32 个项目**（含新项目 039/040/041）全部同步 2026-09-29 规则；`AGENTS.md` **顶部注入** `ORCA-RULES-BLOCK` 增量区块（只增不删、项目专属规矩原样保留、幂等）；账本**内容零改动**（实绩历史禁重写）；32 个账本**模板示例行已删**，现全部 `LEDGER-OK`（实测 0 FAIL）；259 份 `.旧版-2026-09-29` 备份**保留但加 `.gitignore` 隔离**；**28 个有 git 的项目已提交**（精确 add 治理文件，未碰其业务改动），3 个无 git 只能留文件（`000-alw-个人偏好`／`014-山寨滚仓网站`／`027-蛋白质计算器`）。
+- **实测证据（`docs/qa/BUGS-2026-09-28-产品验收实测-最小回归.md`，判 `FAIL`）**：自建样例抓到 037 同类两类缺陷——编号/标题错位 **27–33px 且拆行**（07-12 为 0px）；12 个「查看具体」`href` 全存在但真实点击后 `#detail`/URL/hash **全零变化**。**证实"只验 href 存在不算已验""逐个列出每个可见操作控件"两条新条款必要有效。**
+- **三份角色报告**：code-reviewer `PASS`（P1×2＋P2×5 已修）／qa 规则核验 `DEGRADED`（P1「关键 AC 无标记」＋P2「兜底歧义」已修）／GPT-6 Sol 外部审查 `PASS_WITH_FIXES`（P1×4，P1-1/2/3 已修，P1-4 由用户拍板后落地）。supervisor 两次复检 **PASS（打回 0/2，升级 0）**。逐派记录见 §60（17 派）、§61-§66。
 
 ## 2. 下一步任务（按序）
 
-1. **【等你拍板】P1-4 用户签收**：Sol 指出任务书第四节「必须达成」第 5 条**未达成** —— 需签收项目的触发条件、证据包、`chain_status=OPEN/ACCEPTED` 状态尚未连通。Sol 推荐：项目计划或变更单预先指定「首次面向用户发布／重要用户流程或视觉基线变更」需签收，普通局部修复默认由现有 QA＋Supervisor 证据收口。**编排者未擅自落地，等用户决定默认强制范围。**
-2. **commit 决策**（含分支名，默认 `main`）：本轮 9 个母版文件＋两包＋3 份角色报告＋1 份实测报告＋`经验一句话.md` 全在**工作区未提交**。
-3. 第一单业务等用户口令 `第一阶段，计划`。
-4. 老项目治理尾巴（028/022/020/015）——用户 2026-09-26 划界「你别管」，仍挂各项目，只在用户点名某个项目时接手。
-5. 真实项目 A/B（TM 资格）——用户自跑，本窗口只提供框架与评分器。
+1. **【唯一由本窗口承接】等用户口令 `第一阶段，计划`** 开第一单业务（Phase1 PLAN 链：planner(Sol) ↔ product-reviewer，多轮至 Readiness≥90 再 Human Gate）。
+2. **各老项目自己的活（编排者不代做，用户已划界）**：给实绩 Plan 补「视觉与交互验收标准 ＋ 关键 AC 集合 ＋ 发布类型」，完成后把 `docs/model/GOVERNANCE-STATE.json` 的 `product_acceptance_ac_added` 置 `true`（状态表 `AC` 列跟踪，现 0/32）。**不补则这些项目在新规则下收尾会被判"计划缺项"、卡在门口。**
+3. **治理尾巴**：`038-ing-keep 运动健身仓库` 账本现为空（未开工，属正常态）；`019` 迁移时无改动待提交（其 AGENTS 已是新版）；21→ 现 24 个项目缺 `PROJECT_PHASE` 字段（值只有各自 TM 知道，编排者不瞎填）。
+4. **3 个无 git 项目**的治理改动仅存于工作区与 `.旧版-2026-09-29` 备份，若要入库需用户决定是否 `git init`。
+5. **真实项目 A/B（TM 资格）**：用户自跑，治理仓只提供框架与评分器（采样门槛：≥30 Episode 且 ≥3 项目，否则保持 CANDIDATE）。
+6. **任务书遗留**：原《ORCA 产品验收治理整改任务单》§六 交付物第 3 项"完整整合草案全文"未出（走直接实施路线，用户授权升级），已在 §60/§64 如实标注。
 
 ## 3. 注意事项及规矩（违反即打回）
 
-- **表为准＋改表必真调**；**同一模型已真调通过后换角色复用证据、不重复真调**（经验第 19 条），仅新模型/新写法才真调。README/说明/HANDOFF 不复述 ID。
-- **派工纪律归 AGENTS**：同链续 session、静态打头动态押后、换模型/通道/升级即开新链；DISPATCH `used` 恒填"主"，supervisor 抽查实派==表。
-- **派工逻辑（用户 2026-09-26 定）**：每次派工优先主用；主用限额/失败→切备用（当次生效）；下次仍优先主用，不记忆上次切备。
-- **QA**：普通 QA 走 `codex -s danger-full-access`（仅限 QA、DISPATCH note 记账）；真机 adb/Expo 走本窗口直驱。
-- **账本**：`model` 用 `provider/model` 精确写法；`executed_by`/`chain_status` 可选；跑 `node scripts/model/check-ledger.mjs docs/model`（结构错=FAIL 拦、写法不规范=WARN 供抽查）；**角色交付 PASS≠整链验收**（未闭环记 `OPEN`）。
-- **TM 资格**：Episode 记账；Gate `≥90 ＋ P0=0 ＋ HumanGate=0`；**采样 <30 Episode 或 <3 项目保持 CANDIDATE**；主备由用户定、不自动改表；Supervisor 兼 Observer（不评分/不接管）。
-- **Jev**：advisory only；每次调用自动落 `JEV-DECISION-LOG.jsonl`（best-effort，不记原文/Key）；不改权限/Contract。
-- **temp 不入仓**（`.gitignore` 已加 `/temp/`）；测试残留随手清。
-- **派工通道的已知阻塞（2026-09-26 实测）**：`opencode run` 读本仓以外目录（如 `1.Active`）会被 `external_directory` 权限自动拒；派跨仓任务时把工作目录设到两仓共同父目录，或先取得用户授权。禁反复盲试烧额度。
-- **用户已划界（2026-09-26）**：老项目不归本窗口管；真实项目 A/B 用户自己跑。TM 不得自行把这些活揽回本窗口。
-- **总监督 wake-only**；单点对接；无明确指令（含分支名，默认 main）不 commit 不 push；不碰 secrets。
-- **开工前读**：`AGENTS.md`→角色卡→`USER_MODEL_OVERRIDE.md`→本 HANDOFF→`经验一句话.md`（24 条）→任务目标放最后。
+- **开工读盘顺序（全体系唯一）**：`AGENTS.md` → 本次角色卡 → 根 `USER_MODEL_OVERRIDE.md` → 本 HANDOFF（§1-§3 ＋ 最近一节）→ `经验一句话.md` → 任务目标放最后。
+- **派工前必跑预检**：`bash scripts/check-channel-preflight.sh` 须 `CHANNEL-OK`；报 `CHANNEL-STALE` 即该角色**禁派**（先人工 `codex update` 再重跑，或改用该角色备用模型）。**禁自动装更新**——升级连带改目录/认证/沙箱默认，会打翻整表。**opencode 永不更新**（用户 2026-09-30 明确）。
+- **体系更新三件套**：改治理文件后 ①同步两包 ②同步 `ORCA治理体系说明.md` ③`check-sync` 得 `SYNC-OK`；动过分工表/通道模型再跑预检须 `CHANNEL-OK`；HANDOFF 记一行。**`check-sync` 对 `AGENTS.md` 只按 marker 行数白名单放行 → 两包同步后必须显式 diff 第 37 行确认仅 `docs/prompts/` 裸名差**；概览正文只能写结论与入口，不许复述字段/列名/模型 ID。
+- **派工纪律**：每次优先主用；主用限额/失败→**当次**切备用（下次仍优先主用，不记忆上次切备）；`DISPATCH used` 恒填主；同链续 session；静态打头动态押后；opencode 通道角色**派单里禁止让它写 `/tmp`**（会被 `external_directory` 自动拒、静默失败、易盲试烧额度）——临时文件改 `temp/`。
+- **账本**：母版两账**保持仅示例行口径不记实绩**（母版逐派记录落 HANDOFF）；老项目实绩账本**禁重写**；`model` 用 `provider/model` 精确写法；角色交付 `PASS` ≠ 整链验收（未闭环记 `OPEN`）；校验 `node scripts/model/check-ledger.mjs docs/model`（0 行空账本＝`LEDGER-OK 含 WARN`，属"未开工"正常态）。
+- **老项目迁移边界**：备份不覆盖（铁律）；账本内容零改动；`AGENTS.md` 只注入区块不整份替换（项目专属规矩可能很长）；跨仓动作（提交/改他项目文件）只在用户明确授权时做。
+- **我的三个已知教训（写脚本时反复踩）**：①判"项目在不在跑"必须用「任意位置 `PROJECT_PHASE` ＋ git 最近提交 ＋ 账本行数」三重交叉，grep 锚定行首会漏判（曾漏掉最活跃的 028）；②`grep -v` 在"全部行都匹配"时退出码 1，`&&` 短路会导致文件没被替换（曾致删账本示例行失效）；③**用 Write 工具写含中文的 bash 脚本会随机损坏字节**（`Illegal byte sequence`、变量名被吞）→ 治理脚本一律用**纯 ASCII** 注释与输出。
+- **红线（本体系）**：P0 没完+用户没喊停不准收工；产品验收未落盘或关键 AC 未测不准报完工；首次发布未取得用户签收不准报完工；体系更新未同步两包与概览（或概览检查未过）不准收工；不 push（commit 需用户明确指令含分支名，默认 `main`）；不碰 secrets；换模型的事用户决策。
+- **用户划界（不变）**：老项目不归本窗口管（除用户点名）；真实项目 A/B 用户自跑。
 
 ## 4. 2026-09-09 两轮审查修复记录
 
@@ -575,3 +574,15 @@
   - **259 份 `.旧版-2026-09-29` 备份：不删，但加防污染**——在 29 个项目 `.gitignore` 追加 `*.旧版-2026-09-29`（幂等；本次新增 29 份规则）。理由：备份是回滚保障，删了不可逆；留着又会被 `git add .` 卷进提交，故只隔离不入库。已验 038：`git status` 中备份文件计数 0（已被忽略）。
 - 母版终检：`bash scripts/check-sync.sh` → `SYNC-OK`；`LC_ALL=C bash scripts/check-channel-preflight.sh` → `CHANNEL-OK`。
 - 本轮提交：母版 4 份治理文件 ＋ `HANDOFF` ＋ 5 个新脚本（`sync-old-projects.sh`／`_inject-agents-block.py`／`migration-status.sh`／`check-channel-preflight.sh`／`weekly-channel-check.sh`）＋两包对应副本。
+
+## 67. 「全部处理」收口 ＋ 小交接记一笔（2026-10-03，用户令「全部处理」后开发暂时结束）
+
+- 用户令「全部处理」，逐项做完：
+  1. **32 个老项目删模板示例行** → 账本全部 `LEDGER-OK`（实测 **0 FAIL**）。**踩坑一次并修**：首轮用 `grep -v … > tmp && mv` 时，`grep -v` 在"全部行都匹配"时退出码 1、`&&` 短路导致文件未替换（表头显示"1 → 1"）；改 `;` 后重做成功。
+  2. **补同步漏掉的新项目**：`039-ing-酒吧游戏`、`040-ing-才艺展示厅`、`041-ing-nightrec` 三项目在 09-29 首轮同步之后才出现/才建 `AGENTS.md`，本轮补注入（`AGENTS区块注入: 3`）。项目总数 29 → **32**。
+  3. **28 个有 git 的项目逐项目提交**：统一信息 `chore(governance): 同步 ORCA 治理规则 2026-09-29…`；**精确 `git add` 治理文件白名单，全程不用 `git add -A`**，确保不卷入各项目自己的开发改动（如 028 的内容包开发仍留在工作区未被提交）。**3 个无 git 只能留文件**（`000-alw-个人偏好`／`014-山寨滚仓网站`／`027-蛋白质计算器`）；`019` 迁移时无改动待提交（其 AGENTS 已是新版）。
+  4. **复核虚假状态**：先前 006/037 的 `GOVERNANCE-STATE.json` 曾被外部改写为 `product_acceptance_ac_added: true`（实为虚假，实绩 Plan 查无 AC）→ 重跑同步已重置为 `false`；本轮复核**无任何项目声称已补 AC（0/32）**，与实情一致。
+  5. **修 `migration-status.sh` 显示 bug**：账本 0 行时算出 `rows=-1` → 改为不递减、负值归零。
+- 状态表终态（`bash scripts/migration-status.sh`）：**32 个项目规则版本全部 `2026-09-29-产品验收`、AGENTS 区块全有、`LEDGER-OK` 全绿、已补 AC 0/32**；`039`/`028`/`037` 账本行数持续增长（223/222/72），说明这些项目正活跃开发——**治理同步未干扰其业务**。
+- 母版终检：`check-sync` SYNC-OK；`check-channel-preflight` CHANNEL-OK；工作区干净（`227636d` 已 push）。
+- 仍未做（都不是本窗口的活，已写进 §2）：各项目补 AC 与 `PROJECT_PHASE`（业务判断）；3 个无 git 项目的入库决定；真实项目 A/B（用户自跑）。
