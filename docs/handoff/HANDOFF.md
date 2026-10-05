@@ -594,3 +594,39 @@
 - **老项目铺开**：`scripts/_inject-agents-block.py` 区块新增「汇报与自决（2026-10-03 定）」五条；`sync-old-projects.sh` / `migration-status.sh` 的 `STAMP`/`RULES_VERSION` 改 `2026-10-03-汇报与自决`；实跑结果 **33 个项目全同步（0 未同步）**、区块全有、账本全 `LEDGER-OK`；备份留档 66 份 `.旧版-2026-10-03`（同步脚本铁律，不覆盖原文件）。
 - 顺手处理（属默认自决、不上报的两类）：`042-ing-AIHOT 热点日报站` 新项目账本模板示例行已删 → 转 `LEDGER-OK (含 WARN)`；`037` 缺 `*.旧版-*` 忽略规则导致 2 份新备份在其 git 里可见 → 补规则（其余 26 个项目实测可见数 0，未动）。
 - 校验：母版↔两包 `check-sync` **SYNC-OK**；`check-channel-preflight` **CHANNEL-OK**（本轮未动分工表/通道模型）；两包 `AGENTS.md` 显式 diff 第 37 行确认**仅 `docs/prompts/` 裸名差一处**（经验教训 2026-09-28 的白名单坑）。**未 commit**（用户未给 commit 指令，分支 `main`）；**老项目未 commit/push**（跨仓提交只在用户明确授权时做）。
+
+## 69. 客户端无关＋派工口自动探测＋「何时起体系」判据记一笔（2026-10-03，用户令 commit+push 后开工）
+
+- **背景**：用户核查"这套体系能不能在 Codex/Trae/Qoder 等客户端用"。核查结论＝治理语义层（两阶段 Gate、两本账本、AC 矩阵、升级计数、Human Gate、落盘规范）全为文件/脚本级，与客户端无关；11 角色里 9 个本就是「通道 CLI 直调」（`opencode run` / `codebuddy … -y -p` / `codex exec -m`）；真硬耦合只 4 处（编排者提示词:10 派工口、override 表 TM/product-reviewer 的「本窗口」、QA 真机「本窗口 bash 直驱」、`supervisor.md:40` runtime 枚举）。Orca 专属仅两份**可选**增强文档（总监督提示词、持续推进协议）。
+- **新增 `scripts/detect-client.sh`（纯 ASCII，可执行，exit 0）**：自动认当前客户端并选派工口。认客户端顺序＝bundle id → TERM_PROGRAM → 环境变量前缀 → 父进程链（最多 8 级）→ 仓库痕迹目录 `.claude/.codex/.trae/.qoder/.orca`（**仅作提示不作准**）。输出 `client=… subagent=… mode=window_subagent|channel_cli source=…`，另支持 `--json`。已校准＝Orca／Trae／Qoder／Codex／Claude Code／opencode；**认不出 → 保守 `channel_cli` ＋ note，不找用户填**。自测：5 个 bundle id 分支全部正确（修了一处 `*code*` 抢在 `*claude*` 前的误判、norm 未去空格、`$1` 未绑定报错、末尾退出码非 0）。
+- **规则改动**：override 表 Runtime 列「本窗口」→「当前客户端窗口（自动探测）」＋调用通道说明改写（表定通道角色照旧走 CLI 直调，**禁把通道角色包进客户端 subagent 套娃**）；编排者提示词:10 派工口改写为「按探测结果派工，不问用户填」，并保留"CLI 模式不豁免不起终端人工禁令"；AGENTS.md 派工顺序节写入派工口规则 ＋ **新增「何时起这套体系」节**（命中任一＝大项目按包 README 铺包开工；都不命中＝小活直接干不铺包不起 Gate；**半套最差按红线打回**）；task-manager 卡加"开工第一步＝探测客户端＋判是否大项目"；老项目注入区块加同两条；对外概览加一段结论 ＋ 第八节审查点改 10=客户端无关、11=汇报纪律。
+- **`check-sync` 新增**：两包 `scripts/detect-client.sh` 字节一致检查 ＋ 概览新鲜度关键词加 `detect-client`。
+- **老项目铺开**：`STAMP=2026-10-03`／`RULES_VERSION=2026-10-03-客户端无关`，实跑**全部已同步、未同步 0**；备份留档 33 份 `.旧版-2026-10-03`。
+- **实测**：`check-sync` **SYNC-OK**（AGENTS:37 仅裸名差已显式 diff）；`check-channel-preflight` **CHANNEL-OK**；**Codex 端到端通过**——`codex exec -m gpt-6-sol` 在仓内跑 `detect-client.sh`、读 AGENTS/角色卡全部正常（因其从 Orca 窗口起，探测报 Orca 属正确行为）；Trae／Qoder 需各在客户端内跑一次 `bash scripts/detect-client.sh` 做校准。
+- **项目数口径变化（重要）**：老项目状态表由 33 → **31**，因 `043-ing-成片集-app` 现存 `docs/model/GOVERNANCE-STATE.json` 但已无 `AGENTS.md`（同步脚本要求 AGENTS.md 存在才处理，故不再计入）＋另一个目录已不在 `1.Active`。**账本未动、未查原因**（属其他项目事务，不归本窗口）。
+- **补铺**：`detect-client.sh` 一开始只进了母版与两包、**漏进老项目**（注入区块引用了不存在的脚本＝悬空引用），已把该脚本加进 `sync-old-projects.sh` 的 FILES 并重跑，31 个项目均已落地、可执行、实跑通过。
+- **三客户端验证全部通过（2026-10-03）**：**Codex**（`codex exec -m gpt-6-sol` 仓内实跑探测＋读规则）、**Trae**（TraeCode CN 打开 038 项目，`client=Trae subagent=yes mode=window_subagent source=bundleid`）、**Qoder**（Qoder CN 同样，`client=Qoder subagent=yes mode=window_subagent source=bundleid`）——**零手填即生效**。后续新客户端只需跑一次 `bash scripts/detect-client.sh` 校准。
+- **CodeArts Agent 校准（2026-10-03）**：本机 `/Applications/CodeArts Agent.app`，bundle id `com.huawei.codearts.agent`，**Electron 应用、主进程 comm 只是 `Electron`** → 父进程链认不出，只能靠 bundle id／TERM_PROGRAM／环境变量（已在脚本补 `*codearts*` 三处分支）。**实测在 CodeArts Agent 内跑脚本报 `client=Codex subagent=yes`**——因为它的 agent 后端就是 Codex，能力一致（都能 spawn 子代理），属期望行为、不改判定顺序。另：Electron 主进程同名坑对所有 Electron 系客户端通用（如未来再遇 Electron 客户端，ppid 分支不可依赖）。
+- 至此已校准客户端＝Orca／Trae／Qoder／Codex／Claude Code／opencode／CodeArts Agent，均 `subagent=yes mode=window_subagent`；老项目与两包已铺新版脚本（`SYNC-OK`）。
+- **README 加「怎么用：两件事」节（2026-10-03）**：一张表把四种场景（老项目／新项目大项目／新项目小项目／单客户端环境）写清"你做什么＋说哪一句"，含可复制的【新项目大项目·一句话】启动语（带母版包绝对路径，避免只说"你是编排者"它不知道去哪拿包）；明确三条别做（不整包丢根／不拷母版 Git 历史与别项目 HANDOFF／老项目不重铺）。同时把 `README.md` 纳入 `check-sync` 两包一致性清单。
+- **外部文件并入规范位**：`docs/sop/background-services.md`（2026-10-05 15:42 由外部同步进母版的**未跟踪**文件，中央规则引用它，故属体系正式规范位）两包原先没有，致 `check-sync` 报 `DIFF` → 已同步进两包，现 `SYNC-OK`。
+- 未 commit（本轮用户只授权了开工前那一次 commit+push：`4793184`）。
+
+## 70. 全量一致性审查与 P0/P1 修复记一笔（2026-10-05，用户令"全面检查一遍前后一致/矛盾"）
+
+- **审查方式**：派 Research Reviewer（product-reviewer，本窗口 subagent 直派）做 12 类跨文件交叉核对（角色集合／状态机与阶段／三口令／派工链／升级规则／账本字段／AC 与产品验收／汇报纪律／派工口与客户端无关／路径与布局／check-sync 覆盖／脚本自身），产出 `docs/review/RESEARCH_REVIEW-2026-10-05-体系一致性审查.md`。**结论 `FAIL_WITH_FIXES`：P0=2、P1=14、P2=11**。母版内部的口径类条目（角色/状态机/口令/派工链/升级/汇报纪律/派工口）**基本一致**，问题集中在**同步门禁、老项目规则落地、Gate 条件复述**三处。
+- **P0-1 已修｜check-sync 的 AGENTS 白名单可被绕过**：旧逻辑只数 `diff | grep -c "^[<>]"` 是否等于 2 → 把裸名那行改成任何错字都照样 `SYNC-OK`（已实证）；且脚本注释、`经验一句话.md:26`、`agent.md:18` 三处人工兜底都写"第 37 行"，行号早已漂到 44，**兜底同时失效**。改法：**取消 marker 白名单**，改为 `norm_md()` 归一化（`docs/prompts/xxx` → 裸名）后**逐字节比对**（`cmp`），任何内容差都 DIFF 并 fail；`check_norm` 用于概览/README/四份平铺提示词；"预期差确认"段由 `echo` 升级为**断言**（应为 0）。
+- **P0-2 已修｜老项目被要求跑不存在的脚本**：31 个老项目正文强制"派工前跑 `check-channel-preflight.sh`"，而该脚本 0/31 存在（不在 sync FILES）→ 已加入 FILES 并铺开；抽验 038 项目实跑得 `CHANNEL-OK`。
+- **P1 已修**：①Gate 6 项补齐（`AGENTS.md`/task-manager/编排者提示词，原 4 处漏「视觉与交互验收标准非空」）；②DISPATCH runtime 枚举补「当前客户端窗口（自动探测）」「Claude Code」（`AGENTS.md` + `supervisor.md` 校验块，否则照表记账会被打回）；③`check-ledger.mjs` KNOWN_MODELS 补现役 `codex/gpt-6.1-sol`（此前每派 senior 必产 2 条 WARN，实测已消）；④注入区块字段名 `agents_needs_manual_merge` → `agents_block_injected`（脚本实际写的就是后者）；⑤`043-ing-成片集-app` 治理根在 `software/`，被两个脚本双双漏计 → `sync-old-projects.sh` 与 `migration-status.sh` 加**治理根向下探测**（根无 AGENTS.md 时找唯一含 `ORCA-RULES-BLOCK` 的子目录，多候选跳过告警），**项目数 31 → 32，043 已纳入并升级到本轮规则版本**；⑥老项目缺 7 类文件已补铺（`check-channel-preflight.sh`、`docs/sop/background-services.md`、`GOVERNANCE_VERSION`、两份 Orca 协议提示词落 `docs/prompts/`、归位表落 `docs/templates/`、`编排者提示词.md`/`外部开发者提示词.md` 落根）——**顺带修了一个真 bug：FILES 里含空格的条目被 `for f in $FILES` 词分割拆坏（"Orca 编排治理监督者提示词.md" 被切成 3 段），已改 `while IFS= read -r` + 落位映射**；⑦check-sync 覆盖补齐（四份平铺提示词、`GOVERNANCE_VERSION`、`scripts/orchestration/README.md` 由 echo 升为断言）——**新门禁当场抓到一处真实漂移：母版《持续推进协议》写 9+1、两包已是 9+1＋1（母版落后），已改母版**；⑧概览新鲜度关键词由 6 个扩到 15 个（`window_subagent`／`channel_cli`／`半套最差`／`四类红线`／`≤10 行`／`Task Manager Qualification`／`何时起`／`CHANNEL-OK` 等）；⑨supervisor Phase Integrity 抽查第 6 条①补全（禁 code-reviewer 派工、DEVELOP 禁派 product-reviewer），**新增第 8 条派工口合规、第 9 条通道预检合规**；⑩注入区块补**升级口径**与第 8/9 条抽查摘要（让"冲突以区块为准"真正覆盖项目正文旧口径）。
+- **新增 `scripts/_sync-packages.py`**：母版→两包同步的唯一入口，内含布局裸名映射（`docs/prompts/xxx`／`docs/templates/归位表.template` → 包根裸名）。**以前每次同步靠手写 sed，漏一处就静默分叉**——本轮 P1-10 那处 9+1 漂移就是这么来的。
+- **终检**：`check-sync` **SYNC-OK**（归一化后零差异，断言通过）；`check-channel-preflight` **CHANNEL-OK**；`migration-status` **32 个项目全部已同步、未同步 0**；`check-ledger` 现役模型无 WARN。
+- **留待用户决定（未修，报告内有完整建议）**：P1-1 注入区块不含状态机/口令/派工链/角色集合顶层骨架（16 个老项目顶层只有区块+自有内容，仲裁归属不清）；P1-9 母版 README 与包内 README 被强制成同一份（包内按 README 找不到 `docs/prompts/`，`.zip` 早不产出）；P1-12 中 015/017 正文仍有两个 `## 升级` 节并存；其余 P2 11 条（根目录清单数字、executed_by 多两个非角色值等）。
+- **洁癖收尾（用户令「洁癖一下＋残留自己定＋commit+push」）**：
+  - **模板包残留清理（60 份）**：两包内混进了母版自己的**实例记录**（`HANDOFF.md` 实例、`HANDOFF-2026-*.md` 2 份/包、`PLAN-2026-09-12-整改.md`、`BUGS-*.md` ~11 份/包、`CODE_REVIEW/EXTERNAL_REVIEW/GOVERNANCE_REVIEW/RESEARCH_REVIEW` 历史报告 ~14 份/包）——违反「模板包只含模板、不含其他项目运行记录」。根因＝`_sync-packages.py` 按目录整体复制（`docs/pm|qa|review|handoff` 混着实例记录）→ 已改为**这四个目录只同步 `*.template.md`**，并加 `--prune` 一次性清掉包内散落实例记录。
+  - 另清：两包内 `scripts/weekly-channel-check.sh`（母版 launchd 专用，不该随包分发，已从 EXTRA 移除）、空目录 `新项目模板包/docs/plan`。
+  - `agent.md`（未跟踪接续提示词快照）**移入 `temp/`**，不入库；README 已把它登记为「临时材料、不受 check-sync 门禁」。
+  - **README 对齐**：根目录清单重写为实际内容（入口与规则／脚本／包 三组，含 `ORCA治理体系说明.md`、`detect-client.sh`、`check-channel-preflight.sh`、`_sync-packages.py`、`migration-status.sh` 等），删掉「现行11」硬编码与**早已不产出的 `.zip` 那句**。
+  - **AGENTS.md 三件套第 1 步**改为「用 `python3 scripts/_sync-packages.py` 同步两包（布局裸名由脚本统一处理，**禁手写 sed 复制**）」；`check-sync.sh` 顶部注释里过时的「预期差白名单 AGENTS.md:37」已随之改掉。
+  - **经验追加一条**（按只追加规矩保留旧那条失效经验，另加新条说明已改归一化逐字节比对）。
+  - 终检：`check-sync` **SYNC-OK**；`check-channel-preflight` **CHANNEL-OK**；`sync-old-projects` 32/32 已同步、未同步 0。
+- 未 commit（用户本轮只要求检查，未授权 commit）。

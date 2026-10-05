@@ -14,7 +14,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PROJECTS_ROOT="${PROJECTS_ROOT:-/Users/zzymima0000/Developer/coding/1.Active}"
 PKG="$ROOT/老项目迁移模板包"
 STAMP="${STAMP:-2026-10-03}"
-RULES_VERSION="2026-10-03-汇报与自决"
+RULES_VERSION="2026-10-03-客户端无关"
 DRY_RUN="${1:-}"
 BLOCK_BEGIN="<!-- ORCA-RULES-BLOCK:BEGIN -->"
 export BLOCK_BEGIN
@@ -50,6 +50,15 @@ docs/review/RESEARCH_REVIEW.template.md
 docs/handoff/HANDOFF.template.md
 docs/handoff/EXT-WORKLOG.template.md
 scripts/model/check-ledger.mjs
+scripts/detect-client.sh
+scripts/check-channel-preflight.sh
+docs/sop/background-services.md
+GOVERNANCE_VERSION
+Orca 编排治理监督者提示词.md
+Orca 通用编排者持续推进协议.md
+归位表.template.md
+编排者提示词.md
+外部开发者提示词.md
 "
 
 [ -d "$PKG" ] || { echo "FATAL: 找不到老包 $PKG"; exit 1; }
@@ -60,22 +69,38 @@ backed=0; copied=0; skipped=0; needmerge=0; agentinj=0; nproj=0
 for dir in "$PROJECTS_ROOT"/*/; do
   d="${dir%/}"; name="$(basename "$d")"
   case "$name" in 0-规则与索引|999-*|临时备份*|0-*) continue;; esac
-  [ -f "$d/AGENTS.md" ] || continue          # 还没有治理文件的仓不在本轮范围
+  # 治理根：根 AGENTS.md；否则向下一层找唯一含 ORCA-RULES-BLOCK 的子目录（2026-10-05，救 043 这类 software/ 内治理）
+  govroot="$d"
+  if [ ! -f "$d/AGENTS.md" ]; then
+    hit=""
+    d="$d/"   # 保证 glob 逐层展开（"$d"*/ 在无尾斜杠时只匹配自身）
+    for sub in "$d"*/; do
+      [ -f "$sub/AGENTS.md" ] || continue
+      grep -q "$BLOCK_BEGIN" "$sub/AGENTS.md" 2>/dev/null && { [ -z "$hit" ] && hit="${sub%/}" || hit="__multi__"; }
+    done
+    case "$hit" in
+      "") continue ;;                                  # 还没有治理文件的仓不在本轮范围
+      __multi__) echo "WARN 治理根多候选，跳过: $name"; continue ;;
+      *) govroot="${hit%/}" ;;
+    esac
+  fi
   nproj=$((nproj+1))
 
   # AGENTS.md：全部项目都含专属规矩 → 不整份替换，改为**顶部注入带标记的增量区块**（不删任何原有行）
   # 已注入过则原地更新区块内容（幂等），未注入则插到标题首行之后
   agents_injected=0
-  if [ -f "$d/AGENTS.md" ]; then
-    if grep -q "$BLOCK_BEGIN" "$d/AGENTS.md" 2>/dev/null; then
+  if [ -f "$govroot/AGENTS.md" ]; then
+    if grep -q "$BLOCK_BEGIN" "$govroot/AGENTS.md" 2>/dev/null; then
       agents_injected=1
     fi
   fi
 
-  for f in $FILES; do
+  # 用 while read 而非 for（条目含空格，如 "Orca 编排治理监督者提示词.md"）
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
     src="$PKG/$f"
     [ -f "$src" ] || continue
-    dst="$d/$f"
+    dst="$govroot/$f"
     if [ "$f" = "AGENTS.md" ]; then
       if [ "$agents_injected" = "1" ]; then
         if [ -z "$DRY_RUN" ]; then
@@ -91,6 +116,11 @@ for dir in "$PROJECTS_ROOT"/*/; do
       backed=$((backed+1)); copied=$((copied+1)); agentinj=$((agentinj+1)); needmerge=$((needmerge+1))
       continue
     fi
+    # 包根平铺文件 -> 项目落位（归位表入 docs/templates/；两份 Orca 协议提示词入 docs/prompts/）
+    case "$f" in
+      归位表.template.md) dst="$govroot/docs/templates/$f" ;;
+      Orca*.md) dst="$govroot/docs/prompts/$f" ;;
+    esac
     if [ -f "$dst" ] && diff -q "$src" "$dst" >/dev/null 2>&1; then
       skipped=$((skipped+1)); continue
     fi
@@ -102,19 +132,19 @@ for dir in "$PROJECTS_ROOT"/*/; do
     fi
     if [ -z "$DRY_RUN" ]; then mkdir -p "$(dirname "$dst")"; cp "$src" "$dst"; fi
     copied=$((copied+1))
-  done
+  done < <(printf '%s\n' "$FILES")
 
   # 账本：只确保存在，内容零改动
-  if [ -z "$DRY_RUN" ]; then mkdir -p "$d/docs/model"
+  if [ -z "$DRY_RUN" ]; then mkdir -p "$govroot/docs/model"
     for lg in TASK-MODEL-LOG.jsonl DISPATCH-LOG.jsonl; do
-      [ -f "$d/docs/model/$lg" ] || printf '%s\n' '{"_example":true,"note":"模板示例行，不参与统计，首个真实任务前删除"}' > "$d/docs/model/$lg"
+      [ -f "$govroot/docs/model/$lg" ] || printf '%s\n' '{"_example":true,"note":"模板示例行，不参与统计，首个真实任务前删除"}' > "$d/docs/model/$lg"
     done
     # 统一状态标记（可机读，供 migration-status.sh 汇总）
     ph="UNKNOWN"
-    [ -f "$d/docs/handoff/HANDOFF.md" ] && ph=$(grep -oE "PROJECT_PHASE[=：: ]+[A-Z_]+" "$d/docs/handoff/HANDOFF.md" 2>/dev/null | head -1 | sed 's/.*[=：: ]//')
+    [ -f "$govroot/docs/handoff/HANDOFF.md" ] && ph=$(grep -oE "PROJECT_PHASE[=：: ]+[A-Z_]+" "$govroot/docs/handoff/HANDOFF.md" 2>/dev/null | head -1 | sed 's/.*[=：: ]//')
     [ -z "$ph" ] && ph="ABSENT"
-    lgr=0; [ -f "$d/docs/model/TASK-MODEL-LOG.jsonl" ] && lgr=$(( $(wc -l < "$d/docs/model/TASK-MODEL-LOG.jsonl" | tr -d ' ') - 1 ))
-    cat > "$d/docs/model/GOVERNANCE-STATE.json" <<EOF
+    lgr=0; [ -f "$govroot/docs/model/TASK-MODEL-LOG.jsonl" ] && lgr=$(( $(wc -l < "$govroot/docs/model/TASK-MODEL-LOG.jsonl" | tr -d ' ') - 1 ))
+    cat > "$govroot/docs/model/GOVERNANCE-STATE.json" <<EOF
 {
   "rules_version": "$RULES_VERSION",
   "synced_at": "$STAMP",

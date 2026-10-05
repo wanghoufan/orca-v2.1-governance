@@ -1,9 +1,16 @@
 # AGENTS.md｜ORCA（全员遵守，一页）
 
+## 何时起这套体系（2026-10-03 定：不是所有活都套，套了就别半套）
+
+- **命中任一＝大项目，走本体系**：①多阶段、需中间审批（Human Gate 等用户点头）；②需要产品验收留痕（用户可见要求要逐条落 AC 追踪矩阵）；③跨周以上或中途会被别人接手；④要发布上线并留回执；⑤多角色并行分工（builder/reviewer/QA 同时在跑）。**动作＝按 `新项目模板包/` 包内 README＋归位表铺进项目根再开工**（铺完客户端自动探测生效，无需手填；禁"复制一份规则再改"，那会造成分叉）。
+- **都不命中＝小活，别套**：单文件小修／单日单任务／一次性脚本／纯查资料——直接开工，不铺包、不建账本、不起 Gate（背流程负债比重写一遍还慢）。
+- **老项目不重铺**：已注入 `ORCA-RULES-BLOCK` 区块的老项目直接开工，规则变更由母版 `sync-old-projects.sh` 铺开。
+- 判不准时的默认：**先按小活干**；一旦出现上面 ①-⑤ 任一信号，立即补铺包并把状态迁到对应阶段（`docs/handoff/HANDOFF.md` 记一句为什么补铺）。**半套是最差状态**：套了体系却不落 AC/账本，按红线打回。
+
 ## 两阶段治理（固定 9+1＋1 专项，不再新增角色）
 
 - 状态：`PLAN / WAITING_HUMAN_APPROVAL / DEVELOP / PLAN_REOPEN_REQUIRED`（仅Change C受控重开期间；`PROJECT_PHASE` 当前值以 HANDOFF 为准）。
-- Phase1（PLAN，用户口令`第一阶段，计划`）：只许 task-manager／supervisor／planner（Sol）／product-reviewer（显示名 Research Reviewer，内部 ID 不变，模型/通道以 override 表为准）；禁 builder／code-reviewer／qa 派工，禁业务代码改动，禁 Release。PLAN 链：Planner→Research Reviewer→Planner→…→Readiness Gate→Human Gate；用户不搬运反馈（TM 自动回传）；`PLAN_READINESS_SCORE>=90` 且模板 Gate 全条件满足（P0=0＋blocking P1=0＋关键事实已验证＋核心假设已合理验证）才进 WAITING（定义以 `docs/pm/PRODUCT_PLAN.template.md` 为准，卡内不另写）。
+- Phase1（PLAN，用户口令`第一阶段，计划`）：只许 task-manager／supervisor／planner（Sol）／product-reviewer（显示名 Research Reviewer，内部 ID 不变，模型/通道以 override 表为准）；禁 builder／code-reviewer／qa 派工，禁业务代码改动，禁 Release。PLAN 链：Planner→Research Reviewer→Planner→…→Readiness Gate→Human Gate；用户不搬运反馈（TM 自动回传）；`PLAN_READINESS_SCORE>=90` 且模板 Gate 全条件满足（P0=0＋blocking P1=0＋关键事实已验证＋核心假设已合理验证＋视觉与交互验收标准非空且逐条可测）才进 WAITING（定义以 `docs/pm/PRODUCT_PLAN.template.md` 为准，卡内不另写）。
 - Human Gate：`WAITING_HUMAN_APPROVAL`（`PLAN_GATE=READY_FOR_HUMAN_REVIEW`）时 TM 停循环只找人一次，不可自动跨越，不可自行启动 builder；只有用户明确说`第二阶段，开发`才进 Phase2。
 - Phase2（DEVELOP）：锁定 `DEV_BASELINE=PRODUCT_PLAN_Vx.x`，默认主链 Builder→Reviewer→QA→Supervisor→TM（模型以 override 表为准）；禁随意改 Plan（Plan 变更只走 Change C Controlled Reopen＋Human Approval＋新版本＋新基线）；product-reviewer（Research Reviewer）默认不派，recorder/neat 只在收尾派。
 - Change Request（用户口令`变更请求：……`，TM 分类）：`CHANGE_REQUEST: NONE / A / B / C`——A=开发内小改留 DEVELOP 不召 Planner；B=局部功能变化更新局部 Requirement/DoD 留 DEVELOP 不召 Sol Planner；C=产品/架构变更进 `PLAN_REOPEN_REQUIRED`，局部暂停＋Sol Planner＋Research Reviewer＋Human Approval＋新 Plan 版本＋新 DEV_BASELINE 回 DEVELOP，不全量重跑。
@@ -34,7 +41,7 @@ task-manager=编排者（唯一对人说话）｜supervisor=监督者（只对�
 
 ## 派工顺序（Phase-aware；旧单线默认链已废止）
 
-Phase1（PLAN）：planner（Sol）→product-reviewer（Research Reviewer）→planner→…→Readiness Gate→Human Gate（禁 builder／code-reviewer／qa／业务改动／Release）。Phase2（DEVELOP）：builder 写→code-reviewer 复核→qa 测→supervisor 复检→编排者收齐找人（默认主链；完成判断＝角色交付＋`docs/qa/` 产品验收追踪矩阵关键 AC 全有证据（且计划内用户可见要求无遗漏、逐条已进 AC，这些关键 AC 最终状态均已通过；发布类型为 `首次发布` 的，须用户签收通过才算完成，签收前状态记 `OPEN`（用户签收属 Human Gate 范畴（用户参与）、是既有「开发前计划批准」的延续，不新增 QA Gate）），禁以单测/构建/代码审查通过或工具调用成功替代产品验收；模型以 override 表为准；product-reviewer 默认不派）。真机QA每session先过能力预检PASS才进正式，否则停（详情见qa卡）；codex 普通QA 派工带 `-s danger-full-access`（仅限QA，关闭沙箱解端口/网络限制，须记账）。经验/neat-freak 只在收尾派一次。本窗口内派 subagent，全自动（默认派工口；执行通道按 override『执行通道/Runtime』列，表定通道（codebuddy/codex/opencode）的走通道直调，禁套娃）。三类例外（人肉调试/外部施工/迁移基线）可起终端，见 docs/prompts/编排者提示词 :10。基础设施活必带 docs/sop/ 对应规范（DB 带 supabase.md 或 sqlite.md，部署带 docker.md，Android 打包带 android.md），supervisor 抽查。
+Phase1（PLAN）：planner（Sol）→product-reviewer（Research Reviewer）→planner→…→Readiness Gate→Human Gate（禁 builder／code-reviewer／qa／业务改动／Release）。Phase2（DEVELOP）：builder 写→code-reviewer 复核→qa 测→supervisor 复检→编排者收齐找人（默认主链；完成判断＝角色交付＋`docs/qa/` 产品验收追踪矩阵关键 AC 全有证据（且计划内用户可见要求无遗漏、逐条已进 AC，这些关键 AC 最终状态均已通过；发布类型为 `首次发布` 的，须用户签收通过才算完成，签收前状态记 `OPEN`（用户签收属 Human Gate 范畴（用户参与）、是既有「开发前计划批准」的延续，不新增 QA Gate）），禁以单测/构建/代码审查通过或工具调用成功替代产品验收；模型以 override 表为准；product-reviewer 默认不派）。真机QA每session先过能力预检PASS才进正式，否则停（详情见qa卡）；codex 普通QA 派工带 `-s danger-full-access`（仅限QA，关闭沙箱解端口/网络限制，须记账）。经验/neat-freak 只在收尾派一次。**派工口＝自动探测，不填表**（2026-10-03 定）：每轮开工先跑 `bash scripts/detect-client.sh` 认当前客户端（认客户端顺序＝bundle id → TERM_PROGRAM → 环境变量 → 父进程链 → 仓库痕迹目录仅作提示），按 `mode` 派工、**不找用户填**：`mode=window_subagent`＝当前客户端有原生子代理（Orca／Trae／Qoder／Codex／Claude Code／opencode 等已校准），在本客户端窗口内派 subagent，全自动、享真 resume／并行／worktree 隔离；`mode=channel_cli`＝无原生子代理或客户端未识别（**保守默认**），改走通道 CLI 直调（表定 codebuddy/codex/opencode 的角色照旧通道直调，禁套娃），**只在汇报里带一句「当前客户端未识别，按 CLI 通道派」，不找用户**。新客户端跑一次该脚本校准后加进映射即可；override 表 Runtime 列写「当前客户端窗口（自动探测）」即客户端无关，**一套模板包通用于任何客户端**。三类例外（人肉调试/外部施工/迁移基线）可起终端，见 docs/prompts/编排者提示词 :10。基础设施活必带 docs/sop/ 对应规范（DB 带 supabase.md 或 sqlite.md，部署带 docker.md，Android 打包带 android.md），supervisor 抽查。
 跳步：单文件小修可跳 planner/product，不可跳 code-reviewer+qa+supervisor；跳了记一句原因。分歧听谁的：技术分歧听 code-reviewer，范围分歧听 Task Manager。
 - TM 代做边界（2026-09-26 定）：TM（编排者）原则上不代做角色活，三类区分——①**真机QA直驱**＝合规（qa 卡允许，note 记原因）；②**通道兜底**＝通道超时/沙箱阻塞致角色派不出，TM 可临时补位，但须①账本记 `executed_by=task-manager`、②note 写原因与通道、③同一任务兜底≥2 次即上报用户定通道；③**越权代做**＝TM 亲自写业务代码/跑 QA 并当角色交付且不记 `executed_by`，视为违规打回。
 - Decision Sidecar（非角色，不占 9+1+1）：TM 仅规则无唯一答案时调 `scripts/decision/orca-decide.mjs`（照 docs/sop/decision-router.md），advisory only，失败回 V2.1 逻辑；supervisor 抽查调用点合规；每次调用落决策流水 `docs/model/JEV-DECISION-LOG.jsonl`（best-effort，只记非敏感元数据，不记原文/Key；不改 Jev 权限与 Contract）。
@@ -63,8 +70,8 @@ Phase1（PLAN）：planner（Sol）→product-reviewer（Research Reviewer）→
 - `chain_status` 使用口径（2026-09-26 定）：按**当前交付**状态**三取一、互斥，判不准取 `OPEN`**——①整链（reviewer/qa/supervisor 复核；该链需用户拍板时才含用户验收）验收通过→`ACCEPTED`；②**本条"当前交付"存在明确待办或阻塞**（待评审/待复验/待验证/未验证/产品阻塞/待用户验收/未完成）→`OPEN`（**待办须属于本条交付；正常的下游流转不算本条待办**）；③角色已交付、本条无待办、后续环节正常推进→`DELIVERED`。**不得因角色交付 `PASS` 就记 `ACCEPTED`**（审计发现 028「RC清障三件」属②）。**另补一条判定：适用用户签收的交付（发布类型 `首次发布`／计划显式标注需签收），待用户签收 ⇒ 记 `OPEN`，不得因角色交付 `PASS` 就记 `ACCEPTED`。**
 - 分工：builder/senior 写一行初版→supervisor 校验 JSON 合法+返工数→编排者判结果落盘。
 - `result`=任务级 PASS/FAIL（按表派单成功仍可 PASS；FAIL 须配 escalation_reason/备注说明是任务挂还是模型挂）。
-- 逐派记录：每次派工收工编排者往 `docs/model/DISPATCH-LOG.jsonl` 记一行（schema：date/task/role/model/used恒填主/runtime（本窗口/codebuddy/codex/opencode/—）/result PASS或FAIL/note（切备时used仍填主＋note记切备原因，HANDOFF补一句）/executed_by 可选（同 TASK，派工角色≠实际执行者时填）；示例行不参与统计，首个真实派前删除；tokens/cost不记；寿命随任务账本归档）；与派工显式两行互验；supervisor抽查实派==表三处对得上。
-- 体系更新三件套（2026-09-29 定；原「两包同步」扩写）：①母版治理改动提交后同步两本地包（`新项目模板包/`、`老项目迁移模板包/`）；②**同步对外概览 `ORCA治理体系说明.md`**——任何影响体系对外表述的机制变更（新增/改动 Gate、完成口径、派工链角色职责、账本字段、通道、验收制度等），概览必须同步更新；概览只写结论与入口，不复述字段/模型 ID/列名，保持一页纸概览性质；**漏更新概览＝体系更新未完成**；③跑 `bash scripts/check-sync.sh`，须得 `SYNC-OK`（exit 0)；**若本轮动过分工表/通道模型，另跑 `bash scripts/check-channel-preflight.sh` 须 `CHANNEL-OK`**——该脚本同时做概览新鲜度检查（「对外必现机制」关键词清单），缺项报 `OVERVIEW-STALE` 打回。`diff` 非预期差零容忍（常驻同步，用户定）；HANDOFF 记一行。
+- 逐派记录：每次派工收工编排者往 `docs/model/DISPATCH-LOG.jsonl` 记一行（schema：date/task/role/model/used恒填主/runtime＝override 表『执行通道／备用执行通道』列出现过的取值（本窗口／当前客户端窗口（自动探测）／codebuddy／codex／opencode／Claude Code／—）/result PASS或FAIL/note（切备时used仍填主＋note记切备原因，HANDOFF补一句）/executed_by 可选（同 TASK，派工角色≠实际执行者时填）；示例行不参与统计，首个真实派前删除；tokens/cost不记；寿命随任务账本归档）；与派工显式两行互验；supervisor抽查实派==表三处对得上。
+- 体系更新三件套（2026-09-29 定；原「两包同步」扩写）：①母版治理改动提交后用 `python3 scripts/_sync-packages.py` 同步两本地包（`新项目模板包/`、`老项目迁移模板包/`；布局裸名由该脚本统一处理，**禁手写 sed 复制**）；②**同步对外概览 `ORCA治理体系说明.md`**——任何影响体系对外表述的机制变更（新增/改动 Gate、完成口径、派工链角色职责、账本字段、通道、验收制度等），概览必须同步更新；概览只写结论与入口，不复述字段/模型 ID/列名，保持一页纸概览性质；**漏更新概览＝体系更新未完成**；③跑 `bash scripts/check-sync.sh`，须得 `SYNC-OK`（exit 0)；**若本轮动过分工表/通道模型，另跑 `bash scripts/check-channel-preflight.sh` 须 `CHANNEL-OK`**——该脚本同时做概览新鲜度检查（「对外必现机制」关键词清单），缺项报 `OVERVIEW-STALE` 打回。`diff` 非预期差零容忍（常驻同步，用户定）；HANDOFF 记一行。
 - 换模型决策先读账本：返工多、常升级的任务类型优先换强模型。
 
 ## Task Manager Qualification（增量；不新增角色，2026-09-26）

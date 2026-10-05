@@ -4,7 +4,7 @@
 > **冲突隔离**：§一"禁止预设固定角色/流程动态识别"与固定十一卡制（9+1＋1）冲突，**不采用**——角色一律以 `docs/roles/` 十一卡为准。
 > **读取时机**：① 用外部通道/Orca 终端编排长任务前必读；② 编排者发现自身/前任停摆时必读。纯本窗口 subagent 派工不必读。
 > **L3 部署边界**：仅外部通道/终端编排时部署 launchd watchdog；本窗口 subagent 链不常驻。
-> **两阶段优先**：两阶段治理、Human Gate、Change Request 与固定 9+1 角色定义优先于正文中的通用动态流程描述。
+> **两阶段优先**：两阶段治理、Human Gate、Change Request 与固定 9+1＋1 角色定义优先于正文中的通用动态流程描述。
 > **脚本名以现行为准**：正文引用的 `coordinator-watchdog.sh`/`coordinator-supervision-loop.sh` 以包内现行 `scripts/orchestration/coordinator-watchdog-standalone.sh` 为准；`coordination/STATE.md` 外部编排时自建。
 > 原文见下，正文未改动。
 

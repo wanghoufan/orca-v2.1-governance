@@ -35,6 +35,8 @@ Phase2 完工口径（不改主链、不新增 Gate）：完成＝角色交付�
 
 全程账本：每次派工记 `docs/model/DISPATCH-LOG.jsonl`、每任务记 `TASK-MODEL-LOG.jsonl`（`model` 用 `provider/model` 精确写法；含可选 `executed_by`=实际执行者、`chain_status`=角色交付/已验收/未完）；校验 `scripts/model/check-ledger.mjs`（结构错=FAIL、写法不规范=WARN）。老项目迁移后须过**登记检查**（该脚本得 `LEDGER-OK`）才算迁移完成——迁移即登记。
 
+体系不绑定 Orca 或任何特定客户端，也不按客户端分裂模板包：**每轮开工跑 `scripts/detect-client.sh` 自动认当前客户端并选派工口**：有原生子代理判 `mode=window_subagent`，在该客户端窗口内直派（享真 resume／并行／worktree 隔离）；没有或认不出判 `mode=channel_cli`，走通道 CLI 直调（认不出时只在汇报带一句，不找用户填）。**一份模板包通用于任何客户端**；多阶段需人点头／要产品验收留痕／跨周或会交接／要发布留回执／多角色并行——这套「何时起体系」的判据是：命中任一才算大项目、按包内 README 铺包开工，都不命中就是小活直接干、不铺包不起 Gate（半套最差，按红线打回）。
+
 编排者怎么汇报（2026-10-03 定，写在 AGENTS.md「汇报与自决」节）：只报三件事——目标完成没、用户安排的工作完成没、大影响（上线/回滚、线上故障、数据或备份丢失、生产或他项目改动、要用户本人操作的授权、不可逆删除）。其余小事**自决自做、不问不报**：残留清理、备份与旧文件（不影响继续开发就删，影响的留到大阶段开发完再删）、调试密钥文件（不入库、自动 gitignore）、既有 lint/测试 warning。只有 secrets、删用户数据、生产·数据库·他项目、commit/push 授权四类红线才找用户，且一次问全；单次汇报 ≤10 行，禁把 pending/遗留全量倾倒。啰嗦按违规打回。
 
 ## 三、Jev 决策侧车怎么接入
@@ -77,11 +79,13 @@ Google 登录等 Agent 不碰密码/MFA，登录异常交人工处理（认证�
 
 普通 QA（codex）：派工带 `-s danger-full-access` 关闭沙箱，解端口绑定/网络限制（历史“沙箱禁端口/EPERM”经查为假失败）；**仅限 QA 场景、须在账本 note 记账**，其他角色禁带。
 
+- 派工通道纪律：派工前必跑 `bash scripts/check-channel-preflight.sh`，须 `CHANNEL-OK`（报 `CHANNEL-STALE` 该角色禁派）；表定通道角色走通道直调，禁套娃；禁自动升级客户端。
+
 ## 五、模型与分工（11 行，以根 `USER_MODEL_OVERRIDE.md` 表为准）
 
 模型／通道／调用方式**一律以根 `USER_MODEL_OVERRIDE.md` 表为准**（该表即唯一口径，改表必真调）；本说明**不复述模型 ID**，避免与表漂移。角色清单见 `docs/roles/` 11 张卡；task-manager 行模型开窗口时定。
 
-## 六、Task Manager 资格测试（增量，2026-09-26）
+## 六、Task Manager Qualification｜Task Manager 资格测试（增量，2026-09-26）
 
 把 TM（编排者）正式纳入模型资格测试；**不新增第 12 角色**，不重做两阶段治理。
 - 最小评价单位＝**Orchestration Episode**（TM 接有效状态→判下一步→派对 Worker→收结果→推进到下一合法态；聊天轮数不计）。
@@ -99,14 +103,14 @@ Google 登录等 Agent 不碰密码/MFA，登录异常交人工处理（认证�
 | 产品验收 | `docs/qa/BUGS.template.md`（产品验收追踪矩阵节）＋`docs/roles/qa.md`（第八查/不可放行情形/视觉验收最小覆盖）＋`docs/pm/PRODUCT_PLAN.template.md`（验收标准与关键 AC 集合） | 用户可见要求的验收标准写在计划，证据落矩阵，QA 与 Supervisor 同源判放行 |
 | 模型分工真相源 | `USER_MODEL_OVERRIDE.md` | 11 行精确ID；改表必真调；现势以本表内容为准（历史快照在 `temp/`，回退由用户口头指定编号、按改表规则执行） |
 | 角色卡×11 | `docs/roles/` | 每角色职责＋写入位置；适用角色附输出模板 |
-| 开工提示词 | `docs/prompts/编排者提示词.md` | 一句话开工全文 |
+| 开工提示词 | `编排者提示词.md` | 一句话开工全文 |
 | 基础设施规范 | `docs/sop/` | docker/supabase/sqlite/android（＋android-machine-profile）/webqa/decision-router（去版本号引用） |
 | 中央规则（散兵读） | `~/.agents/rules/`＋`~/.agents/AGENTS.md` | docker 等为软链指本仓库 sop；散兵按任务按需读 |
 | 账本 | `docs/model/TASK-MODEL-LOG.jsonl`、`DISPATCH-LOG.jsonl` | 换模型决策的重要依据（先读账本，最终用户定）；`model` 精确写法，含可选 `executed_by`/`chain_status`；校验 `scripts/model/check-ledger.mjs`（FAIL 拦、WARN 供抽查） |
 | TM 资格 | `docs/model/TASK-MANAGER-QUALIFICATION.md`＋`TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`；评分 `scripts/model/tm-qualification.mjs` | Episode/五维评分/Gate＋采样门槛；证据不改账本；主备由用户批准 |
 | Jev 决策流水 | `docs/model/JEV-DECISION-LOG.jsonl` | 每次 orca-decide 调用一行（非敏感元数据；不记原文/Key） |
 | 交接 | `docs/handoff/HANDOFF.md` | 状态源（新节顺延，现至 §60；旧号冻结不重排） |
-| 迁移入口 | `docs/prompts/迁移整理提示词.md`（老包根同名） | 自举取包＋冲突处理＋5.7 登记检查（迁移即登记，`LEDGER-OK` 才算完成） |
+| 迁移入口 | `迁移整理提示词.md`（老包根同名） | 自举取包＋冲突处理＋5.7 登记检查（迁移即登记，`LEDGER-OK` 才算完成） |
 | 新项目脚手架 | `新项目模板包/`（按包内 README 铺入项目根，提示词/模板按清单落位，`USER_MODEL_OVERRIDE.md` 建软链指母版） | 老项目用 `老项目迁移模板包/`＋迁移提示词 |
 
 ## 八、给审查者的检查点
@@ -120,4 +124,5 @@ Google 登录等 Agent 不碰密码/MFA，登录异常交人工处理（认证�
 7. 老项目迁移是否过登记检查（`check-ledger.mjs` 得 `LEDGER-OK`）。
 8. TM 资格：Episode 是否记账、采样门槛/Gate 是否遵守、主备是否经用户批准（未自动改表）。
 9. 产品验收：追踪矩阵是否落盘、关键 AC 是否都有证据、核心路径上的控件是否真点过并观察到变化、首次发布类交付是否已取得用户签收。
-10. 汇报纪律：编排者是否只报目标完成/工作完成/大影响三类，是否 ≤10 行，残留清理/备份旧文件/既有 warning 有没有被拿来反复问用户（发现即打回）。
+10. 客户端无关：派工口是否由探测决定而非人工填表；同一套包在别的客户端能否直接开工（不应出现 Orca 专属硬依赖）；小活有没有被硬套上体系。
+11. 汇报纪律：编排者是否只报目标完成/工作完成/大影响三类，是否 ≤10 行，残留清理/备份旧文件/既有 warning 有没有被拿来反复问用户（发现即打回）。
