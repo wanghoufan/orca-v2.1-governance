@@ -4,7 +4,7 @@
 # 输出列：项目 | 规则版本 | AGENTS区块 | TASK账本 | LEDGER | PROJECT_PHASE | AC已补 | 最后提交
 set -u
 PROJECTS_ROOT="${PROJECTS_ROOT:-/Users/zzymima0000/Developer/coding/1.Active}"
-RULES_VERSION="2026-09-29-产品验收"
+RULES_VERSION="2026-10-03-汇报与自决"
 
 [ -d "$PROJECTS_ROOT" ] || { echo "FATAL: 找不到 $PROJECTS_ROOT"; exit 1; }
 
