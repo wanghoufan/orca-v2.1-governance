@@ -1,5 +1,7 @@
 # ORCA 治理模板分发版｜导航（先读我）
 
+[English](./README.en.md)
+
 > 模板名冻结，版本真相以本仓库 Git 提交历史为准（版本标记文件仅为指针）。
 
 开工读盘顺序（全体系唯一）：`AGENTS.md` → `docs/roles/`（本次角色卡）→ 根 `USER_MODEL_OVERRIDE.md`（模型表，有就用它）→ `docs/handoff/`（交接现状）→ 根 `经验一句话.md` → 任务目标放最后。
