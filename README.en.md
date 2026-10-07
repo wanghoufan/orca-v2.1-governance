@@ -6,6 +6,16 @@
 
 Single canonical read order at the start of work: `AGENTS.md` → `docs/roles/` (the role cards for this run) → root `USER_MODEL_OVERRIDE.md` (the model table; use it if present) → `docs/handoff/` (current handover state) → root `经验一句话.md` → and the task goal last.
 
+## The system at a glance
+
+**Two-phase governance flow** (command-driven; the Human Gate cannot be crossed automatically; Change C closes the loop):
+
+![ORCA two-phase governance flow](./docs/assets/orca-two-phase-flow.png)
+
+**Roles and the Phase 2 dispatch chain** (9 + 1 + 1; auto-detected dispatch port; ledgers and the three-step sync):
+
+![ORCA roles and dispatch chain](./docs/assets/orca-roles-dispatch-chain.png)
+
 ## The user only needs three commands
 
 - `第一阶段，计划` (phase 1, plan): enters Phase 1 (PLAN); Planner plus Research Reviewer produce the PRODUCT_PLAN, and only when the score is ≥90 and every template gate condition holds (P0 = 0, blocking P1 = 0, facts and assumptions verified) does it come back to you.

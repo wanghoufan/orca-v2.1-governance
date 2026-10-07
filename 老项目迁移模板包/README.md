@@ -6,6 +6,16 @@
 
 开工读盘顺序（全体系唯一）：`AGENTS.md` → `docs/roles/`（本次角色卡）→ 根 `USER_MODEL_OVERRIDE.md`（模型表，有就用它）→ `docs/handoff/`（交接现状）→ 根 `经验一句话.md` → 任务目标放最后。
 
+## 一图看懂（体系全景）
+
+**两阶段治理总流程**（口令推进 · Human Gate 不可自动跨越 · Change C 闭环）：
+
+![ORCA 两阶段治理总流程](./docs/assets/orca-two-phase-flow.png)
+
+**角色阵容与 Phase 2 派工主链**（9+1+1 · 自动探测派工口 · 账本与同步三件套）：
+
+![ORCA 角色阵容与派工主链](./docs/assets/orca-roles-dispatch-chain.png)
+
 ## 怎么用：你的操作只有两件事（新建文件夹 ＋ 说一句话）
 
 体系不绑定 Orca，也不绑定任何客户端：**Orca／Trae／Qoder／Codex／CodeArts Agent／opencode／Claude Code** 随便切，编排者每轮开工跑 `scripts/detect-client.sh` 自动认当前客户端并选派工口（有原生子代理就在该客户端窗口内直派；没有就走通道 CLI），**不需要你填任何配置、不需要你指派角色**。

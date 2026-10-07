@@ -20,8 +20,8 @@ PAIRS = [
     ("docs/prompts/迁移整理提示词.md", "迁移整理提示词.md"),   # 仅老包有
     ("docs/templates/归位表.template.md", "归位表.template.md"),
 ]
-# 全目录同步的（本来就只有规则/规范文件）
-DIRS = ["docs/roles", "docs/sop", "scripts/model"]
+# 全目录同步的（本来就只有规则/规范文件；docs/assets 是 README 用的示意图，按二进制拷贝）
+DIRS = ["docs/roles", "docs/sop", "scripts/model", "docs/assets"]
 # 只同步 *.template.md 的（这几个目录里混有母版自己的实例记录：BUGS-*.md / CODE_REVIEW-*.md /
 #   GOVERNANCE_REVIEW-*.md / RESEARCH_REVIEW-*.md / PLAN-*.md / HANDOFF.md 等，**模板包不该带实例记录**）
 TEMPLATE_DIRS = ["docs/pm", "docs/qa", "docs/review", "docs/handoff"]
@@ -57,7 +57,7 @@ def collect():
             continue
         for name in sorted(os.listdir(dd)):
             p = os.path.join(d, name)
-            if os.path.isfile(p):
+            if os.path.isfile(os.path.join(ROOT, p)):
                 out.append((p, p))
     for e in EXTRA:
         if os.path.exists(os.path.join(ROOT, e)):
@@ -81,9 +81,14 @@ def main():
                 continue
             if pkg == "新项目模板包" and os.path.basename(src) == "迁移整理提示词.md":
                 continue  # 迁移提示词仅老包有
-            text = strip_paths(io.open(s, encoding="utf-8").read())
             out = os.path.join(ROOT, pkg, dst)
             os.makedirs(os.path.dirname(out), exist_ok=True)
+            if os.path.splitext(src)[1].lower() in (".png", ".jpg", ".jpeg", ".gif", ".webp"):
+                with open(s, "rb") as fi, open(out, "wb") as fo:
+                    fo.write(fi.read())
+                n += 1
+                continue  # 图片走二进制拷贝，不做路径归一化
+            text = strip_paths(io.open(s, encoding="utf-8").read())
             io.open(out, "w", encoding="utf-8").write(text)
             if src.endswith(".sh"):
                 os.chmod(out, 0o755)
