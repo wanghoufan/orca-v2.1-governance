@@ -4,6 +4,7 @@
 > 适用范围：Android / iOS / Flutter / React Native / React / PWA，以及面向用户交付的纯 HTML APP。
 > 不新增 Skill、角色、顶层状态或 Human Gate。缺强制交付内容时，由现有各阶段原有 Gate 拦截。
 > 需求真源仍是 `PRODUCT_PLAN`（FR/AC 单真源），本文**不建立第二套需求编号**。
+> **姊妹规范**：`app-brand-assets.md`（APP 品牌资产：中文名／英文名／安卓图标／启动画面——P045 实战暴露的漏项）。两者同属 APP 前置，**互相独立但都要在 Phase1 落实**；启动画面底色须与本文的主题三态兼容。
 
 ---
 

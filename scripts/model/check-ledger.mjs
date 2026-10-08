@@ -124,6 +124,15 @@ function trueSource(root) {
 // ③只 grep 声明段、从不校验这六类是否真进了「关键 AC 集合」。现改为：
 //   · 六类必须出现在**标了 关键：是 的 AC 条目**里（匹配范围限定到关键 AC 行，不再 grep 整篇）；
 //   · 命中不到 ⇒ FAIL（真拦，不是提醒）；非 APP 项目与历史版本不受影响。
+// APP 品牌资产（2026-10-08）：与主题/多语言同属 APP 前置，单一真源 docs/sop/app-brand-assets.md
+const BRAND_DECL = /(APP\s*品牌资产方向|品牌资产方向)/;
+const BRAND_AC = [
+  ["三方向附命名候选", /中文名|中文名称/],
+  ["三方向附图标方向", /图标/],
+  ["三方向附启动画面方向", /启动画面|Splash|Launch/i],
+  ["Freeze 锁定最终四项", /最终拍板|Freeze.*锁定|锁定.*最终/],
+];
+
 const APP_AC = [
   ["主题三态", /LIGHT/], ["SYSTEM 默认", /SYSTEM/], ["中英可用", /zh-CN/],
   ["不支持语言回退 zh-CN", /回退|fallback/], ["设置持久化", /持久|persist/i],
@@ -185,6 +194,20 @@ function checkAppBaseline(root) {
       if (c.isSrc) fails.push(`${c.label}: APP-CRITICAL-AC-INCOMPLETE — 关键 AC 集合未覆盖：${missing.join("、")}。`
         + `这六类必须各自有一条标「关键：是」的 AC；补不齐不得进 Human Review。`);
       else warns.push(`${c.label}: WARN 非当前真源的 APP Plan 关键 AC 未覆盖：${missing.join("、")}`);
+    }
+    // 品牌资产：声明缺失 FAIL；关键 AC 未覆盖 FAIL
+    if (!BRAND_DECL.test(text)) {
+      const m = `缺「APP 品牌资产方向」（中文名/英文名/安卓图标/启动画面方向；见 docs/sop/app-brand-assets.md）。`
+        + `P045 教训：品牌资产未前置，开发阶段由执行者自行决定命名与图标，结果不可控。`;
+      if (c.isSrc) fails.push(`${c.label}: APP-BRAND-ASSETS-MISSING — ${m} 未补齐不得进 Design Pipeline。`);
+      else warns.push(`${c.label}: WARN 非当前真源的 APP Plan ${m}`);
+    } else {
+      const missB = BRAND_AC.filter(([, re]) => !re.test(pool)).map(([n]) => n);
+      if (missB.length) {
+        if (c.isSrc) fails.push(`${c.label}: APP-BRAND-AC-INCOMPLETE — 品牌资产关键 AC 未覆盖：${missB.join("、")}。`
+          + `三方向附候选与 Freeze 锁定最终四项必须各有标「关键：是」的 AC；缺任一类不得进 Human Review。`);
+        else warns.push(`${c.label}: WARN 非当前真源的 APP Plan 品牌资产关键 AC 未覆盖：${missB.join("、")}`);
+      }
     }
   }
 }

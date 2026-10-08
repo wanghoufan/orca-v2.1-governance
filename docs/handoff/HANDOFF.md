@@ -699,3 +699,44 @@
 **验证**：`SYNC-OK` / `CHANNEL-OK` / `tm-qualification 17/17` / 10 项残留总检全过 / APP 门正反例实跑通过。
 
 **仍未处置**：041 与 045 两份矩阵实例的 9 列机械迁移（跨仓）；铺开链**实际重跑**（35 项目，含"正在开发的不动"判据待用户确认）；P2-8／9／13／14。
+
+## 74. Phase1 拟稿分工调整：planner 改把关者（2026-10-08，用户定）
+
+**用户诉求**：Phase1 讨论阶段 `codex/gpt-6.1-sol` 调用太多，额度不够；planner 不该拟制所有小计划，应作为计划的审查者。
+
+**改动**：plan 正文**拟制与修改归 builder**（`codebuddy/deepseek-v4.1-flash`），planner（`codex/gpt-6.1-sol`）改为**把关者/审查者**——不拟制、不改写正文。
+
+**新链**：`Builder(deepseek-flash) 拟稿 → Research Reviewer 审 → Planner(Sol) 对照 Readiness 逐项核、给分、一次列全缺项 → 不合格打回 Builder 改稿（planner 不自己写） → Readiness Gate → Human Gate`。
+
+**省额度三处**：①sol 单次只读稿出裁决，不生成全文；②**改稿不再烧 sol**（原口径每次打回都由 sol 重写全文）；③sol 一次列全缺项，builder 一次改到位，减少来回轮次。
+
+**落地 6 处**：`AGENTS.md`（Phase1 派工边界放开 builder 限写 plan＋「谁写哪」表＋派工顺序链）｜`docs/roles/planner.md`（职责改为把关者，**不合格一律打回 builder，违反按 `WRONG_ROUTE`**）｜`docs/roles/builder.md`（Phase1 例外职责，四条硬约束：只许写 `docs/pm/` plan 正文、一次改到位、禁自行提分或改 `PLAN_GATE`、Phase1 业务代码仍禁）｜`USER_MODEL_OVERRIDE.md`（planner 行口径）｜`ORCA治理体系说明.md`（概览）｜`docs/prompts/编排者提示词.md`（主入口 Phase1 链同步）。
+
+**边界**：**不新增角色**——builder 本就在 9+1 内，只是 Phase1 开「写 plan 正文」这一个口子，其余 Phase1 禁令（禁业务改动／禁 code-reviewer／qa／Release）不变。planner 的**结论性判断**（产品目标、用户与范围、技术可行性、风险与关键假设）仍由它出，只是**落到文档的拟制与改稿由 builder 执行**。
+
+**验证**：`SYNC-OK` / `CHANNEL-OK` / `tm-qualification 17/17` / 8 项一致性总检全过 / 旧口径（`Planner→Research Reviewer→Planner`）全仓无残留。
+
+## 75. APP 品牌资产前置必选（2026-10-08，用户定；来源＝P045 实战暴露的漏项）
+
+**问题**：P045 做了 A/B/C 方向、原型与 Design Freeze，但**品牌资产没有前置锁定**——中文名／英文名／安卓图标／启动画面留到开发阶段由执行者自行决定，结果不可控、必然返工。
+
+**新增单一真源**：`docs/sop/app-brand-assets.md`（与 `app-theme-i18n.md` 并列，后者管主题与多语言；两者同属 APP 前置，互相独立，启动画面底色须与主题三态兼容）。
+
+**必选六件**：中文名称｜英文名称｜安卓图标｜启动画面（Splash/Launch）｜副标题/slogan（仅需要时）｜资产交付形态。
+
+**环节落点（不新增 Skill／Gate／Human Decision）**
+| 环节 | 强制点 |
+|---|---|
+| Product Plan | 「APP 品牌资产方向」字段（命名方向／图标风格／启动画面要求／slogan 是否需要）；自动生成 4 FR＋4 AC；其中**三方向附候选**与**Freeze 锁定最终四项**两类必须进关键 AC 集合 |
+| A/B/C 三方向 | 每方向须附中文名、英文名、图标方向、启动画面方向四类候选，缺一即该方向不合格；三个方向不得共用同一套命名/图标 |
+| 交互原型 | 必须体现启动页（可点击或可预览）并展示命名与图标候选 |
+| Human 2 / Design Freeze | **BRAND Freeze**（第七项语义）锁定最终中文名／英文名／图标／启动画面；未锁定则 Freeze 不成立、Phase2 不得启动 |
+
+**执行约束**：Product Plan 未写品牌资产方向 ⇒ `check-ledger` 报 `APP-BRAND-ASSETS-MISSING`（exit 1）；品牌关键 AC 未覆盖 ⇒ `APP-BRAND-AC-INCOMPLETE`（exit 1）；**未完成最终拍板时 Phase2 执行者不得自行决定名称/图标/启动画面，须停下问**。
+
+**落地**：`docs/sop/app-brand-assets.md`（新建）｜`PRODUCT_PLAN.template.md`（字段＋AC＋关键 AC 硬约束）｜`scripts/model/check-ledger.mjs`（两道新门）｜`app-theme-i18n.md`（姊妹规范指针）｜`AGENTS.md`／`ORCA治理体系说明.md`（APP 前置条目补品牌资产；概览 sop 表补）｜`README.md`（sop 清单）｜`scripts/check-sync.sh`（概览关键词＋2）｜`scripts/_sync-packages.py`（EXTRA 补新 sop）。
+**check-sync 逐字节比对第 30 行本就是 `docs/sop/*.md` 通配**，新规范已被纳管——实测故意改包内文件即 `SYNC-FAIL`，还原后 `SYNC-OK`。
+
+**七颗 Skill 全改**（中央真源 → SM → 10 个 Agent，**70/70 逐文件一致、70/70 含新引用**）：Router 加品牌资产链与四条证据规则｜DRR 加调研范围（命名/图标可读性/启动屏）且「品牌资产不是产品方向」｜VDE 加每方向四类候选｜UIC 加启动页加载/跳转/可跳过交互｜Prototype 加「启动页与命名图标候选须可见」｜**Freeze 加 BRAND Freeze 并把 validator 由六项语义改为七项**（`validate_contract.py` 与 `freeze-contract.md` 同步加 `brand`）｜Traceability 加品牌条目追踪与图标/启动屏 hash 参与 stale。`validate_skillset.py` 已把 `app-brand-assets.md`＋`BRAND Freeze` 加为强制项，防回退。
+
+**验证**：7-Skill validator `VALID: … seven semantics (incl. BRAND) … PASS`；`check-ledger` 正例（品牌＋主题关键 AC 补齐）→ `LEDGER-OK exit 0`，负例（模板原样）→ 两道门同时 `FAIL exit 1`；`SYNC-OK` / `CHANNEL-OK` / `tm-qualification 17/17`。

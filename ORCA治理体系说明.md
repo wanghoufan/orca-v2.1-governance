@@ -88,12 +88,13 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 ## 六、Task Manager Qualification｜Task Manager 资格测试（增量，2026-09-26）
 
 把 TM（编排者）正式纳入模型资格测试；**不新增第 12 角色**，不重做两阶段治理。
+- **Phase1 拟稿分工（2026-10-08 用户定）**：**plan 正文由 builder（`codebuddy/deepseek-v4.1-flash`）拟制与修改，planner（`codex/gpt-6.1-sol`）改为把关者/审查者**——对照 Readiness 清单逐项核、给分、一次列全缺项，**不合格打回 builder 改稿，planner 不亲手写**。目的是把反复重写 plan 的 Sol 调用降下来（省额度）。builder 在 Phase1 **仅开 plan 正文一个口子**，禁碰业务代码；禁自行提分或改 `PLAN_GATE`。
 - 最小评价单位＝**Orchestration Episode**（TM 接有效状态→判下一步→派对 Worker→收结果→推进到下一合法态；聊天轮数不计）。
 - 监督：supervisor 兼 **Task Manager Observer**（只标记异常、按现有机制提醒/唤醒/替喊一次；不评分/不接管/不改表/不跨 Gate）；评分汇总由 **Governance Steward**（治理管理层，非 9+1+1 角色，周期审计）做，只出主备**建议**；**主备由用户最终决定**，Steward 不自动改表。
 - 五维评分 100：派工/下一步 30＋持续推进 25＋治理遵守 20＋响应 15＋资源 10；响应阈值据 watchdog（`CONSUME_STALE_SEC=300`/`COOLDOWN_SEC=900`）分 NORMAL/SLOW/STALL；`infra_error` 不计入能力分。
 - Gate：`Score≥90 且 P0 治理违规=0 且 Human Gate 违规=0 → QUALIFIED`；**采样门槛**（有效 Episode <30 或项目 <3 保持 CANDIDATE，不得凭少量样本判通过）。
 - **产品审查链（2026-10-07 用户定）**：口令「第三阶段产品审查」触发（**「第三阶段」仅为口令字面，不代表新增 Phase**），位置在 Phase1 末尾、Develop Approval Gate 之前，**不新增角色/Phase/Gate**。planner（`codex/gpt-6.1-sol`）任组织者并冻结 Plan 版本→**串行**派两份互不可见的独立审查（实测 codebuddy 双实例并发会互相干扰、且失败是静默 exit 0，故必须串行＋校验产出文件非空；planner 已带 `-s danger-full-access` 可直接写盘（解禁失效时才退回 stdout））（`product-reviewer` × `codebuddy/glm-5.3-flash` 与 `codebuddy/deepseek-v4-pro`，只读）→交回 planner 参考/比较/汇总/裁决→产出 `docs/review/PRODUCT_REVIEW_<plan版本>_<日期>.md`（一致项／分歧＋裁决／仅A／仅B／体验改进／交互顺序／功能候选／**明确不采纳项**）→用户 Human Gate → 说「第二阶段，开发」才进 DEVELOP。审查维度限**用户使用体验／交互逻辑与流程顺序／新增或优化功能**，非代码层面；代码类意见判 `WRONG_ROUTE`。
-- **APP 基础能力前置（2026-10-08 用户定）**：面向用户的 APP **自动继承**主题三态（`LIGHT`/`DARK`/`SYSTEM`，默认 SYSTEM）＋初始中英双语（默认跟随系统，不支持语言回退 `zh-CN`）＋设置持久化＋切换不丢状态；单一真源 `docs/sop/app-theme-i18n.md`。用户不提也会在 Product Plan／三方向／原型／SDD／QA 全链覆盖；**只有用户对某项目明确提特殊要求才允许在 Plan 记覆盖**，Planner/Builder 不得自行取消。沉浸式页面禁擅自强制另一态；可扩展架构（加 ru/ko/th 只增资源不重写核心）是硬性 AC；优先复用官方成熟主题与 i18n 组件。**不新增 Skill/角色/状态/Human Gate**，强制点落在既有 Gate。
+- **APP 基础能力前置（2026-10-08 用户定）**：面向用户的 APP **自动继承**主题三态（`LIGHT`/`DARK`/`SYSTEM`，默认 SYSTEM）＋初始中英双语（默认跟随系统，不支持语言回退 `zh-CN`）＋设置持久化＋切换不丢状态；单一真源 `docs/sop/app-theme-i18n.md`。用户不提也会在 Product Plan／三方向／原型／SDD／QA 全链覆盖；**只有用户对某项目明确提特殊要求才允许在 Plan 记覆盖**，Planner/Builder 不得自行取消。沉浸式页面禁擅自强制另一态；可扩展架构（加 ru/ko/th 只增资源不重写核心）是硬性 AC；优先复用官方成熟主题与 i18n 组件。**APP 品牌资产同样前置必选**（单一真源 `docs/sop/app-brand-assets.md`）：中文名／英文名／安卓图标／启动画面——Product Plan 写方向 → A/B/C 每方向附四类候选 → 原型须体现启动页与命名/图标候选 → **Human 2/Design Freeze 前拍板最终四项**；**未拍板开发阶段不得自行决定**（`check-ledger` 报 `APP-BRAND-ASSETS-MISSING`，Freeze 无 BRAND Freeze 即不成立）。**不新增 Skill/角色/状态/Human Gate**，强制点落在既有 Gate。
 - 证据（**不改现有账本 schema**）：事件日志 `docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`；评分 `scripts/model/tm-qualification.mjs`；测试 `scripts/model/tm-qualification.test.mjs`；规范 `docs/model/TASK-MANAGER-QUALIFICATION.md`。
 - **Episode 记账（2026-10-07 定）**：编排者**每轮收工必自记一行**，一 Episode 一行；非 Episode 的轮次不记也不硬凑。写后必跑 `scripts/model/tm-qualification.mjs` 校验；无计时证据的 `decision_latency_ms` 填 `null` 不许编；历史行不得改写。**母版与两包的 `docs/model/*.jsonl` 永远只留 `_example` 空壳**（母版是分发源，写真实行会致 check-sync `SYNC-FAIL`），真实 Episode 记到各项目自己的账本。**supervisor 抽查对账**（拿 DISPATCH-LOG 真实派工逐条核是否漏记，漏记/对不上打回，补记由编排者执行）。Episode 层证据不替代 DISPATCH-LOG/TASK-MODEL-LOG 派工账。
 - 候选（真调已过）：`opencode-go/deepseek-v4.1-flash`、`opencode-go/mimo-v2.6-flash`（Runtime=opencode）；真实多项目 A/B 数据由用户后续在真实项目跑。
@@ -107,7 +108,7 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 | 模型分工真相源 | `USER_MODEL_OVERRIDE.md` | 11 行精确ID；改表必真调；现势以本表内容为准（历史快照在 `temp/`，回退由用户口头指定编号、按改表规则执行） |
 | 角色卡×11 | `docs/roles/` | 每角色职责＋写入位置；适用角色附输出模板 |
 | 开工提示词 | `docs/prompts/编排者提示词.md` | 一句话开工全文 |
-| 基础设施规范 | `docs/sop/` | docker/supabase/sqlite/android（＋android-machine-profile）/webqa/decision-router/**app-theme-i18n（APP 主题三态＋中英双语基线）**/background-services（去版本号引用） |
+| 基础设施规范 | `docs/sop/` | docker/supabase/sqlite/android（＋android-machine-profile）/webqa/decision-router/**app-theme-i18n（APP 主题三态＋中英双语基线）**/**app-brand-assets（APP 品牌资产：中文名／英文名／图标／启动画面）**/background-services（去版本号引用） |
 | 中央规则（散兵读） | `~/.agents/rules/`＋`~/.agents/AGENTS.md` | docker 等为软链指本仓库 sop；散兵按任务按需读 |
 | 账本 | `docs/model/TASK-MODEL-LOG.jsonl`、`DISPATCH-LOG.jsonl` | 换模型决策的重要依据（先读账本，最终用户定）；`model` 精确写法，含可选 `executed_by`/`chain_status`；校验 `scripts/model/check-ledger.mjs`（FAIL 拦、WARN 供抽查） |
 | TM 资格 | `docs/model/TASK-MANAGER-QUALIFICATION.md`＋`TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`；评分 `scripts/model/tm-qualification.mjs` | Episode/五维评分/Gate＋采样门槛；证据不改账本；主备由用户批准 |

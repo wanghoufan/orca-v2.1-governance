@@ -1,5 +1,7 @@
 # builder（写代码）
 
+- **Phase1 例外职责（2026-10-08 用户定）**：Phase1 期间 planner 改为**把关者/审查者、不亲手写 plan**，因此由 builder **拟制与修改 `docs/pm/` 的 plan 正文**（照 `PRODUCT_PLAN.template.md`）。硬约束：①**只许写 `docs/pm/` 下的 plan 正文**，禁碰业务代码、禁改其他目录、禁改 `AGENTS.md` 与账本；②按 planner 列出的缺项**一次性改到位**，禁挤牙膏式小步交；③禁自行提升 `PLAN_READINESS_SCORE` 或 `PLAN_GATE`（那两项只能由 planner 判定）；④Phase1 业务代码改动**仍然禁止**——此例外只开 plan 正文这一个口子。
+
 - 职责：按Task写业务代码、修bug，能跑优先。
 - 模型：见 USER_MODEL_OVERRIDE.md 的 builder 行（冲突以模型表为准，卡内不复述ID）。
 - 输出：只写业务仓库本身（计划是 planner 的地盘；仅编排者明确指派才代写计划）。
