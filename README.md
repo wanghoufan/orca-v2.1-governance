@@ -59,6 +59,8 @@ cp -R "<母版>/新项目模板包/." <项目目录>/
 # 4) 校验
 ls <项目目录>/docs/qa/产品验收追踪矩阵.template.md                  # 应存在
 ls <项目目录>/docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl    # 应存在（空壳）
+# 先删 docs/model/ 下各账本的 `_example` 行（母版/分发包里是模板空壳，新项目直接跑必然报「示例行未删」）
+sed -i '' "/\"_example\"/d" <项目目录>/docs/model/*.jsonl
 node <项目目录>/scripts/model/check-ledger.mjs                       # 期望 LEDGER-OK
 ```
 
@@ -89,13 +91,13 @@ node <项目目录>/scripts/model/check-ledger.mjs                       # 期�
 - `USER_MODEL_OVERRIDE.md`：模型表（角色/模型/执行通道/调用方式，**唯一口径**，改表即生效，精确ID照抄执行）
 - `GOVERNANCE_VERSION`：版本指针文件（内容：以Git历史为准）
 - `经验一句话.md`：收工一句经验（只追加）
-- `agent.md`：接续开工提示词快照（**临时材料，随交接更新，不受 check-sync 门禁**）
+- `agent.md`：**审查交付约定**（审查者须一次性交付完整结论，不分批问；**临时材料，随交接更新，不受 check-sync 门禁**）。接续开工快照在 `temp/agent.md`，两者不是同一份
 
 **脚本（`scripts/`）**
 - `detect-client.sh`：自动认当前客户端并选派工口（`window_subagent`／`channel_cli`）；每轮开工先跑它
 - `check-channel-preflight.sh`：分工表在用模型 ↔ 通道目录对账，须 `CHANNEL-OK` 才可派工
 - `weekly-channel-check.sh` ＋ `_inject-agents-block.py`、`sync-old-projects.sh`、`migration-status.sh`、`_sync-packages.py`（母版→两包同步唯一入口，**禁手写 sed 复制**）
-- `model/check-ledger.mjs`：三本账本校验（`TASK-MODEL-LOG`／`DISPATCH-LOG`／`TASK-MANAGER-QUALIFICATION-EVENTS`；老项目迁移登记检查用它，须 `LEDGER-OK`）
+- `model/check-ledger.mjs`：**两本**账校验（`TASK-MODEL-LOG`／`DISPATCH-LOG`；`TASK-MANAGER-QUALIFICATION-EVENTS` 由 `tm-qualification.mjs` 校验）；另含 **APP 基线硬门**（`APP-BASELINE-MISSING`／`APP-CRITICAL-AC-EMPTY`／`APP-CRITICAL-AC-INCOMPLETE`，2026-10-08 起为 FAIL 不再是 WARN）。母版/分发包自检用 `--allow-example`（**真实项目禁用**，否则等于放过「示例行未删」）
 - `decision/orca-decide.mjs`：决策侧车；`orchestration/`：L3 watchdog（仅外部/终端编排时部署）
 - `check-sync.sh`：母版↔两包一致性门禁（归一化裸名后逐字节比对），须 `SYNC-OK`
 
@@ -110,7 +112,7 @@ node <项目目录>/scripts/model/check-ledger.mjs                       # 期�
 - `templates/`：归位表模板
 - `pm/` `qa/` `review/`：计划/测试/评审落盘（各照 template）
 - `handoff/`：交接（含模板）；`model/`：模型账本（TASK 首个真实任务前、DISPATCH 首个真实派工前删示例行）＋ TM 资格测试（`TASK-MANAGER-QUALIFICATION.md` 规范/报告、`TASK-MANAGER-QUALIFICATION-EVENTS.jsonl` 事件，评分 `scripts/model/tm-qualification.mjs`）
-- `sop/`：基础设施规范（docker.md、supabase.md、sqlite.md、android.md、android-machine-profile.md、webqa.md、decision-router.md、**app-theme-i18n.md**（APP 基础能力：主题三态＋中英双语，面向用户 APP 默认继承），去版本号引用），新项目自建
+- `sop/`：基础设施规范（docker.md、supabase.md、sqlite.md、android.md、android-machine-profile.md、webqa.md、decision-router.md、**app-theme-i18n.md**（APP 基础能力：主题三态＋中英双语，面向用户 APP 默认继承）、**background-services.md**，去版本号引用），新项目自建
 - `scripts/decision/`：Decision Sidecar orca-decide（用法见其 README 与 docs/sop/decision-router.md）
 
 ## 已删除（用户令，结论均已落实）

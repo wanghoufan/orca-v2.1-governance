@@ -13,6 +13,12 @@ set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PROJECTS_ROOT="${PROJECTS_ROOT:-/Users/zzymima0000/Developer/coding/1.Active}"
 PKG="$ROOT/老项目迁移模板包"
+# 跳过清单（2026-10-08 新增）：逗号分隔的项目名，照原样跳过。
+#   SKIP_LIST="a,b"    —— 显式跳过指定项目
+#   SKIP_DEV_TODAY=1   —— 自动跳过「今天(当天)有 commit」的项目（用户口径：今天有 commit 就算在开发，不动）
+SKIP_LIST="${SKIP_LIST:-}"
+SKIP_DEV_TODAY="${SKIP_DEV_TODAY:-0}"
+TODAY="$(date +%F)"
 STAMP="${STAMP:-2026-10-08}"
 RULES_VERSION="2026-10-08-APP基础能力"
 DRY_RUN="${1:-}"
@@ -45,12 +51,15 @@ docs/sop/webqa.md
 docs/pm/PLAN.template.md
 docs/pm/PRODUCT_PLAN.template.md
 docs/qa/BUGS.template.md
+docs/qa/产品验收追踪矩阵.template.md
 docs/review/CODE_REVIEW.template.md
 docs/review/PRODUCT_BACKLOG.template.md
 docs/review/RESEARCH_REVIEW.template.md
 docs/handoff/HANDOFF.template.md
 docs/handoff/EXT-WORKLOG.template.md
 scripts/model/check-ledger.mjs
+scripts/model/tm-qualification.mjs
+scripts/model/tm-qualification.test.mjs
 scripts/detect-client.sh
 scripts/check-channel-preflight.sh
 docs/sop/background-services.md
@@ -66,10 +75,18 @@ Orca 通用编排者持续推进协议.md
 [ -d "$PROJECTS_ROOT" ] || { echo "FATAL: 找不到项目根 $PROJECTS_ROOT"; exit 1; }
 
 backed=0; copied=0; skipped=0; needmerge=0; agentinj=0; nproj=0
+nskip=0
 
 for dir in "$PROJECTS_ROOT"/*/; do
   d="${dir%/}"; name="$(basename "$d")"
   case "$name" in 0-规则与索引|999-*|临时备份*|0-*) continue;; esac
+  if [ -n "$SKIP_LIST" ]; then
+    case ",$SKIP_LIST," in *",$name,"*) echo "SKIP(清单): $name"; continue;; esac
+  fi
+  if [ "$SKIP_DEV_TODAY" = "1" ] && [ -d "$d/.git" ]; then
+    lastc="$(git -C "$d" log -1 --format=%cd --date=short 2>/dev/null)"
+    if [ "$lastc" = "$TODAY" ]; then echo "SKIP(今天有commit=$lastc): $name"; nskip=$((nskip+1)); continue; fi
+  fi
   # 治理根：根 AGENTS.md；否则向下一层找唯一含 ORCA-RULES-BLOCK 的子目录（2026-10-05，救 043 这类 software/ 内治理）
   govroot="$d"
   if [ ! -f "$d/AGENTS.md" ]; then

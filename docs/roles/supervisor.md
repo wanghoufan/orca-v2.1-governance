@@ -27,7 +27,7 @@
   ```sh
   python3 -c "
   import json,sys
-  req={'date','task','role','model','used','runtime','result','note'}
+  req={'date','task','role','model','used','runtime','result'}  # 2026-10-08：note 为可选（与 check-ledger 对齐；note 仅切备/返工/兜底时必填）
   bad=0
   for n,l in enumerate(open(sys.argv[1]),1):
    s=l.strip()
@@ -49,7 +49,7 @@
   4. C 类变更禁绕 Controlled Reopen（疑似产品/架构变更未进 `PLAN_REOPEN_REQUIRED` 即打回）。
   5. TM 停摆沿用现有 watchdog/恢复职责（唤醒不代做 Gate；见卡末链 ID 校验＋持续推进协议）。
   6. 状态机合法性：`PROJECT_PHASE` 仅 PLAN/WAITING_HUMAN_APPROVAL/DEVELOP/PLAN_REOPEN_REQUIRED 四态；Change C 必经 `PLAN_REOPEN_REQUIRED`。
-- Phase Integrity 抽查第 7 条（独立于上方六查，不改六查标题与编号）：复检 DEVELOP 交付时凭 `docs/qa/` 的产品验收追踪矩阵判放行——关键 AC（＝ `PRODUCT_PLAN` 的「关键 AC 集合」，即 Plan 标 `关键：是` 的 AC）是否全有证据、矩阵是否**逐个列出**了关键任务的可见操作控件名称、预期变化、实际操作与结果并有对应界面证据（**有控件漏列即打回**）；矩阵缺失、关键 AC 标“未测”、或核心按钮失效未修 → 打回。抽查只看矩阵与证据，不重跑 QA。
+- Phase Integrity 抽查第 7 条（独立于上方六查，不改六查标题与编号）：复检 DEVELOP 交付时凭 `docs/qa/` 的产品验收追踪矩阵判放行——关键 AC（＝ `PRODUCT_PLAN` 的「关键 AC 集合」，即 Plan 标 `关键：是` 的 AC）是否全有证据、矩阵是否**逐个列出**了关键任务的可见操作控件名称、预期变化、实际操作与结果（对应 `产品验收追踪矩阵.md` 的「控件／预期变化／实际操作与结果」三列）并有对应界面证据（**有控件漏列即打回**）；矩阵缺失、关键 AC 标“未测”（**注意：该状态已于 2026-10-08 废止，新枚举为 `OPEN`／`PASS`／`FAIL`／`BLOCKED`，「未测」＝`OPEN`，禁再写「未测」**）、或核心按钮失效未修 → 打回。抽查只看矩阵与证据，不重跑 QA。
 - 输出：无独立文档，打回意见直接写在被检输出的评论区/复检行。
 - Phase Integrity 抽查第 8 条（派工口合规，2026-10-05 加）：复检时确认 TM 的派工口**由 `scripts/detect-client.sh` 的 `mode` 决定**而非人工填表——`window_subagent` 时角色应在客户端窗口内派、`channel_cli` 时走通道 CLI 直调；**发现表定通道角色（codebuddy/codex/opencode）被包进客户端 subagent 套娃，或在未探测的情况下自行改口，判违规打回**（依据 AGENTS 派工顺序节「派工口＝自动探测，不填表」）。
 - Phase Integrity 抽查第 9 条（通道预检合规，2026-10-05 加）：确认派工前跑过 `bash scripts/check-channel-preflight.sh` 且结果非 `CHANNEL-STALE`；**`CHANNEL-STALE` 时仍派该角色即打回**；换模型/升客户端后未重跑预检也打回。老项目若缺该脚本（历史原因），先补铺或按 AGENTS「单客户端环境」口径走 CLI 并在复检行注明。

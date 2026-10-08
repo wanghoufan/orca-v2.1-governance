@@ -6,6 +6,9 @@ import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join, basename } from "node:path";
 
 const dir = process.argv[2] || "docs/model";
+// --allow-example（2026-10-08）：仅供**母版/分发包自检**——模板包带 `_example` 空壳，
+// 直接跑必然 exit 1。真实项目禁用此开关，否则「示例行未删」失去强制力。
+const ALLOW_EXAMPLE = process.argv.includes("--allow-example");
 const fails = [];
 const warns = [];
 
@@ -87,9 +90,14 @@ function check(file, need, enums, evidence) {
     }
   }
   const nex = lines.filter((l) => { try { return JSON.parse(l)._example === true; } catch { return false; } }).length;
-  if (n === 0 && nex > 0) fails.push(`${file}: _example 行未删（首个真实任务前删除示例行）`);
-  else if (n === 0) warns.push(`${file}: 空账本（首个真实任务/派工前正常）`);
-  if (n > 0 && nex > 0) fails.push(`${file}: ${nex} _example rows mixed with ${n} real rows (示例行必须在首个真实任务前删除)`);
+  if (n === 0 && nex > 0) {
+    const m = `${file}: _example 行未删（首个真实任务前删除示例行）`;
+    if (ALLOW_EXAMPLE) warns.push(`[--allow-example] ${m}`); else fails.push(m);
+  } else if (n === 0) warns.push(`${file}: 空账本（首个真实任务/派工前正常）`);
+  if (n > 0 && nex > 0) {
+    const m = `${file}: ${nex} _example rows mixed with ${n} real rows (示例行必须在首个真实任务前删除)`;
+    if (ALLOW_EXAMPLE) warns.push(`[--allow-example] ${m}`); else fails.push(m);
+  }
 }
 check("TASK-MODEL-LOG.jsonl",
   ["task", "project", "date", "role", "model", "result", "rework", "escalated", "escalation_reason", "tokens", "cost_cny"],
@@ -111,46 +119,76 @@ function trueSource(root) {
   return m ? m[1] : null;
 }
 
+// APP 基础能力硬门（2026-10-08 B1 升级：从 WARN 升 FAIL）
+// 前一版三处空转：①模板自带六关键字→原样也命中；②只 WARN 而迁移提示词写「WARN 视为通过」；
+// ③只 grep 声明段、从不校验这六类是否真进了「关键 AC 集合」。现改为：
+//   · 六类必须出现在**标了 关键：是 的 AC 条目**里（匹配范围限定到关键 AC 行，不再 grep 整篇）；
+//   · 命中不到 ⇒ FAIL（真拦，不是提醒）；非 APP 项目与历史版本不受影响。
+const APP_AC = [
+  ["主题三态", /LIGHT/], ["SYSTEM 默认", /SYSTEM/], ["中英可用", /zh-CN/],
+  ["不支持语言回退 zh-CN", /回退|fallback/], ["设置持久化", /持久|persist/i],
+  ["切换不丢状态", /不丢|保持|preserv/i],
+];
+
+// 抽出「关键：是」的 AC 条目行（关键 AC 集合），匹配只在这里面做
+function criticalAcLines(text) {
+  const out = [];
+  for (const ln of text.split("\n")) {
+    if (!/AC-\d+/.test(ln)) continue;
+    if (/关键\s*[:：]\s*是|\*\*关键：是\*\*/.test(ln)) out.push(ln);
+  }
+  return out;
+}
+
 function checkAppBaseline(root) {
   const pmDir = join(root, "docs/pm");
   const src = trueSource(root);
   const cands = [];
   if (existsSync(pmDir)) {
     let files = [];
-    try { files = readdirSync(pmDir).filter((f) => f.endsWith(".md") && !f.includes("template")); } catch {}
+    try { files = readdirSync(pmDir).filter((f) => f.endsWith(".md") && !f.includes("template")); } catch { files = []; }
     for (const f of files) {
       if (!/^PRODUCT[_-]?PLAN/i.test(f) && !/Product\s*Plan/i.test(f)) continue;
       cands.push({ label: `docs/pm/${f}`, isSrc: src ? `docs/pm/${f}`.includes(basename(src)) : files.length === 1 });
     }
   }
-  // HANDOFF 指名但在 docs/pm/ 之外的真源（如项目根的用户草稿）也要查
   if (src && !cands.some((c) => c.label.includes(basename(src)))) {
     const direct = readIfExists(join(root, src));
-    if (direct) cands.push({ label: src, isSrc: true });
+    // 只认**产品计划类**文档：技术规格（specs/…spec.md 等）不是 Product Plan，不得当计划判
+    if (direct && /product[\s_-]?plan|产品\s*plan|需求/i.test(src)) {
+      cands.push({ label: src, isSrc: true });
+    }
   }
   for (const c of cands) {
     const text = readIfExists(join(root, c.label));
     if (!text) continue;
-    // 判定是不是「面向用户交付的 APP」：必须命中强特征（平台/客户端形态/主题语言基线任一），
-    // 避免「应用」「客户端服务」这类普通词误报（实测：纯后端看板曾因「应用」二字被误判）。
-    // 否定表述优先：「无移动端」「不做 APP」「不适用」等先剔除，避免否定句造成误判
-    const probe = text.replace(/(无|不含|不做|不涉及|非|不适用|不涉及)[^\n]{0,12}?(Android|iOS|Flutter|小程序|移动端|APP|客户端)/gi, "");
+    const probe = text.replace(/(无|不含|不做|不涉及|非|不适用)[^\n]{0,12}?(Android|iOS|Flutter|小程序|移动端|APP|客户端)/gi, "");
     const strong = /(Android|iOS|Flutter|React\s*Native|小程序|移动端|APP\s*(项目|应用|端)|面向用户交付|客户端\s*App|APK|IPA)/i.test(probe);
     const basis = /(LIGHT|DARK|SYSTEM|深色|浅色|主题切换|zh-CN|多语言|国际化|本地化)/.test(probe);
     if (!strong && !basis) continue;
-    const hasDecl = /(APP\s*基础能力声明|app[-_ ]baseline)/.test(text);
-    if (!hasDecl) {
+    if (!/(APP\s*基础能力声明|app[-_ ]baseline)/.test(text)) {
       const msg = `缺「APP 基础能力声明」（主题三态/语言集/系统跟随/回退/持久化；见 docs/sop/app-theme-i18n.md）`;
       if (c.isSrc) fails.push(`${c.label}: APP-BASELINE-MISSING — ${msg}。不进 Design Pipeline，补齐后再收工。`);
       else warns.push(`${c.label}: WARN 非当前真源的 APP Product Plan ${msg}（历史版本可不补；若将启用则须先补）`);
       continue;
     }
-    const need = [["主题三态", /LIGHT/], ["SYSTEM 默认", /SYSTEM/], ["中英双语", /zh-CN/],
-      ["不支持回退 zh-CN", /回退|fallback/], ["设置持久化", /持久|persist/i], ["切换不丢状态", /不丢|保持|preserv/i]];
-    const missing = need.filter(([, re]) => !re.test(text)).map(([n]) => n);
-    if (missing.length) warns.push(`${c.label}: WARN APP 基线声明已填，但未检出：${missing.join("、")}（关键 AC 无法覆盖）`);
+    // 关键 AC 集合必须非空且覆盖六类
+    const crit = criticalAcLines(text);
+    if (!crit.length) {
+      if (c.isSrc) fails.push(`${c.label}: APP-CRITICAL-AC-EMPTY — 已声明 APP 基线，但关键 AC 集合为空或无一条标「关键：是」；`
+        + `六类（主题三态／SYSTEM 默认／中英可用／回退 zh-CN／持久化／切换不丢状态）必须进关键 AC 集合，不得进 Human Review。`);
+      continue;
+    }
+    const pool = crit.join("\n");
+    const missing = APP_AC.filter(([, re]) => !re.test(pool)).map(([n]) => n);
+    if (missing.length) {
+      if (c.isSrc) fails.push(`${c.label}: APP-CRITICAL-AC-INCOMPLETE — 关键 AC 集合未覆盖：${missing.join("、")}。`
+        + `这六类必须各自有一条标「关键：是」的 AC；补不齐不得进 Human Review。`);
+      else warns.push(`${c.label}: WARN 非当前真源的 APP Plan 关键 AC 未覆盖：${missing.join("、")}`);
+    }
   }
 }
+
 const projectRoot = basename(dir) === "model" ? join(dir, "..", "..") : dir;
 if (existsSync(dir)) checkAppBaseline(projectRoot);
 

@@ -2,6 +2,9 @@
 
 > 本文件为实例，拷进新项目时清空第 1-2 节照模板重写。
 
+- 更新：2026-10-08 全量审查整改第二轮（mimo-v2.6-flash-free 审查，结论 FAIL）：清 P0-A（矩阵扩到 9 列含控件三件、修 supervisor 悬空要求与废止「未测」引用）＋ P0-B（`APP-BASELINE-MISSING` 由 WARN 升 FAIL，新增 `APP-CRITICAL-AC-EMPTY`／`APP-CRITICAL-AC-INCOMPLETE`，匹配范围限定到关键 AC 条目）；补编排者提示词第四口令、README 假红修正＋`--allow-example`、概览三处漏项、check-sync 纳管矩阵模板与预检脚本；铺开链 `FILES` 补 AC 矩阵模板与 `tm-qualification`（**脚本侧，本轮未跨仓实跑**）；清 P2-1/2/5/6/7/10/11/12。**§73**。
+- 更新：2026-10-08 APP 基础能力全局规范 V1.1：主题三态（默认 SYSTEM）＋中英双语（默认跟随系统、不支持回退 zh-CN）＋持久化＋切换不丢状态成为新 APP 默认继承项，`PRODUCT_PLAN` 模板自动生成 9 FR/9 AC 且六类必须进关键 AC 集合；`docs/sop/app-theme-i18n.md` 单一真源；七颗 Design Pipeline Skill 同步；`check-ledger` 加 `APP-BASELINE-MISSING`（本轮已升 FAIL）。**§71/§72**。
+- 更新：2026-10-07 Episode 记账硬约束＋多模型产品审查链（口令「第三阶段产品审查」）：编排者每轮收工必自记一行 Episode；planner 组织、`codebuddy/glm-5.3-flash` 与 `codebuddy/deepseek-v4-pro` **串行**派两份互不可见独立审查（实测 codebuddy 双实例并发互相干扰且静默失败 exit 0）→ 汇总裁决 → Human Gate → `第二阶段，开发`。**§69**。
 - 更新：2026-10-03 **小交接（用户令开发暂时结束）**：产品验收治理整改＋体系更新三件套＋通道预检制度＋每周自动检查＋老项目 32 个全量迁移全部落地并入库（`e73e4af`/`227636d`）；§§1-3 重写为 10-03 现势；§67。
 - 更新：2026-09-28 产品验收治理整改落地：builder×4→reviewer→返工→qa 规则核验(DEGRADED)→返工→neat 同步×3→supervisor(PASS 0/2)→GPT-6 Sol 外部审查(PASS_WITH_FIXES)→返工 P1-1/2/3→neat 同步→experience-recorder(+2)→neat 同步；**实测 FAIL**（自建样例抓到 037 同类两类缺陷）；母版＋两包 **SYNC-OK**；P1-4 用户签收**挂起待用户拍板**；**未 commit**；§60。
 - 更新：2026-09-26 小交接（用户令开发暂时结束）：§§1-3 刷新为小交接现势（治理迭代五批全部落地＋分工表 T23 已 push `c5408ba`；**老项目不归本窗口管**、**真实项目 A/B 用户自己跑**；§59）。
@@ -18,10 +21,10 @@
 - 更新：2026-09-12，收编持续推进协议（§7）＋L3 watchdog 脚本进 `scripts/orchestration/`（§8），两包同步、zip 重建。
 - 更新：2026-09-11，开发暂停收尾（已推 `b84e61d`）。历史旧报告6份已删；`docs/history/` 新增审查报告3份（-y轮/现势/逐派，未提交，待定去留）。现行结论以包内文件＋本 HANDOFF §1-§3 为准。
 
-## 1. 当前工作进展（2026-10-03 小交接现势；用户令开发暂时结束）
+## 1. 当前工作进展（**最新现势见顶部「更新」行与 §§69-73**；本节为 2026-10-03 小交接现势快照，其中 10-08 已被 §71/§72/§73 取代处已就地标注）
 
 - **主线：本轮四件事全部落地、已 commit＋push（最新 `227636d`，另 `e73e4af`）**，母版工作区干净。
-- **① 产品验收治理整改（`36e94ae`）**：把"产品验收"接入**既有 QA Gate**（未新增角色/派工链/Gate）。`PRODUCT_PLAN.template` 增「视觉与交互验收标准（AC 编号）」「关键 AC 集合」（关键不得为空）＋「发布类型」；`BUGS.template` 增 **11 列产品验收追踪矩阵**；`qa.md` 七查→八查＋**不可放行三情形**＋逐个可见操作控件＋落盘要求＋视觉验收最小覆盖；`supervisor.md` 增抽查第 7 条（凭同一矩阵判放行）；`AGENTS.md` 完成口径＋红线；`webqa.md` DEGRADED 口径对齐（唯一解冻项）；`product-reviewer.md` 边界句。**用户签收范围已定（用户 2026-09-28「类别 1」）：仅「首次发布」必须用户点头，按发布类型自动判定，迭代更新/局部修复不强制。**
+- **① 产品验收治理整改（`36e94ae`）**：把"产品验收"接入**既有 QA Gate**（未新增角色/派工链/Gate）。`PRODUCT_PLAN.template` 增「视觉与交互验收标准（AC 编号）」「关键 AC 集合」（关键不得为空）＋「发布类型」；`BUGS.template` 增 11 列产品验收追踪矩阵（**⚠️ 2026-10-08 已废止，见 §72 P1-3：AC 结论唯一落盘位改为独立的 `docs/qa/产品验收追踪矩阵.md`，§73 再扩到 9 列含控件三件；BUGS 只留操作过程证据**）；`qa.md` 七查→八查＋**不可放行三情形**＋逐个可见操作控件＋落盘要求＋视觉验收最小覆盖；`supervisor.md` 增抽查第 7 条（凭同一矩阵判放行）；`AGENTS.md` 完成口径＋红线；`webqa.md` DEGRADED 口径对齐（唯一解冻项）；`product-reviewer.md` 边界句。**用户签收范围已定（用户 2026-09-28「类别 1」）：仅「首次发布」必须用户点头，按发布类型自动判定，迭代更新/局部修复不强制。**
 - **② 体系更新三件套（`d19a6c2`）**：概览 `ORCA治理体系说明.md` 纳入常驻一环（①同步两包 ②同步概览 ③`check-sync` 必须过，"漏更新概览＝未完成"）；`check-sync.sh` 增**概览新鲜度**检查（缺对外必现机制关键词报 `OVERVIEW-STALE`，负例实测 4 项全拦下）；`neat-freak` 卡增对齐清单项；`AGENTS.md` 红线增一条。
 - **③ 通道失配制度（`e73e4af`）**：**senior-expert 换 `codex/gpt-6.1-sol`（T24，真调 exit 0）**——首真调失败根因＝**Codex CLI 0.155.1 模型目录无该模型**，已升 0.159.2（用户 `~/.codex/config.toml` 默认模型随之恢复可用）。新增 `scripts/check-channel-preflight.sh`（表内**在用**模型 ↔ 三通道真实目录对账，缺失报 `CHANNEL-STALE` ＋ exit 1 禁派；假表负例实测 exit=1）+ `scripts/weekly-channel-check.sh` 与 `~/Library/LaunchAgents/com.orca.channel-check.plist`（每周一 09:00，只检查+提醒，**绝不自动升级客户端**；脚本内安全闸自扫 update/install/upgrade 命中即拒运行，**opencode 零更新**）。`AGENTS.md` 派工顺序节增「派工前通道预检」，三件套第 3 步补"动过分工表/通道模型须预检过"。
 - **④ 老项目全量迁移（`e73e4af`，用户令"全部统一改、不许逐个来"）**：**32 个项目**（含新项目 039/040/041）全部同步 2026-09-29 规则；`AGENTS.md` **顶部注入** `ORCA-RULES-BLOCK` 增量区块（只增不删、项目专属规矩原样保留、幂等）；账本**内容零改动**（实绩历史禁重写）；32 个账本**模板示例行已删**，现全部 `LEDGER-OK`（实测 0 FAIL）；259 份 `.旧版-2026-09-29` 备份**保留但加 `.gitignore` 隔离**；**28 个有 git 的项目已提交**（精确 add 治理文件，未碰其业务改动），3 个无 git 只能留文件（`000-alw-个人偏好`／`014-山寨滚仓网站`／`027-蛋白质计算器`）。
@@ -279,14 +282,14 @@
 - 真调：Luna codex 只读跑 check-sync＋DISPATCH 断言，双 exit 0 PASS，未改文件。
 - 表 qa 行回 codex＋双态备注（普通走 Luna，真机走本窗口直驱）；qa 卡/README/HANDOFF §1 同步；两包同步；未 commit，等用户指令。
 
-## 34. PC 本地 rules 软链落地记一笔（2026-09-16，本机环境）
+## 34. PC 本地 rules 软链落地记一笔（2026-09-16，本机环境[重号 §34，勿与前一条混读]）
 
 - 现状：本机（ZhuanZ/Windows）`C:\Users\ZhuanZ\.agents\rules` 原为空目录（AGENTS.md 第 5 节引用其下 docker/supabase/sqlite.md 实为悬空）；今按 §26 设计替换为 **Junction 目录软链**，指回坚果云从 Mac 同步来的母版副本：`E:\000coding\4.Templates（PC）\2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11\docs\sop`。验证：rules 内现可见 docker.md/supabase.md/sqlite.md 三规范，大小与真身一致。
 - 约定（用户确认）：规范只在 Mac 端改，坚果云同步到 PC；本机 rules 软链自动跟随，PC 端当只读入口。
 - 注意：软链位于 `~/.agents`（不在坚果云同步目录内），不会被同步/分发；换机须重建（符合 §27 软链制「跨机器断链时拷实文件并记 HANDOFF」）。向 `~/.agents/rules/` 写/改＝直接改母版真源（路径穿透），PC 端只读。
 - 方法：`Remove-Item` 删空目录 → `New-Item -ItemType Junction`（免管理员）；本环境 PowerShell stdout 回显为空（host 怪癖），用 Git Bash `ls` 验链接与内容。
 
-## 35. 华为 CodeArts Doer 软链落地记一笔（2026-09-16，本机环境）
+## 35. 华为 CodeArts Doer 软链落地记一笔（2026-09-16，本机环境[重号 §35，勿与前一条混读]）
 
 - 背景：华为桌面编程工具（CodeArts Doer）自有一套管理目录 `~/.codeartsdoer`，默认读不到中央 `.agents/AGENTS.md` 与中央技能仓库；本机（ZhuanZ/Windows）按用户要求以软链接入中央，统一「单一真源」。
 - rule（路径无效，已纠偏）：原 `~/.codeartsdoer/rule` 为空目录；曾误建 **Junction 目录软链** → `C:\Users\ZhuanZ\.agents`，文件系统可见中央 `AGENTS.md`+`rules/`，但**工具（opencode 内核）实际不读此目录**（日志坐实其只注入 `~/.claude\CLAUDE.md` 兜底，不取 `rule/`），故该链对"读规则"无效，留作备用/无害，勿误以为生效。
@@ -296,7 +299,7 @@
 - 注意：两条链均在 `~/.codeartsdoer`（不在坚果云同步目录内），换机/重装须重建。补链脚本：`relink-codeartsdoer-skills.ps1`（WorkBuddy 工作区 `2026-09-16-13-34-53\` 下；中央新增技能后跑一次即补齐）。向 `~/.codeartsdoer/rule` 或 `~/.codeartsdoer/skills/*` 写/改＝穿透改中央真源，PC 端只读。
 - 方法：`Remove-Item` 删空目录 → `New-Item -ItemType Junction`（免管理员）；本环境 PowerShell stdout 回显为空，用 Git Bash `ls` 验。
 
-## 36. `~/.claude/CLAUDE.md` 软链入中央（Claude Code 读中央，2026-09-16，本机环境）
+## 36. `~/.claude/CLAUDE.md` 软链入中央（Claude Code 读中央，2026-09-16，本机环境[重号 §36，勿与前一条混读]）
 
 - 背景：`~/.claude/CLAUDE.md` 原是独立手写文件（1777 B，2026-08-03，内容为「全局工作准则」：不寒暄＋编码前思考／简洁优先／精准修改／目标驱动执行四节）。用户要求让真正的 Claude Code 也**读中央**，消除第二份真源。
 - 落地（已完成并验证）：`C:\Users\ZhuanZ\.claude\CLAUDE.md` 已替换为**符号链接** → `C:\Users\ZhuanZ\.agents\AGENTS.md`。验证：`readlink` 指向中央；`cmp` 与中央逐字节一致（2742 B）；`ls -la` 显示 `CLAUDE.md -> .agents/AGENTS.md`。
@@ -304,7 +307,7 @@
 - 原文备份（未丢）：同源完整副本在 `C:\Users\ZhuanZ\.codex\AGENTS.md`（1776 B，2026-08-03 12:45）；另拷一份到 WorkBuddy 工作区 `2026-09-16-13-34-53\CLAUDE.md.原文备份-2026-09-16.md`。
 - 方法／坑（Windows 文件链接）：文件级**硬链/符号链一律需管理员或开发者模式**（目录 Junction 才免权限，见 §34/§35）。**仅开启开发者模式不够**——该权限要**注销重登／重启**取得新登录会话后才进令牌，否则仍报 `UnauthorizedAccessException`；本机两次探测均因此失败（探测即止，未动真文件）。最终以**管理员终端**执行 `cmd /c "del … && mklink C:\Users\ZhuanZ\.claude\CLAUDE.md C:\Users\ZhuanZ\.agents\AGENTS.md"` 一次建成。换机须重建（符合 §27 软链制）。
 
-## 37. TRAE（Trae CN）软链落地记一笔（2026-09-16，本机环境）
+## 37. TRAE（Trae CN）软链落地记一笔（2026-09-16，本机环境[重号 §37，勿与前一条混读]）
 
 - 背景：字节 Trae CN（VS Code 系 AI IDE，v3.3.100，build 2.3.83560）自带 `~/.trae-cn` 目录，默认读不到中央 `.agents/AGENTS.md` 与中央技能仓库；本机按用户「TRAE 帮我接入中央仓库和SKILL」要求以软链接入，统一「单一真源」。
 - 路径纠偏（关键）：用户截图误以为 TRAE 读 `~/.trae-cn/rule`；**逆向其打包 JS 证实实际读 `~/.trae-cn/user_rules/`（目录）＋ 旧式单文件 `~/.trae-cn/user_rules.md`**。`~/.trae-cn/rule` 目录根本不存在，链到那里无效，勿误以为生效。
@@ -315,7 +318,7 @@
 - ⚠️ 待最终确认（可见≠加载）：软链仅文件系统级生效，须**重启 TRAE** 后问它「你的用户级规则来自哪 / 你加载了哪些全局规则」做运行时确认。TRAE 无 opencode 式 `instructions` 配置键，确认只能来自工具自身回答或日志。
 - 注意：两条链均在 `~/.trae-cn`（不在坚果云同步目录内），换机/重装须重建（符合 §27 软链制）。本笔同步写进 `agent-central-mapping` 技能 `references/tool-matrix.md`（新增 TRAE 段），技能 zip 待 Mac 端重打包。
 
-## 38. agent-central-mapping 技能改造为可迁移/跨平台（2026-09-16，本机环境）
+## 38. agent-central-mapping 技能改造为可迁移/跨平台（2026-09-16，本机环境[重号 §38，勿与前一条混读]）
 
 - 起因：用户要求该技能不仅本机用，还要在 Mac / Windows 11 等多设备、以及交给别的智能体使用；须做到**路径不写死**、**资料打包即拷即用**、**按 skill-creator 规范**。
 - 改造（均已落盘，技能位于 `~/.workbuddy/skills/agent-central-mapping/`）：
@@ -372,7 +375,7 @@
 - 派工审计（1.Active）：报告与整改任务书经 Sol 多轮审；结论"历史不追溯"，路线＝治理迭代→老项目迁移→迁移即登记。逐项目待办清单存 `1.Active/ORCA派工账本-逐项目待办清单.md`（4 项目 HANDOFF 已挂待办，未提交，留各自 TM）。
 - 上一真实业务链为 028 等（详见 §33–§49 历史节）；最新提交以 Git 历史为准。
 - 账本：母版 TASK/DISPATCH 均仅 `_example` 行；经验 18 条。
-## 2. 下一步任务（按序，恢复时逐条做）
+## 2. 下一步任务（按序，恢复时逐条做[重号 §2，勿与前一条混读]）
 1. 跑`bash scripts/check-sync.sh`取exit码，落本HANDOFF一行（验证T4两包同步）。
 2. 修P0-1：README:15、ORCA说明§五、HANDOFF§1同步峰谷双路口径（或改“以表为准不复述ID”）。
 3. 修P0-2：DISPATCH runtime枚举加`volcengine-plan`（AGENTS＋supervisor卡＋校验脚本同步）。
@@ -384,7 +387,7 @@
 - 派工以母版`USER_MODEL_OVERRIDE.md`（T4）为准，README/说明/HANDOFF§1旧口径不得作为派工依据；高峰builder按表走volc，runtime暂填`opencode`＋note记`peak/volc`，等P0-2修完再按新枚举填。
 - 冲突听表；换模型用户定；supervisor抽查实派==表三处对账；总监督wake-only（只喊编排者，两次叫不醒才找用户一次）。
 - 恢复读盘顺序：AGENTS→角色卡→override表→本HANDOFF→经验一句话→任务目标放最后。
-## 49. 并行 W2 真 Implementation 演示记一笔（2026-09-24，分支 demo/par-w2）
+## 49. 并行 W2 真 Implementation 演示记一笔（2026-09-24，分支 demo/par-w2[重号 §49，勿与前一条混读]）
 - Parent TASK-DEMO-PAR-003：两独立 docs（feature-a/b.md）分派 volc deepseek / radeon mimo 双 worktree 同写，allowed_paths 无重叠，Integration 两次无冲突合流（先 A 后 B）。
 - 验证：PV_GOOD 校验通，SYNC-OK，分支 demo/par-w2 保留，worktree 未删（演示用）。
 
@@ -661,3 +664,38 @@
 **验证**：`SYNC-OK`（含新增 `README.en.md: 0`）／`CHANNEL-OK`／`tm-qualification 17/17`。
 
 **仍未处置**：P2-1～P2-10（按审查报告第三节表）；P1-7 的实际跨仓重跑（待授权）。
+
+## 73. 第二轮审查整改（2026-10-08，审查者 `opencode/mimo-v2.6-flash-free`，结论 FAIL）
+
+审查报告：`docs/review/GOVERNANCE_REVIEW-2026-10-08-全量体系审查-mimo-v2.6-flash-free.md`（2×P0 / 7×P1 / 14×P2）。逐条实测复核后处置。
+
+**P0-A｜矩阵 schema 承载不了角色卡门禁要求的「控件三件」**（前轮 P1-3 修复引入的新矛盾）
+矩阵从 7 列扩到 **9 列**，新增「控件（逐个列出）／预期变化／实际操作与结果」三列并写明硬要求（只写「点了主要按钮」不算、`href` 存在不算验过）；`docs/roles/qa.md` 落点改指矩阵三列；`docs/roles/supervisor.md` 抽查第 7 条补「对应矩阵三列」并把**已废止的 `未测`** 标注为 `OPEN`、禁再写。**041／045 两实例待机械迁移**（跨仓，本轮未动）。
+
+**P0-B｜APP 基线机器门实测空转**
+实测复现：模板原样、声明全空、关键 AC 集合空 → `LEDGER-OK exit 0`。三重失效：①模板自带六关键字，从模板改写的计划无论填没填都命中；②六类缺失只 WARN，而迁移提示词明写「WARN 视为通过」；③只 grep 声明段、**从不校验是否进了关键 AC 集合**。
+已改为**真拦**：`APP-CRITICAL-AC-EMPTY`（关键 AC 集合空/无一条标「关键：是」）与 `APP-CRITICAL-AC-INCOMPLETE`（六类未全进关键 AC）一律 **FAIL**，且匹配范围**限定到关键 AC 条目行**而非 grep 整篇；另修 `037` 误判（`specs/…spec.md` 技术规格不再被当 Product Plan）。正反例实跑：模板原样 → FAIL；六类补齐 → `LEDGER-OK exit 0`。
+
+**P1**
+- P1-1 编排者提示词：三口令→**四口令**（补 `第三阶段产品审查`，注明「口令字面不代表新增 Phase」＋禁并发＋维度白名单＋汇总不得抄边）；Phase1 链补产品审查链；QA 落盘拆为「过程证据→BUGS／**AC 结论→产品验收追踪矩阵.md**」。
+- P1-2 README 铺包第一步假红：改为「**先删 `_example` 行再跑**」；`check-ledger` 描述由「三本账」订正为「**两本**（EVENTS 由 `tm-qualification.mjs` 校验）」；新增 **`--allow-example`** 开关（母版/分发包自检用，**真实项目禁用**；不带开关仍 FAIL，强制力保留）。
+- P1-3 铺开链（**脚本侧**）：`sync-old-projects.sh` FILES 补 `产品验收追踪矩阵.template.md`＋`tm-qualification.mjs/.test.mjs`；迁移提示词 sop 清单补 `android-machine-profile.md`／`app-theme-i18n.md`／`background-services.md`，并改正 **AC-MATRIX 因果**（取模板**不免除**该报错——它查的是**实例**且须含 `AC-` 条目）。
+- P1-4 HANDOFF：顶部补 2026-10-07／10-08 两行更新；§1 标题指向 §§69-73；§1 里的「11 列矩阵」就地标注已废止；重号（2/34/35/36/37/38/49）用 `[重号 §N，勿与前一条混读]` 标注，**不重排**（维持旧号冻结）。
+- P1-5 `check-sync.sh`：纳管 `docs/qa/产品验收追踪矩阵.template.md` 与 `scripts/check-channel-preflight.sh`（此前二者虽在两包却不受门禁保护）。
+- P1-6 概览：标题日期更新至 2026-10-08；sop 表补 `app-theme-i18n`／`background-services`；`check-ledger` 描述补 `APP-BASELINE-MISSING` 与 `--allow-example`；check-sync 概览关键词加 `APP-BASELINE`／`background-services`（使下次漏改能被 `OVERVIEW-STALE` 兜住）。`README.md` sop 行亦补 `background-services.md`。
+
+**P2（本轮清 8 条）**
+- P2-1 `app-theme-i18n.md` 补**依赖边界**：七颗 Design Pipeline Skill 不随本包分发 ⇒ 只用本模板包时机器强制点只有「声明字段」＋`check-ledger` 三道 APP 门；装了那七颗才额外有各阶段 BLOCKED。
+- P2-2 supervisor `note` 由必填改**可选**（与 `check-ledger` 对齐；切备/返工/兜底时仍必填）。
+- P2-5 DISPATCH 示例行 `runtime` 由 `本窗口` 对齐为 `当前客户端窗口（自动探测）`。
+- P2-6 `check-sync.sh` 清除死引用 `AGENTS.md.tmpnorm`＋文件清单重复条目。
+- P2-7 外部开发者提示词多余代码围栏。
+- P2-10 README 里 `agent.md` 描述订正为「**审查交付约定**」，接续快照在 `temp/agent.md`（两者不是同一份）。
+- P2-11 `acceptance.json` 悬空引用改为「本文件 Markdown 即真源，`acceptance.json` 为可选机器视图」。
+- P2-12 三套矩阵 schema 并存：本轮以 9 列为统一 schema（041/045 实例迁移待跨仓授权）。
+
+**分工表变更**：product-reviewer 由 `opencode/muse-spark-1.3-contributor-free` 改 **`codebuddy/glm-5.3-flash`**（用户令；真调 exit 0 回 ok；旧 ID 移入档案归档）。experience-recorder 改火山方舟 `volcengine-plan/ark-code-latest` **用户令暂缓（当前限额），本轮未动**。
+
+**验证**：`SYNC-OK` / `CHANNEL-OK` / `tm-qualification 17/17` / 10 项残留总检全过 / APP 门正反例实跑通过。
+
+**仍未处置**：041 与 045 两份矩阵实例的 9 列机械迁移（跨仓）；铺开链**实际重跑**（35 项目，含"正在开发的不动"判据待用户确认）；P2-8／9／13／14。

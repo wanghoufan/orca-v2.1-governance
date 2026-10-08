@@ -29,7 +29,8 @@ for pkg in "新项目模板包" "老项目迁移模板包"; do
   check USER_MODEL_OVERRIDE.md "$pkg/USER_MODEL_OVERRIDE.md"
   for f in docs/roles/*.md docs/sop/*.md docs/assets/*; do check "$f" "$pkg/$f"; done
   for f in docs/pm/PLAN.template.md docs/pm/PRODUCT_PLAN.template.md \
-           docs/qa/BUGS.template.md docs/review/CODE_REVIEW.template.md \
+           docs/qa/BUGS.template.md docs/qa/产品验收追踪矩阵.template.md \
+           docs/review/CODE_REVIEW.template.md \
            docs/review/RESEARCH_REVIEW.template.md docs/review/PRODUCT_BACKLOG.template.md \
            docs/handoff/HANDOFF.template.md docs/handoff/EXT-WORKLOG.template.md \
            docs/model/TASK-MODEL-LOG.jsonl docs/model/DISPATCH-LOG.jsonl \
@@ -42,6 +43,7 @@ for pkg in "新项目模板包" "老项目迁移模板包"; do
   check "docs/templates/归位表.template.md" "$pkg/归位表.template.md" # 包根平铺布局
   check_norm "README.md" "$pkg/README.md"
   check "scripts/detect-client.sh" "$pkg/scripts/detect-client.sh"
+  check "scripts/check-channel-preflight.sh" "$pkg/scripts/check-channel-preflight.sh"  # 2026-10-08 补纳管
   # 包根平铺的四份提示词（母版在 docs/prompts/，包内平铺到根）
   check_norm "docs/prompts/编排者提示词.md" "$pkg/编排者提示词.md"
   check_norm "docs/prompts/外部开发者提示词.md" "$pkg/外部开发者提示词.md"
@@ -62,7 +64,7 @@ echo "--- 归一化后预期差（应为 0） ---"
 for f in AGENTS.md README.en.md scripts/orchestration/README.md; do
   case "$f" in
     README.en.md) src=$(mktemp); sed 's#docs/prompts/编排者提示词#编排者提示词#g; s#docs/prompts/Orca 编排治理监督者提示词#Orca 编排治理监督者提示词#g; s#docs/prompts/Orca 通用编排者持续推进协议#Orca 通用编排者持续推进协议#g; s#docs/templates/归位表.template#归位表.template#g' "$f" > "$src";;
-    AGENTS.md) src=$(mktemp); sed 's#docs/prompts/编排者提示词#编排者提示词#g; s#docs/prompts/Orca 编排治理监督者提示词#Orca 编排治理监督者提示词#g; s#docs/prompts/Orca 通用编排者持续推进协议#Orca 通用编排者持续推进协议#g' AGENTS.md.tmpnorm 2>/dev/null; sed 's#docs/prompts/编排者提示词#编排者提示词#g; s#docs/prompts/Orca 编排治理监督者提示词#Orca 编排治理监督者提示词#g; s#docs/prompts/Orca 通用编排者持续推进协议#Orca 通用编排者持续推进协议#g' "$f" > "$src";;
+    AGENTS.md) src=$(mktemp); sed 's#docs/prompts/编排者提示词#编排者提示词#g; s#docs/prompts/Orca 编排治理监督者提示词#Orca 编排治理监督者提示词#g; s#docs/prompts/Orca 通用编排者持续推进协议#Orca 通用编排者持续推进协议#g' sed 's#docs/prompts/编排者提示词#编排者提示词#g; s#docs/prompts/Orca 编排治理监督者提示词#Orca 编排治理监督者提示词#g; s#docs/prompts/Orca 通用编排者持续推进协议#Orca 通用编排者持续推进协议#g' "$f" > "$src";;
     scripts/orchestration/README.md) src=$(mktemp); norm_md "$f" > "$src";;
     *) src="$f";;
   esac
@@ -74,7 +76,7 @@ done
 # 维护约定——将来新增/改动影响体系对外表述的机制（Gate、完成口径、账本字段、通道、验收制度等）时，
 # 必须把该机制的对外必现关键词补进下方清单，并同步更新 ORCA治理体系说明.md；否则该机制漏检。
 # 母版 1 次即可（两包一致性已由上方白名单保证）。
-for kw in "产品验收" "关键 AC" "首次发布" "签收" "不问不报" "detect-client" "window_subagent" "channel_cli" "半套最差" "四类红线" "≤10 行" "Task Manager Qualification" "何时起" "CHANNEL-OK" "产品验收追踪矩阵" "产品审查" "APP 基础能力" "app-theme-i18n"; do
+for kw in "产品验收" "关键 AC" "首次发布" "签收" "不问不报" "detect-client" "window_subagent" "channel_cli" "半套最差" "四类红线" "≤10 行" "Task Manager Qualification" "何时起" "CHANNEL-OK" "产品验收追踪矩阵" "产品审查" "APP 基础能力" "app-theme-i18n" "APP-BASELINE" "background-services"; do
   grep -q "$kw" ORCA治理体系说明.md || { echo "OVERVIEW-STALE: 概览缺 $kw"; fail=1; }
 done
 # 项目治理完整度：产品验收落盘（2026-10-07 增；**只报不阻塞**，与上方 SYNC 主结论解耦）

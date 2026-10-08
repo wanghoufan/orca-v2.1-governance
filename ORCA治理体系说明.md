@@ -1,4 +1,4 @@
-# ORCA V2.1 治理体系说明（对外版，2026-09-28）
+# ORCA V2.1 治理体系说明（对外版，2026-10-08）
 
 > 一页纸讲清：这套体系是什么、怎么运转、模型怎么分工、规范都在哪。
 > 本文件是概览，不能替代真相源做合规审计（完整 Gate、精确派工、验证证据以 AGENTS.md、分工表、HANDOFF 为准）。版本真相以 Git 历史为准。
@@ -33,7 +33,7 @@ Phase2 完工口径（不改主链、不新增 Gate）：完成＝角色交付�
 - 什么情况不许放行：关键项没测、核心路径上的控件没真点过并观察到变化、证据缺失——三者任一即不得判通过。
 - 用户签收：发布类型为**首次发布**的，用户签收通过才算完成（签收前状态记未完成）；迭代更新与局部修复不强制签收。这是用户参与的那一步，不是新加的关卡。
 
-全程账本：每次派工记 `docs/model/DISPATCH-LOG.jsonl`、每任务记 `TASK-MODEL-LOG.jsonl`（`model` 用 `provider/model` 精确写法；含可选 `executed_by`=实际执行者、`chain_status`=角色交付/已验收/未完）；校验 `scripts/model/check-ledger.mjs`（结构错=FAIL、写法不规范=WARN）。老项目迁移后须过**登记检查**（该脚本得 `LEDGER-OK`）才算迁移完成——迁移即登记。产品验收结论落 `docs/qa/产品验收追踪矩阵.md`（模板 `docs/qa/产品验收追踪矩阵.template.md`），`check-sync.sh` 巡检缺失并报 `AC-MATRIX-MISSING`。
+全程账本：每次派工记 `docs/model/DISPATCH-LOG.jsonl`、每任务记 `TASK-MODEL-LOG.jsonl`（`model` 用 `provider/model` 精确写法；含可选 `executed_by`=实际执行者、`chain_status`=角色交付/已验收/未完）；校验 `scripts/model/check-ledger.mjs`（结构错=FAIL、写法不规范=WARN）。老项目迁移后须过**登记检查**（该脚本得 `LEDGER-OK`）才算迁移完成——迁移即登记。产品验收结论落 `docs/qa/产品验收追踪矩阵.md`（模板 `docs/qa/产品验收追踪矩阵.template.md`），`check-sync.sh` 巡检缺失并报 `AC-MATRIX-MISSING`。　**APP 基线硬门**（2026-10-08）：`APP-BASELINE-MISSING`（缺声明）/`APP-CRITICAL-AC-EMPTY`（关键 AC 集合空）/`APP-CRITICAL-AC-INCOMPLETE`（六类未全进关键 AC）一律 **FAIL**，非 WARN；母版/分发包自检用 `--allow-example`（真实项目禁用）。
 
 体系不绑定 Orca 或任何特定客户端，也不按客户端分裂模板包：**每轮开工跑 `scripts/detect-client.sh` 自动认当前客户端并选派工口**：有原生子代理判 `mode=window_subagent`，在该客户端窗口内直派（享真 resume／并行／worktree 隔离）；没有或认不出判 `mode=channel_cli`，走通道 CLI 直调（认不出时只在汇报带一句，不找用户填）。**一份模板包通用于任何客户端**；多阶段需人点头／要产品验收留痕／跨周或会交接／要发布留回执／多角色并行——这套「何时起体系」的判据是：命中任一才算大项目、按包内 README 铺包开工，都不命中就是小活直接干、不铺包不起 Gate（半套最差，按红线打回）。
 
@@ -107,7 +107,7 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 | 模型分工真相源 | `USER_MODEL_OVERRIDE.md` | 11 行精确ID；改表必真调；现势以本表内容为准（历史快照在 `temp/`，回退由用户口头指定编号、按改表规则执行） |
 | 角色卡×11 | `docs/roles/` | 每角色职责＋写入位置；适用角色附输出模板 |
 | 开工提示词 | `docs/prompts/编排者提示词.md` | 一句话开工全文 |
-| 基础设施规范 | `docs/sop/` | docker/supabase/sqlite/android（＋android-machine-profile）/webqa/decision-router（去版本号引用） |
+| 基础设施规范 | `docs/sop/` | docker/supabase/sqlite/android（＋android-machine-profile）/webqa/decision-router/**app-theme-i18n（APP 主题三态＋中英双语基线）**/background-services（去版本号引用） |
 | 中央规则（散兵读） | `~/.agents/rules/`＋`~/.agents/AGENTS.md` | docker 等为软链指本仓库 sop；散兵按任务按需读 |
 | 账本 | `docs/model/TASK-MODEL-LOG.jsonl`、`DISPATCH-LOG.jsonl` | 换模型决策的重要依据（先读账本，最终用户定）；`model` 精确写法，含可选 `executed_by`/`chain_status`；校验 `scripts/model/check-ledger.mjs`（FAIL 拦、WARN 供抽查） |
 | TM 资格 | `docs/model/TASK-MANAGER-QUALIFICATION.md`＋`TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`；评分 `scripts/model/tm-qualification.mjs` | Episode/五维评分/Gate＋采样门槛；证据不改账本；主备由用户批准 |

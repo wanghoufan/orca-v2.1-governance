@@ -122,5 +122,7 @@
 
 - 本规范是 `docs/sop/` 基础设施规范位文件，母版与两分发包由 `scripts/_sync-packages.py` 同步。
 - 各阶段强制点落在既有 Skill 与既有 Gate 上（见 §4），**不新增 Skill、角色、顶层状态或 Human Gate**。
-- Design Pipeline 七颗 Skill 在各自阶段引用本文；缺强制交付内容由各 Skill 原有 Gate 拦截。
+- **依赖边界（2026-10-08 澄清）**：Design Pipeline 七颗 Skill（`design-reference-research`／`visual-direction-exploration`／`ux-interaction-contract`／`interactive-product-prototype`／`design-freeze`／`requirements-traceability`／`orca-design-pipeline`）**不随本治理模板包分发**，它们装在 Skill 体系里（中央 Skill 仓库 → 各 Agent 目录）。
+  ⇒ **只用本模板包时，APP 基线的机器强制点只有两层**：①`PRODUCT_PLAN` 模板的「APP 基础能力声明」字段；②`scripts/model/check-ledger.mjs` 的 `APP-BASELINE-MISSING`／`APP-CRITICAL-AC-EMPTY`／`APP-CRITICAL-AC-INCOMPLETE`（2026-10-08 起为 FAIL）。
+  ⇒ 装了七颗 Skill 时，才额外获得 §4 表中「Design Research／A/B/C／UX Contract／Prototype／Freeze」各阶段的 `BLOCKED` 拦截。**未装时不报错**，只是那些阶段无机器门——这是可选增强，不是缺失。
 - 既有运行正常的项目**不批量重构**；是否接本文由该项目在 `PRODUCT_PLAN` 决定。
