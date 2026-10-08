@@ -58,7 +58,7 @@ Models, channels and invocation methods **always follow the root `USER_MODEL_OVE
 - `docs/history/2.1-更新说明.md` → `docs/history/更新说明.md`
 - `docs/history/ORCA-V2.1-治理审查报告-*` → `docs/history/ORCA-治理审查报告-*` (files since deleted, see Git history)
 - `docs/history/*ORCA V2.1模型与双阶段治理-整改方案 丨 V1.0.md` → `docs/history/*ORCA模型与双阶段治理-整改方案.md`
-- `docs/prompts/*持续推进协议 丨 V1.1.md` → `docs/prompts/Orca 通用编排者持续推进协议.md`
+- `docs/prompts/*持续推进协议 丨 V1.1.md` → `Orca 通用编排者持续推进协议.md`
 - `docs/sop/*交接上下文 丨 V1.0.md` → trailing ` 丨 V1.0` removed (file since deleted, see Git history)
 - Command `【迁移整理｜2.1】` → `【迁移整理】`
 - Command `【编排者｜2.1开工】` → `【编排者｜开工】`

@@ -630,3 +630,34 @@
   - **经验追加一条**（按只追加规矩保留旧那条失效经验，另加新条说明已改归一化逐字节比对）。
   - 终检：`check-sync` **SYNC-OK**；`check-channel-preflight` **CHANNEL-OK**；`sync-old-projects` 32/32 已同步、未同步 0。
 - 未 commit（用户本轮只要求检查，未授权 commit）。
+
+## 71. 全量体系审查整改（2026-10-08，审查者 `volcengine-plan/ark-code-latest`）
+
+审查报告：`docs/review/GOVERNANCE_REVIEW-2026-10-08-全量体系审查-ark-code-latest.md`（结论 `FAIL_WITH_FIXES`，3×P0 / 7×P1 / 10×P2）。本节记本轮处置。
+
+**已修（3×P0 + 1×P1，本轮范围）**
+- **P0-1 planner 沙箱口径自相矛盾**：10-07 加解禁时只改了 `AGENTS.md` Phase2 行，**漏改同一文件产品审查链里「禁给 planner 加 `-s danger-full-access`」那句**，两行互斥。已统一为「planner 已带该标志可直接写盘；解禁失效时才退回 stdout」，同步 `AGENTS.md`／`ORCA治理体系说明.md:95`／`USER_MODEL_OVERRIDE.md` 双审派工表，并在 `经验一句话.md` 追加更正行（历史行不改写）。
+- **P0-2 supervisor DISPATCH 校验块是死代码**：行内 `#` 注释把 `: print(...); bad+=1` 整段吃掉，`if` 无语句体，`python3` 实跑 `SyntaxError: invalid syntax`。已改为独立 `RT` 元组行。**修后实跑**：治理仓真实账本 exit 0；构造负例（runtime 枚举错／used 非主／result 枚举错／缺键）4 类全抓、exit 1。此前该门禁从未真正执行过。
+- **P0-3 product-reviewer 角色卡写「并行」**：与 10-07 实测的「串行禁并发」硬规则冲突。已改为「必须串行，禁并发」，并写明 codebuddy 双实例并发的静默失败教训。
+- **P1-3 两套验收矩阵并存**（用户 2026-10-08 定）：定 `docs/qa/产品验收追踪矩阵.md`（7 列／`OPEN·PASS·FAIL·BLOCKED`）为 **AC 结论唯一落盘位**；`BUGS.template.md` 内旧 11 列矩阵与 `人工判定／未测／DEGRADED` 枚举**废止**，BUGS 只记操作过程证据。同步订正 `docs/roles/qa.md`（原指向旧节名）。理由：唯一真实实例（nightrec 44 条 AC）用的就是新套；状态词与账本 `chain_status` 语义一致；取消 `人工判定` 以堵「无证据改状态」的口子。
+
+**未修（另轮，需用户先定方向）**
+- P1-1 备用列口径二选一、P1-2 角色卡硬编码过时模型 ID、P1-4 HANDOFF 段号与 overview 节号、P1-5 编排者提示词补产品审查链＋「第三阶段」口令命名澄清、P1-6 两包 README.en.md 死链、P1-7 老项目铺开链（跨 31 仓，需授权）
+- P2-1～P2-10 按审查报告第三节表逐条
+
+**验证**：`SYNC-OK` / `CHANNEL-OK` / `tm-qualification 17/17`；supervisor 两个校验块语法 OK 且正反例实跑通过；6 项残留一致性总检全过。
+
+## 72. 审查整改第二轮：P1 剩余项（2026-10-08，用户拍板 K1/K2/K3）
+
+**K1 备用列口径（用户定：留列）**：`AGENTS.md:58` 与 `README.md:81` 原写「表内无备用列」，与表头实有的「备用模型／备用执行通道」两列矛盾。已统一为「**表内备用两列以本表为准**；主通道超时/限额才切备，切备时 DISPATCH `used` 仍填主＋note 记原因」；`README.en.md` 同步（en 版原写 `the table has no backup column`）。
+**K2 口令命名（用户定：不改名）**：口令仍是「第三阶段产品审查」，在 `AGENTS.md`／`ORCA治理体系说明.md`／`docs/prompts/迁移整理提示词.md` 三处补「**『第三阶段』仅为口令字面，不代表新增 Phase**」，避免与「两阶段治理」表述冲突。
+
+**自修项（用户授权 K3）**
+- **P1-2 角色卡硬编码过时模型 ID**：`docs/roles/planner.md`／`senior-expert.md` 原写 `codex/gpt-5.6-sol`（已不在通道目录，照卡派工必 `not supported`）。改为「见 `USER_MODEL_OVERRIDE.md` 对应行，卡内不复述模型 ID」，与其余角色卡一致。
+- **P1-4 HANDOFF 节号漂移**：`ORCA治理体系说明.md` 写「现至 §60」，实际已到 §71。已订正并注明「新节自 §72 起顺延，勿撞旧号」。
+- **P1-6 两包 README.en.md 死链**：两包 `README.md` 均链向 `./README.en.md`，但两包根目录**没有该文件**（`_sync-packages.py` 的 `PAIRS` 漏了它）。①补进同步清单并同步两包（53/54 文件）；②`check-sync.sh` 比对清单加 `README.en.md` 并补布局裸名归一化，防其再次无限漂移；③英文版对齐中文现势：删 `no backup column`、`(11 current items)` 硬编码、`.zip` 条目，`sop/` 补 `app-theme-i18n.md` 与 `background-services.md`。
+- **P1-7 老项目铺开链缺口**（**只改脚本，未跨仓落盘**）：`scripts/sync-old-projects.sh` 的 `FILES` 补 `docs/sop/app-theme-i18n.md`；`STAMP`/`RULES_VERSION` 由 `2026-10-03-客户端无关` 推到 `2026-10-08-APP基础能力`。`--dry-run` 实跑：35 项目／新铺 384／备份留档 314／已是新版 981／AGENTS 区块注入 3，**未落盘**。真正重跑属跨 31+ 仓动作，**须用户单独授权**。
+
+**验证**：`SYNC-OK`（含新增 `README.en.md: 0`）／`CHANNEL-OK`／`tm-qualification 17/17`。
+
+**仍未处置**：P2-1～P2-10（按审查报告第三节表）；P1-7 的实际跨仓重跑（待授权）。

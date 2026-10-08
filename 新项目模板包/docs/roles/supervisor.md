@@ -37,7 +37,8 @@
    if not req<=set(o): print(f'L{n}: 缺键',sorted(req-set(o))); bad+=1
    if o.get('used') != '主': print(f'L{n}: used非常量主:',o.get('used')); bad+=1
    if o.get('result') not in ('PASS','FAIL'): print(f'L{n}: result枚举错:',o.get('result')); bad+=1
-   if o.get('runtime') not in ('本窗口','当前客户端窗口（自动探测）','codebuddy','codex','opencode','Claude Code','—')  # 2026-10-05 补：runtime 取值集合以 override 表通道列为准（自动探测/备用通道新增两值）: print(f'L{n}: runtime枚举错:',o.get('runtime')); bad+=1
+   RT=('本窗口','当前客户端窗口（自动探测）','codebuddy','codex','opencode','Claude Code','—')  # 2026-10-05 补：取值集合以 override 表通道列为准（自动探测/备用通道新增两值）
+   if o.get('runtime') not in RT: print(f'L{n}: runtime枚举错:',o.get('runtime')); bad+=1
   sys.exit(1 if bad else 0)
   " docs/model/DISPATCH-LOG.jsonl
   ```

@@ -23,7 +23,7 @@
 
 | 位 | 角色 ID（不变） | 模型（精确 ID） | 调用方式 |
 |---|---|---|---|
-| 组织者 / 汇总 | `planner` | `codex/gpt-6.1-sol` | `codex exec -m "gpt-6.1-sol" --skip-git-repo-check "任务" </dev/null` |
+| 组织者 / 汇总 | `planner` | `codex/gpt-6.1-sol` | `codex exec -m "gpt-6.1-sol" -s danger-full-access --skip-git-repo-check "任务" </dev/null` |
 | 独立审查 A | `product-reviewer` | `codebuddy/glm-5.3-flash` | `codebuddy --model glm-5.3-flash --effort high -y -p "任务"` |
 | 独立审查 B | `product-reviewer` | `codebuddy/deepseek-v4-pro` | `codebuddy --model deepseek-v4-pro --effort high -y -p "任务"` |
 

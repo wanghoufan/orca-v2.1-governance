@@ -9,6 +9,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PAIRS = [
     ("AGENTS.md", "AGENTS.md"),
     ("README.md", "README.md"),
+    ("README.en.md", "README.en.md"),  # 2026-10-08：此前漏同步，两包 README 的英文链接全是死链
     ("USER_MODEL_OVERRIDE.md", "USER_MODEL_OVERRIDE.md"),
     ("ORCA治理体系说明.md", "ORCA治理体系说明.md"),
     ("GOVERNANCE_VERSION", "GOVERNANCE_VERSION"),

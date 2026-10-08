@@ -13,8 +13,8 @@ set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PROJECTS_ROOT="${PROJECTS_ROOT:-/Users/zzymima0000/Developer/coding/1.Active}"
 PKG="$ROOT/老项目迁移模板包"
-STAMP="${STAMP:-2026-10-03}"
-RULES_VERSION="2026-10-03-客户端无关"
+STAMP="${STAMP:-2026-10-08}"
+RULES_VERSION="2026-10-08-APP基础能力"
 DRY_RUN="${1:-}"
 BLOCK_BEGIN="<!-- ORCA-RULES-BLOCK:BEGIN -->"
 export BLOCK_BEGIN
@@ -36,6 +36,7 @@ docs/roles/supervisor.md
 docs/roles/task-manager.md
 docs/sop/android-machine-profile.md
 docs/sop/android.md
+docs/sop/app-theme-i18n.md
 docs/sop/decision-router.md
 docs/sop/docker.md
 docs/sop/sqlite.md

@@ -58,8 +58,10 @@ for pkg in "新项目模板包" "老项目迁移模板包"; do
 done
 # 预期差确认：归一化后两包与母版应零差异；非零即 fail（不再只 echo）
 echo "--- 归一化后预期差（应为 0） ---"
-for f in AGENTS.md scripts/orchestration/README.md; do
+# README.en.md（2026-10-08 增）：此前不在比对范围，英文导航无限漂移且两包英文链接是死链
+for f in AGENTS.md README.en.md scripts/orchestration/README.md; do
   case "$f" in
+    README.en.md) src=$(mktemp); sed 's#docs/prompts/编排者提示词#编排者提示词#g; s#docs/prompts/Orca 编排治理监督者提示词#Orca 编排治理监督者提示词#g; s#docs/prompts/Orca 通用编排者持续推进协议#Orca 通用编排者持续推进协议#g; s#docs/templates/归位表.template#归位表.template#g' "$f" > "$src";;
     AGENTS.md) src=$(mktemp); sed 's#docs/prompts/编排者提示词#编排者提示词#g; s#docs/prompts/Orca 编排治理监督者提示词#Orca 编排治理监督者提示词#g; s#docs/prompts/Orca 通用编排者持续推进协议#Orca 通用编排者持续推进协议#g' AGENTS.md.tmpnorm 2>/dev/null; sed 's#docs/prompts/编排者提示词#编排者提示词#g; s#docs/prompts/Orca 编排治理监督者提示词#Orca 编排治理监督者提示词#g; s#docs/prompts/Orca 通用编排者持续推进协议#Orca 通用编排者持续推进协议#g' "$f" > "$src";;
     scripts/orchestration/README.md) src=$(mktemp); norm_md "$f" > "$src";;
     *) src="$f";;
