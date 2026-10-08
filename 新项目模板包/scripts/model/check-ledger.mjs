@@ -110,13 +110,24 @@ check("DISPATCH-LOG.jsonl",
 // 背景：APP 主题/多语言默认要求只写在 PRODUCT_PLAN 模板里，Phase1 收工时无人拦，
 // 要到 Design Pipeline 才 BLOCKED（拦得住但白干一轮文档）。这里把校验前移到收工检查。
 // 只报 FAIL/WARN，不新增流程与 Gate。规则见 docs/sop/app-theme-i18n.md。
+// 路径归一：去前导 ./ 与重复斜杠，便于精确比对
+function normalizePath(p) {
+  return String(p).replace(/\/\.\//g, "").replace(/\/\/\//g, "/").replace(/^\.\//, "");
+}
+
 function readIfExists(p) { try { return existsSync(p) ? readFileSync(p, "utf8") : ""; } catch { return ""; } }
 
 // HANDOFF 指名的需求真源（PLAN_VERSION 行里指向的 Plan 文件路径）
 function trueSource(root) {
   const h = readIfExists(join(root, "docs/handoff/HANDOFF.md"));
-  const m = h.match(/PLAN_VERSION[^\n]*?`([^`]+\.md)`/);
-  return m ? m[1] : null;
+  if (!h) return { src: null, err: "docs/handoff/HANDOFF.md 不存在，无法判定需求真源" };
+  const line = h.split("\n").find((l) => /PLAN_VERSION/.test(l));
+  if (!line) return { src: null, err: "HANDOFF 无 PLAN_VERSION 行，需求真源不可判定" };
+  const m = line.match(/`([^`]+\.md)`/);
+  if (!m) return { src: null, err: "HANDOFF 的 PLAN_VERSION 未用反引号标出 Plan 文件路径，真源不可判定" };
+  const p = m[1];
+  if (!existsSync(join(root, p))) return { src: null, err: `HANDOFF 的 PLAN_VERSION 指向的文件不存在：${p}` };
+  return { src: p, err: null };
 }
 
 // APP 基础能力硬门（2026-10-08 B1 升级：从 WARN 升 FAIL）
@@ -127,16 +138,21 @@ function trueSource(root) {
 // APP 品牌资产（2026-10-08）：与主题/多语言同属 APP 前置，单一真源 docs/sop/app-brand-assets.md
 const BRAND_DECL = /(APP\s*品牌资产方向|品牌资产方向)/;
 const BRAND_AC = [
-  ["三方向附命名候选", /中文名|中文名称/],
-  ["三方向附图标方向", /图标/],
-  ["三方向附启动画面方向", /启动画面|Splash|Launch/i],
-  ["Freeze 锁定最终四项", /最终拍板|Freeze.*锁定|锁定.*最终/],
+  ["三方向附命名候选", /中文名|中文名称|命名候选|名称建议|命名/],
+  ["三方向附图标方向", /图标|icon/i],
+  ["三方向附启动画面方向", /启动画面|启动页|Splash|Launch|闪屏/i],
+  ["Freeze 锁定最终四项", /最终拍板|最终定稿|Freeze.*锁定|锁定.*最终|冻结.*最终/],
 ];
 
+// 关键词门只验字面，故必须同时接受中文等价说法——否则「主题三态：浅色/深色/跟随系统」
+// 这类完全合规的写法会被误判 FAIL（2026-10-08 实测正例暴露）。
 const APP_AC = [
-  ["主题三态", /LIGHT/], ["SYSTEM 默认", /SYSTEM/], ["中英可用", /zh-CN/],
-  ["不支持语言回退 zh-CN", /回退|fallback/], ["设置持久化", /持久|persist/i],
-  ["切换不丢状态", /不丢|保持|preserv/i],
+  ["主题三态", /LIGHT|浅色|深色|三态/],
+  ["SYSTEM 默认", /SYSTEM|跟随系统|系统主题|系统外观/],
+  ["中英可用", /zh-CN|中文|英语|english|\ben\b/i],
+  ["不支持语言回退 zh-CN", /回退|fallback|兜底/],
+  ["设置持久化", /持久|persist|重启保留|重启保持/i],
+  ["切换不丢状态", /不丢|不丢业务|保持|preserv|状态保持/i],
 ];
 
 // 抽出「关键：是」的 AC 条目行（关键 AC 集合），匹配只在这里面做
@@ -151,22 +167,42 @@ function criticalAcLines(text) {
 
 function checkAppBaseline(root) {
   const pmDir = join(root, "docs/pm");
-  const src = trueSource(root);
+  // 本项目根本没有 Product Plan（纯后端仓/未立项仓）⇒ 本检查不适用，直接跳过
+  if (!existsSync(pmDir)) return;
+  const ts = trueSource(root);
+  const src = ts.src;
   const cands = [];
   if (existsSync(pmDir)) {
     let files = [];
     try { files = readdirSync(pmDir).filter((f) => f.endsWith(".md") && !f.includes("template")); } catch { files = []; }
     for (const f of files) {
       if (!/^PRODUCT[_-]?PLAN/i.test(f) && !/Product\s*Plan/i.test(f)) continue;
-      cands.push({ label: `docs/pm/${f}`, isSrc: src ? `docs/pm/${f}`.includes(basename(src)) : files.length === 1 });
+      // 精确匹配真源路径；不再用 basename 包含判断（改名即可绕过＝漏洞）
+      const label = `docs/pm/${f}`;
+      const same = (p) => p === label || p === f || normalizePath(p) === normalizePath(label);
+      cands.push({ label, isSrc: same(src) });
     }
   }
-  if (src && !cands.some((c) => c.label.includes(basename(src)))) {
+  // HANDOFF 指名但在 docs/pm/ 之外的真源（如项目根的用户草稿）也要查
+  if (src && !cands.some((c) => c.isSrc)) {
     const direct = readIfExists(join(root, src));
     // 只认**产品计划类**文档：技术规格（specs/…spec.md 等）不是 Product Plan，不得当计划判
     if (direct && /product[\s_-]?plan|产品\s*plan|需求/i.test(src)) {
       cands.push({ label: src, isSrc: true });
     }
+  }
+  // 需求真源不可判定或与候选都不匹配 ⇒ FAIL（2026-10-08）。
+  // 修掉一个旁路：此前用 basename 包含判断，改个文件名即可让强门静默降级成 WARN。
+  if (!src) {
+    fails.push(`APP-TRUEOUT-SOURCE-UNRESOLVED — ${ts.err}。docs/pm 下有 Product Plan 但无法确认哪份是真源时，`
+      + `不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 \`路径.md\` 为需求真源）后重跑。`);
+    return;
+  }
+  if (cands.length && !cands.some((c) => c.isSrc)) {
+    fails.push(`APP-TRUEOUT-SOURCE-MISMATCH — HANDOFF 的 PLAN_VERSION 指向 \`${src}\`，`
+      + `但 docs/pm 下没有同名 Plan（现有：${cands.map((c) => c.label).join("、")}）。`
+      + `真源被改名或移走时不得默认放行：把 PLAN_VERSION 改成实际路径后重跑。`);
+    return;
   }
   for (const c of cands) {
     const text = readIfExists(join(root, c.label));

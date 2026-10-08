@@ -740,3 +740,57 @@
 **七颗 Skill 全改**（中央真源 → SM → 10 个 Agent，**70/70 逐文件一致、70/70 含新引用**）：Router 加品牌资产链与四条证据规则｜DRR 加调研范围（命名/图标可读性/启动屏）且「品牌资产不是产品方向」｜VDE 加每方向四类候选｜UIC 加启动页加载/跳转/可跳过交互｜Prototype 加「启动页与命名图标候选须可见」｜**Freeze 加 BRAND Freeze 并把 validator 由六项语义改为七项**（`validate_contract.py` 与 `freeze-contract.md` 同步加 `brand`）｜Traceability 加品牌条目追踪与图标/启动屏 hash 参与 stale。`validate_skillset.py` 已把 `app-brand-assets.md`＋`BRAND Freeze` 加为强制项，防回退。
 
 **验证**：7-Skill validator `VALID: … seven semantics (incl. BRAND) … PASS`；`check-ledger` 正例（品牌＋主题关键 AC 补齐）→ `LEDGER-OK exit 0`，负例（模板原样）→ 两道门同时 `FAIL exit 1`；`SYNC-OK` / `CHANNEL-OK` / `tm-qualification 17/17`。
+
+## 76. 第三轮体系审查整改（2026-10-08，审查者 `muse-spark-1.3-contributor`）
+
+审查报告：`review/GOVERNANCE_REVIEW-2026-10-08-体系审查-muse-spark-1.3-contributor.md`（3×P0 矛盾 ＋ 若干 P1/P2 ＋ 落实缺口分析）。
+
+**最要紧一条（我自己上一轮改出来的）**：`scripts/check-sync.sh` 尾段 `case` 的 `AGENTS.md` 分支被截断成两条 `sed` 杂糅（插入 `README.en.md` 行时损坏）。**实测确认门禁当时仍能拦住**（改包内 `AGENTS.md` → `SYNC-FAIL exit 1`，计数 0/2 正常），但那是靠 shell 巧合在跑、结构不可信。**已修复**为单条完整 `sed … "$f" > "$src"`，`bash -n` 通过、计数可信。
+
+**P0 三处矛盾（全部实测复核成立，已修）**
+1. `docs/roles/task-manager.md` 的 Phase1 链仍是 10-08 前的旧链（「禁派 builder/code-reviewer/qa」），与 `AGENTS.md`＋builder 卡＋planner 卡的新链互斥——执行者照旧卡会把 builder 派工当违规打回。已同步为新链，并写明 builder 在 Phase1 仅限写 `docs/pm/` plan 正文、仍禁 code-reviewer/qa 与业务改动。
+2. `docs/roles/builder.md` 内「输出：只写业务仓库本身（计划是 planner 的地盘；仅编排者明确指派才代写）」与同卡 Phase1 例外职责自相矛盾。已改为「Phase2 写业务仓库；Phase1 写 plan 正文（『计划是 planner 地盘』是 10-08 前的旧划分，已作废）」。
+3. `USER_MODEL_OVERRIDE.md` qa 行「`-s` 仅限 QA、其他角色禁带」与 `AGENTS.md`＋概览「2026-10-07 已放宽到 QA＋planner＋senior-expert」打架，而同表 planner/senior 行已带该标志。已改为「其他角色是否可带以 `AGENTS.md` 解禁口径为准，禁超范围，带标志须账本 note 记账」。
+
+**P1**
+- 概览流程图第 18 行仍是旧链「planner↔reviewer 多轮打磨」→ 已改为 builder 拟稿→reviewer 审→planner 把关打回 builder。
+- `app-brand-assets.md` 补**依赖边界段**（与 `app-theme-i18n.md` §6 对等）：品牌资产的阶段级拦截全依赖七颗 Design Pipeline Skill（不随本模板包分发），只用本模板包时机器强制点仅声明字段＋`check-ledger` 两道门。**修掉「只装模板包会高估品牌门强制力」的误导**。
+- 概览补三条语义：`-s` 解禁以 `AGENTS.md` 为准｜Episode 记账三条（非 Episode 不记/禁凑数、不得改写历史行、母版与两包只留空壳）｜主题/品牌「未装 Skill 无机器门」差异。
+- `经验一句话.md` 2026-10-07「汇总走 stdout 落盘」旧绕行结论**就地加修订标**（stdout 现仅作解禁失效兜底），未改写历史行。
+
+**P2**
+- `docs/pm/PLAN.template.md` 补「**APP 基础能力承接**」栏（主题/双语/品牌各项回指 Phase1 的 AC 编号与 BRAND Freeze 引用），修 Phase2 Traceability 断链。
+- 档案行 3 `codex/gpt-6-sol` 由 ✅ 改为 📦（历史，已不可用），避免被误当可用。
+- qa 行「supervisor 不记偏离」改为以 `AGENTS.md`「TM 代做边界」为准——真机直驱与 TM 兜底**一律记 `executed_by`＋note**。
+- `AGENTS.md` 明确 DISPATCH 的 **note 为可选键**（7 必需键 + note 可选），与 supervisor 校验块口径一致。
+
+**验证**：`SYNC-OK` / `CHANNEL-OK` / `tm-qualification 17/17` / 9 项整改后总检全过 / check-sync 破损实修后计数可信（正常 0、漂移 2、`bash -n` 通过）。
+
+**未处置（中期，需用户定方向）**：审查第二节列的「有体系但落不了地」缺口——小活豁免旁路、APP 判定可主动规避（关键词推断）、非真源 Plan 只 WARN 可降级、`isSrc` 用 basename 包含判定易被改名绕、关键词门只验字面不验语义、AC 巡检只报不阻塞、升级只数 supervisor FAIL、Human Gate 口头放行不校验 `PLAN_GATE`、双审同版本不重跑可绕、断链项目永久漂移。这些都要改判定逻辑或新增门，属机制变更。
+
+## 77. 修「改名即可绕过真源检查」旁路（2026-10-08，用户同意先修第 1 条）
+
+**审查指出的旁路**：`checkAppBaseline` 用 `docs/pm/X.md".includes(basename(PLAN_VERSION))` 判定「哪份是真源」——把 Plan 改名即可让强门**静默从 FAIL 降级成 WARN**；且 `PLAN_VERSION` 缺失/指空/指向不存在文件时 `src` 为 null，逻辑上直接放行。
+
+**改动**
+- `isSrc` 判定由 basename 包含改为**精确路径匹配**（新增 `normalizePath` 归一 `./` 与重复斜杠，故 `./docs/pm/X.md` 与 `docs/pm/X.md` 仍等价）。
+- `trueSource` 返回 `{src, err}`：HANDOFF 不存在 / 无 `PLAN_VERSION` 行 / 未用反引号标路径 / 指向文件不存在 ⇒ `src=null` 且带原因。
+- 新增两个 FAIL 码：`APP-TRUEOUT-SOURCE-UNRESOLVED`（有 `docs/pm/*.md` 但真源不可判定）、`APP-TRUEOUT-SOURCE-MISMATCH`（PLAN_VERSION 指向的文件在 `docs/pm/` 下不存在＝被改名或移走）。**不再默认放行。**
+- 判定顺序修正：**先判「本项目根本没有 `docs/pm/`」→ 跳过**（纯后端仓/未立项仓不该被本检查拦），再看真源是否可判定。
+
+**顺带修的关键词门缺陷（实测正例暴露）**：`AC-001：主题三态可用` 这类完全合规写法被判 FAIL——机器只认字面 `LIGHT`/`SYSTEM`/`zh-CN`。`APP_AC` 与 `BRAND_AC` 的正则**放宽为中英双语等价**（浅色/深色/三态、跟随系统/系统外观、中文/英语/english、回退/兜底、闪屏/启动页…），否则收紧判定只会制造误伤。
+
+**实测（五用例全过）**
+| 用例 | 期望 | 实测 |
+|---|---|---|
+| 正例：中文说法、无一个英文模型词 | exit 0 | `LEDGER-OK` exit 0 ✓ |
+| 攻击①：PLAN_VERSION 指向不存在文件 | exit 1 | `UNRESOLVED` exit 1 ✓ |
+| 攻击②：真源被改名 | exit 1 | exit 1 ✓ |
+| 攻击③：真源存在但缺 APP 声明 | exit 1 | `APP-BASELINE-MISSING` exit 1 ✓ |
+| 边界：项目无 `docs/pm/` | 跳过 | exit 0 ✓ |
+
+**过程中自己引入并修掉的两个错**：①`trueSource` 改返回对象后漏改一处 `join(root, src)`，`src=null` 时抛 TypeError（先撞 `tm-qualification` 17/17 → 16/17 才发现）；②「无 `docs/pm/` 也报 TRUEOUT」导致 `ledger-good` 夹具回归失败。两者都是靠**正例/攻击例/边界例三套 + 17/17 回归**抓到的。
+
+**验证**：`tm-qualification 17/17` / `SYNC-OK` / `CHANNEL-OK` / 五用例全过。
+
+**仍未处置的旁路**（审查第二节，需用户定方向）：APP 适用性靠关键词推断可主动规避（写「不适用/后端服务」即跳过）｜关键词门只验字面不验语义（已放宽中文等价，仍非语义校验）｜AC 巡检只报不阻塞｜升级只数 supervisor FAIL｜Human Gate 口头放行不校验 `PLAN_GATE`｜双审同版本不重跑｜断链项目永久漂移｜小活豁免旁路。

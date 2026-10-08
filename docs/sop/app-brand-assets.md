@@ -81,4 +81,6 @@
 | Human 2 / Freeze | `design-freeze` 的 **BRAND Freeze**（第七项语义）——未锁定不得 Freeze |
 
 - 品牌资产与主题/多语言（`app-theme-i18n.md`）**互相独立但同属 APP 前置**：启动画面底色须与主题三态兼容，但不因此合并两份规范。
-- 七颗 Design Pipeline Skill 的引用与校验以母版 `scripts/check-sync.sh` 同步的两包为准；Skill 本体装在 Skill 体系里（中央 Skill 仓库 → 各 Agent 目录），**不随本模板包分发**。
+- **依赖边界（2026-10-08 澄清，与 `app-theme-i18n.md` §6 对等）**：上表中的**阶段级拦截全部依赖七颗 Design Pipeline Skill**（`design-reference-research`／`visual-direction-exploration`／`ux-interaction-contract`／`interactive-product-prototype`／`design-freeze`／`requirements-traceability`／`orca-design-pipeline`），它们装在 Skill 体系里（中央 Skill 仓库 → 各 Agent 目录），**不随本治理模板包分发**。
+  ⇒ **只用本模板包时，品牌资产的机器强制点只有两层**：①`PRODUCT_PLAN` 的「APP 品牌资产方向」字段；②`scripts/model/check-ledger.mjs` 的 `APP-BRAND-ASSETS-MISSING` / `APP-BRAND-AC-INCOMPLETE`。
+  ⇒ 装了七颗 Skill 时，才额外获得 §2 各阶段的 `BLOCKED` 拦截（尤其 `design-freeze` 的 **BRAND Freeze**）。**未装时不报错**——那些阶段无机器门，属可选增强，不要高估强制力。

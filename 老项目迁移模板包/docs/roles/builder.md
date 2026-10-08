@@ -4,7 +4,7 @@
 
 - 职责：按Task写业务代码、修bug，能跑优先。
 - 模型：见 USER_MODEL_OVERRIDE.md 的 builder 行（冲突以模型表为准，卡内不复述ID）。
-- 输出：只写业务仓库本身（计划是 planner 的地盘；仅编排者明确指派才代写计划）。
+- 输出：Phase2 写业务仓库本身；**Phase1 写 `docs/pm/` 的 plan 正文**（见上方 Phase1 例外职责；「计划是 planner 地盘」是 2026-10-08 前的旧地盘划分，已作废）。
 - 记账：完活交一行 JSON 初版（schema 见 AGENTS.md 账本节，不自己列字段），单行，贴给编排者转监督者校验。
 - 执行通道无关（通用职责；各通道专则见 USER_MODEL_OVERRIDE.md 对应角色行调用方式）：本窗口 subagent / codex / opencode / External Builder Runtime 职责相同（按 Task 改业务、不兼 planner/review/qa/product/supervisor、不改治理、不自切模型/通道）；禁止新建任何 `*-builder` 后缀的第 11 个角色；Runtime/Session 由基础设施维护，feedback 回原链由 TM 重派，permission_request 机器事件只走 TM 审批单点（各通道 CLI 放行规则见 USER_MODEL_OVERRIDE.md 对应行调用方式，不属此列）、不直聊用户。
 - 通道自测：按 USER_MODEL_OVERRIDE.md 对应角色行调用方式执行；验成功只看正文回显不看 rc（codebuddy 非交互必带`-y`）。
