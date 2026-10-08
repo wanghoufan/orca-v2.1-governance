@@ -26,7 +26,13 @@ DIRS = ["docs/roles", "docs/sop", "scripts/model", "docs/assets"]
 #   GOVERNANCE_REVIEW-*.md / RESEARCH_REVIEW-*.md / PLAN-*.md / HANDOFF.md 等，**模板包不该带实例记录**）
 TEMPLATE_DIRS = ["docs/pm", "docs/qa", "docs/review", "docs/handoff"]
 EXTRA = ["scripts/detect-client.sh", "scripts/model/check-ledger.mjs",
-         "scripts/check-channel-preflight.sh"]  # weekly-channel-check.sh 是母版 launchd 专用，不随包分发
+         "scripts/check-channel-preflight.sh",  # weekly-channel-check.sh 是母版 launchd 专用，不随包分发
+         # 账本空壳（2026-10-07 补）：此前不在同步清单里，母版改动后 check-sync 报 SYNC-FAIL。
+         # 母版只留 _example 模板行，真实行落各项目自己的账本；此处同步保证两包拿到同一份空壳。
+         "docs/model/TASK-MODEL-LOG.jsonl",
+         "docs/model/DISPATCH-LOG.jsonl",
+         "docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl",
+         "docs/model/JEV-DECISION-LOG.jsonl"]
 # 母版正文里的路径引用 -> 包内裸名
 STRIP = ["docs/prompts/编排者提示词", "docs/prompts/外部开发者提示词",
          "docs/prompts/Orca 编排治理监督者提示词", "docs/prompts/Orca 通用编排者持续推进协议",

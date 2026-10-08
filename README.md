@@ -37,6 +37,39 @@
 
 **别做的事**：不要把 `新项目模板包/` 整个文件夹丢进项目根（会多一层目录、路径全错）；不要拷母版 Git 历史或别的项目的 HANDOFF；老项目不要重铺（规则升级由母版 `scripts/sync-old-projects.sh` 自动铺开）。
 
+### 新项目怎么铺（两种情况，别搞混）
+
+| 项目目录状态 | 怎么做 | 为什么 |
+|---|---|---|
+| **空目录**（只有 `.git`／`.project.yaml`／`.DS_Store`） | **整包拷** `新项目模板包/` 的**全部内容**到项目根（`cp -R "<母版路径>/新项目模板包/." <项目根>/`，注意末尾 `/.`，不要多套一层目录） | 不会漏文件。人工逐文件铺最容易漏 `docs/model/` 下四本账本空壳、`scripts/model/fixtures/`、后加的模板文件——这些漏了要到后续门禁才爆，且爆的时候查不出来。空目录 `cp -R` 无覆盖风险 |
+| **非空目录**（已有文件／已有治理文件／已有业务代码） | **只覆盖规则层＋补新增，实例层一律不碰** | 非空目录整包拷会把实例记录（`docs/pm/` 的计划、`docs/qa/BUGS-*.md`、`docs/handoff/HANDOFF.md`、账本真实行、业务代码）静默顶成空模板，**且不报错** |
+
+**空目录整包拷的正确写法（带回滚保障）**：
+
+```bash
+# 1) 目标必须干净
+ls -A <项目目录>          # 期望只有 .git / .project.yaml / .DS_Store
+
+# 2) 先原子备份——把「不可逆」变成「可回退」
+mv <项目目录> <项目目录>.bak && mkdir <项目目录>
+
+# 3) 整包拷（末尾 /. 关键，漏了会多一层目录）
+cp -R "<母版>/新项目模板包/." <项目目录>/
+
+# 4) 校验
+ls <项目目录>/docs/qa/产品验收追踪矩阵.template.md                  # 应存在
+ls <项目目录>/docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl    # 应存在（空壳）
+node <项目目录>/scripts/model/check-ledger.mjs                       # 期望 LEDGER-OK
+```
+
+**非空目录的「规则层」清单**（只覆盖这几份，其余一律不碰）：
+`AGENTS.md`｜`USER_MODEL_OVERRIDE.md`｜`ORCA治理体系说明.md`｜`经验一句话.md`｜`scripts/model/check-ledger.mjs`｜`scripts/detect-client.sh`｜`scripts/check-sync.sh`｜`scripts/check-channel-preflight.sh`
+＋ **补新增**（不存在才放，已存在不覆盖）：`docs/qa/产品验收追踪矩阵.template.md`｜`docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`｜`docs/model/JEV-DECISION-LOG.jsonl`
+
+**规则文件不要挑行合并**：要么整个文件覆盖，要么按归位表整包处理——手工挑行是这类操作里最容易漏、最容易冲突的做法。
+
+**`USER_MODEL_OVERRIDE.md` 在包里是实文件**（不是软链），落地后按 `AGENTS.md` 的软链制改成软链指母版真源；改之前先备份旧实文件。
+
 ## 用户只需记住三个口令
 
 - `第一阶段，计划`：进 Phase1（PLAN），Planner＋Research Reviewer 出 PRODUCT_PLAN，≥90 且模板 Gate 全条件满足（P0=0＋blocking P1=0＋事实/假设验证）才找你。
@@ -62,7 +95,7 @@
 - `detect-client.sh`：自动认当前客户端并选派工口（`window_subagent`／`channel_cli`）；每轮开工先跑它
 - `check-channel-preflight.sh`：分工表在用模型 ↔ 通道目录对账，须 `CHANNEL-OK` 才可派工
 - `weekly-channel-check.sh` ＋ `_inject-agents-block.py`、`sync-old-projects.sh`、`migration-status.sh`、`_sync-packages.py`（母版→两包同步唯一入口，**禁手写 sed 复制**）
-- `model/check-ledger.mjs`：两本账本校验（老项目迁移登记检查用它，须 `LEDGER-OK`）
+- `model/check-ledger.mjs`：三本账本校验（`TASK-MODEL-LOG`／`DISPATCH-LOG`／`TASK-MANAGER-QUALIFICATION-EVENTS`；老项目迁移登记检查用它，须 `LEDGER-OK`）
 - `decision/orca-decide.mjs`：决策侧车；`orchestration/`：L3 watchdog（仅外部/终端编排时部署）
 - `check-sync.sh`：母版↔两包一致性门禁（归一化裸名后逐字节比对），须 `SYNC-OK`
 

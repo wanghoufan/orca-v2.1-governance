@@ -33,7 +33,7 @@ Phase2 完工口径（不改主链、不新增 Gate）：完成＝角色交付�
 - 什么情况不许放行：关键项没测、核心路径上的控件没真点过并观察到变化、证据缺失——三者任一即不得判通过。
 - 用户签收：发布类型为**首次发布**的，用户签收通过才算完成（签收前状态记未完成）；迭代更新与局部修复不强制签收。这是用户参与的那一步，不是新加的关卡。
 
-全程账本：每次派工记 `docs/model/DISPATCH-LOG.jsonl`、每任务记 `TASK-MODEL-LOG.jsonl`（`model` 用 `provider/model` 精确写法；含可选 `executed_by`=实际执行者、`chain_status`=角色交付/已验收/未完）；校验 `scripts/model/check-ledger.mjs`（结构错=FAIL、写法不规范=WARN）。老项目迁移后须过**登记检查**（该脚本得 `LEDGER-OK`）才算迁移完成——迁移即登记。
+全程账本：每次派工记 `docs/model/DISPATCH-LOG.jsonl`、每任务记 `TASK-MODEL-LOG.jsonl`（`model` 用 `provider/model` 精确写法；含可选 `executed_by`=实际执行者、`chain_status`=角色交付/已验收/未完）；校验 `scripts/model/check-ledger.mjs`（结构错=FAIL、写法不规范=WARN）。老项目迁移后须过**登记检查**（该脚本得 `LEDGER-OK`）才算迁移完成——迁移即登记。产品验收结论落 `docs/qa/产品验收追踪矩阵.md`（模板 `docs/qa/产品验收追踪矩阵.template.md`），`check-sync.sh` 巡检缺失并报 `AC-MATRIX-MISSING`。
 
 体系不绑定 Orca 或任何特定客户端，也不按客户端分裂模板包：**每轮开工跑 `scripts/detect-client.sh` 自动认当前客户端并选派工口**：有原生子代理判 `mode=window_subagent`，在该客户端窗口内直派（享真 resume／并行／worktree 隔离）；没有或认不出判 `mode=channel_cli`，走通道 CLI 直调（认不出时只在汇报带一句，不找用户填）。**一份模板包通用于任何客户端**；多阶段需人点头／要产品验收留痕／跨周或会交接／要发布留回执／多角色并行——这套「何时起体系」的判据是：命中任一才算大项目、按包内 README 铺包开工，都不命中就是小活直接干、不铺包不起 Gate（半套最差，按红线打回）。
 
@@ -77,7 +77,7 @@ Google 登录等 Agent 不碰密码/MFA，登录异常交人工处理（认证�
 
 网页／本地页面的**产品验收就走这条已冻结通道**，不另起浏览器基础设施；视觉验收要覆盖关键用户任务逐条走通、桌面与窄屏、边界样本（奇偶条目数、长标题、空状态）下的对齐／换行／裁切／溢出／可读性，并留真实浏览器截图。
 
-普通 QA（codex）：派工带 `-s danger-full-access` 关闭沙箱，解端口绑定/网络限制（历史“沙箱禁端口/EPERM”经查为假失败）；**仅限 QA 场景、须在账本 note 记账**，其他角色禁带。
+codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/EPERM”经查为假失败）；**2026-10-07 用户令由「仅限 QA」放宽到 QA＋planner＋senior-expert**：QA 解端口/网络限制，planner 解「默认沙箱写不了文件致汇总落不了盘」，senior-expert 升级任务需写业务仓库。**只解沙箱、不解职责边界**（planner 在 Phase1 仍禁改业务代码与改 Plan）；须在账本 note 记账。
 
 - 派工通道纪律：派工前必跑 `bash scripts/check-channel-preflight.sh`，须 `CHANNEL-OK`（报 `CHANNEL-STALE` 该角色禁派）；表定通道角色走通道直调，禁套娃；禁自动升级客户端。
 
@@ -92,7 +92,9 @@ Google 登录等 Agent 不碰密码/MFA，登录异常交人工处理（认证�
 - 监督：supervisor 兼 **Task Manager Observer**（只标记异常、按现有机制提醒/唤醒/替喊一次；不评分/不接管/不改表/不跨 Gate）；评分汇总由 **Governance Steward**（治理管理层，非 9+1+1 角色，周期审计）做，只出主备**建议**；**主备由用户最终决定**，Steward 不自动改表。
 - 五维评分 100：派工/下一步 30＋持续推进 25＋治理遵守 20＋响应 15＋资源 10；响应阈值据 watchdog（`CONSUME_STALE_SEC=300`/`COOLDOWN_SEC=900`）分 NORMAL/SLOW/STALL；`infra_error` 不计入能力分。
 - Gate：`Score≥90 且 P0 治理违规=0 且 Human Gate 违规=0 → QUALIFIED`；**采样门槛**（有效 Episode <30 或项目 <3 保持 CANDIDATE，不得凭少量样本判通过）。
+- **产品审查链（2026-10-07 用户定）**：口令「第三阶段产品审查」触发，位置在 Phase1 末尾、Develop Approval Gate 之前，**不新增角色/Phase/Gate**。planner（`codex/gpt-6.1-sol`）任组织者并冻结 Plan 版本→**串行**派两份互不可见的独立审查（实测 codebuddy 双实例并发会互相干扰、且失败是静默 exit 0，故必须串行＋校验产出文件非空；planner 汇总走 stdout 落盘）（`product-reviewer` × `codebuddy/glm-5.3-flash` 与 `codebuddy/deepseek-v4-pro`，只读）→交回 planner 参考/比较/汇总/裁决→产出 `docs/review/PRODUCT_REVIEW_<plan版本>_<日期>.md`（一致项／分歧＋裁决／仅A／仅B／体验改进／交互顺序／功能候选／**明确不采纳项**）→用户 Human Gate → 说「第二阶段，开发」才进 DEVELOP。审查维度限**用户使用体验／交互逻辑与流程顺序／新增或优化功能**，非代码层面；代码类意见判 `WRONG_ROUTE`。
 - 证据（**不改现有账本 schema**）：事件日志 `docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`；评分 `scripts/model/tm-qualification.mjs`；测试 `scripts/model/tm-qualification.test.mjs`；规范 `docs/model/TASK-MANAGER-QUALIFICATION.md`。
+- **Episode 记账（2026-10-07 定）**：编排者**每轮收工必自记一行**，一 Episode 一行；非 Episode 的轮次不记也不硬凑。写后必跑 `scripts/model/tm-qualification.mjs` 校验；无计时证据的 `decision_latency_ms` 填 `null` 不许编；历史行不得改写。**母版与两包的 `docs/model/*.jsonl` 永远只留 `_example` 空壳**（母版是分发源，写真实行会致 check-sync `SYNC-FAIL`），真实 Episode 记到各项目自己的账本。**supervisor 抽查对账**（拿 DISPATCH-LOG 真实派工逐条核是否漏记，漏记/对不上打回，补记由编排者执行）。Episode 层证据不替代 DISPATCH-LOG/TASK-MODEL-LOG 派工账。
 - 候选（真调已过）：`opencode-go/deepseek-v4.1-flash`、`opencode-go/mimo-v2.6-flash`（Runtime=opencode）；真实多项目 A/B 数据由用户后续在真实项目跑。
 
 ## 七、规范在哪
@@ -111,7 +113,7 @@ Google 登录等 Agent 不碰密码/MFA，登录异常交人工处理（认证�
 | Jev 决策流水 | `docs/model/JEV-DECISION-LOG.jsonl` | 每次 orca-decide 调用一行（非敏感元数据；不记原文/Key） |
 | 交接 | `docs/handoff/HANDOFF.md` | 状态源（新节顺延，现至 §60；旧号冻结不重排） |
 | 迁移入口 | `迁移整理提示词.md`（老包根同名） | 自举取包＋冲突处理＋5.7 登记检查（迁移即登记，`LEDGER-OK` 才算完成） |
-| 新项目脚手架 | `新项目模板包/`（按包内 README 铺入项目根，提示词/模板按清单落位，`USER_MODEL_OVERRIDE.md` 建软链指母版） | 老项目用 `老项目迁移模板包/`＋迁移提示词 |
+| 新项目脚手架 | `新项目模板包/`（目录**空**→整包拷 `cp -R "<母版>/新项目模板包/." <项目根>/`，快且不漏文件；目录**非空**→只覆盖规则层＋补新增，实例层不碰，因整包拷会把计划/BUGS/HANDOFF/账本真实行静默顶成空模板且不报错；规则文件不挑行合并） | 老项目用 `老项目迁移模板包/`＋【迁移整理】提示词（同规则＋冲突改名铁律），不要用新项目这套 |
 
 ## 八、给审查者的检查点
 

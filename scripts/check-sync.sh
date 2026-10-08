@@ -72,8 +72,29 @@ done
 # 维护约定——将来新增/改动影响体系对外表述的机制（Gate、完成口径、账本字段、通道、验收制度等）时，
 # 必须把该机制的对外必现关键词补进下方清单，并同步更新 ORCA治理体系说明.md；否则该机制漏检。
 # 母版 1 次即可（两包一致性已由上方白名单保证）。
-for kw in "产品验收" "关键 AC" "首次发布" "签收" "不问不报" "detect-client" "window_subagent" "channel_cli" "半套最差" "四类红线" "≤10 行" "Task Manager Qualification" "何时起" "CHANNEL-OK"; do
+for kw in "产品验收" "关键 AC" "首次发布" "签收" "不问不报" "detect-client" "window_subagent" "channel_cli" "半套最差" "四类红线" "≤10 行" "Task Manager Qualification" "何时起" "CHANNEL-OK" "产品验收追踪矩阵" "产品审查"; do
   grep -q "$kw" ORCA治理体系说明.md || { echo "OVERVIEW-STALE: 概览缺 $kw"; fail=1; }
 done
+# 项目治理完整度：产品验收落盘（2026-10-07 增；**只报不阻塞**，与上方 SYNC 主结论解耦）
+# AGENTS.md 红线要求「产品验收未落盘或关键 AC 未测不得报完工」，但此前无任何机器校验点，
+# 实测 31 个项目仅 1 个建了矩阵 ⇒ 覆盖率 3%。此处补一个只读巡检口径。
+# 识别真实项目：有 docs/model/TASK-MODEL-LOG.jsonl 且不在母版/两包内。
+echo "--- 产品验收落盘巡检（只报，不影响 SYNC 主结论） ---"
+ACROOT="${AC_SCAN_ROOT:-$HOME/Developer/coding/1.Active}"
+ac_missing=0; ac_total=0
+for d in "$ACROOT"/*/; do
+  [ -d "$d" ] || continue
+  [ -f "$d/docs/model/TASK-MODEL-LOG.jsonl" ] || continue
+  ac_total=$((ac_total+1))
+  m="$d/docs/qa/产品验收追踪矩阵.md"
+  if [ ! -f "$m" ]; then
+    echo "AC-MATRIX-MISSING: $d"
+    ac_missing=$((ac_missing+1))
+  elif ! grep -qE '^\| *AC-[0-9]+' "$m"; then
+    echo "AC-MATRIX-EMPTY: $m（文件在但无 AC 条目）"
+    ac_missing=$((ac_missing+1))
+  fi
+done
+echo "AC-MATRIX: $((ac_total-ac_missing))/$ac_total 有落盘；缺失 $ac_missing"
 [ "$fail" -eq 0 ] && echo "SYNC-OK" || echo "SYNC-FAIL"
 exit "$fail"
