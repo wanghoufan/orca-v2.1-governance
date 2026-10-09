@@ -39,6 +39,7 @@ for pkg in "新项目模板包" "老项目迁移模板包"; do
            docs/model/JEV-DECISION-LOG.jsonl \
            scripts/model/tm-qualification.mjs scripts/model/tm-qualification.test.mjs \
             scripts/model/prototype-gate.test.mjs \
+            scripts/model/ui-leak.mjs scripts/model/ui-leak.test.mjs \
            经验一句话.md; do
     check "$f" "$pkg/$f"
   done
@@ -84,7 +85,7 @@ done
 # 维护约定——将来新增/改动影响体系对外表述的机制（Gate、完成口径、账本字段、通道、验收制度等）时，
 # 必须把该机制的对外必现关键词补进下方清单，并同步更新 ORCA治理体系说明.md；否则该机制漏检。
 # 母版 1 次即可（两包一致性已由上方白名单保证）。
-for kw in "产品验收" "关键 AC" "首次发布" "签收" "不问不报" "detect-client" "window_subagent" "channel_cli" "半套最差" "四类红线" "≤10 行" "Task Manager Qualification" "何时起" "CHANNEL-OK" "产品验收追踪矩阵" "产品审查" "APP 基础能力" "app-theme-i18n" "APP-BASELINE" "background-services" "品牌资产" "app-brand-assets" "app-navigation" "底部导航" "NavigationBar" "同一核心页面" "CHANGELOG"; do
+for kw in "产品验收" "关键 AC" "首次发布" "签收" "不问不报" "detect-client" "window_subagent" "channel_cli" "半套最差" "四类红线" "≤10 行" "Task Manager Qualification" "何时起" "CHANNEL-OK" "产品验收追踪矩阵" "产品审查" "APP 基础能力" "app-theme-i18n" "APP-BASELINE" "background-services" "品牌资产" "app-brand-assets" "app-navigation" "底部导航" "NavigationBar" "同一核心页面" "CHANGELOG" "app-ui-layers" "信息分层"; do
   grep -q "$kw" ORCA治理体系说明.md || { echo "OVERVIEW-STALE: 概览缺 $kw"; fail=1; }
 done
 # 项目治理完整度：产品验收落盘（2026-10-07 增；**只报不阻塞**，与上方 SYNC 主结论解耦）

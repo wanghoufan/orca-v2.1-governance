@@ -987,3 +987,38 @@
 **不整改的（备案，属设计决策或需另立机制）**：E-01 评分无机器校验（用户令不加）、E-04 签收无格式/超时/拒签路径、B2 产品验收「只报不阻塞」、E-02 `CHANNEL-STALE` 死锁风险、E-03 Episode 自记账无独立数据源。**审查点名的 C-03 经核实不成立**——Phase1 边界已写清（仅限 `docs/design/prototype/`＋禁 APK/生产模块/正式后端/未批 SDD TASK），无需再补。
 
 **测试（跑完先报告，未提交）**：`prototype-gate.test.mjs` 扩到 **9 用例**（原型 6 ＋ 导航 3），母版与两包均 `ALL PASS pass=9 fail=0`；非空跑证明：短路 `navNewRegime` → 导航用例 FAIL，还原后 9/9。`SYNC-OK`｜`CHANNEL-OK`｜`tm-qualification 17/17`｜7-Skill `VALID`。
+
+## 86. 禁止开发内部信息污染用户界面（2026-10-09 用户定）
+
+**问题（用户已确认的跨项目系统性缺陷）**：开发智能体常把内部审查信息、技术约束、风险分析、版本编号、授权流程直接渲染到普通用户界面，导致 APP 冗长、专业、复杂，甚至出现与产品目标无关的阻断式操作。
+
+**新增单一真源 `docs/sop/app-ui-layers.md`**（与 `app-theme-i18n` / `app-brand-assets` / `app-navigation` 并列，六节：三层隔离原则／严禁文档文字直接转 UI／安全医疗版权边界／各阶段前置检查／自动扫描／与既有体系关系）：
+- **L1** 默认可见＝任务/结果/原因/下一步 ＋场景必要的安全与法律信息；**L2** 用户主动展开＝详细玩法/来源/适用条件（**来源用可读名称、不得用内部 ID**）；**L3** 仅内部＝Phase/Gate/AC-FR/模型路由/审查评分/置信度内部等级/数据 ID/动作代码/开发版本与 hash/运营授权记录，**不上屏**。
+- 转换对照：`E01/DRAW_S2`→「还差一张二条」、`证据等级 C`→「可能因牌桌不同，先向朋友确认」、`Phase 1 原型模拟`→仅记原型 README、内部素材授权流程→由运营/项目负责人处理而非访客门槛。
+- **安全/医疗/版权边界**：精简**不得**隐藏真实危险/停止条件/隐私告知/依法必须的同意；非紧急说明按场景渐进披露（P045 疼痛即停并给退出；P037 区分访客操作与项目方授权责任，无必要性不得增加前台门槛）。
+
+**新增扫描机制 `scripts/model/ui-leak.mjs`**（**提示工具，不是新 Gate**）：扫用户界面源码/原型的 L3 泄露（L3 标识字面量 ＋ **动态渲染线索**如 `esc(x.id)`/`evidence_grade` 直接上屏）；**刻意避开**注释行、`data-act` 事件钩子、把内部 ID 当数据键的正确写法（`i18n` 里 `E01:{title:"人话"}`）；内置**误伤白名单**（地区玩法名/玩法版本/查看来源/安全法律隐私提示）；命中只是**提示**，由 QA/Code-Reviewer **人工语义核验**判定。回归测试 `ui-leak.test.mjs` + 夹具 `fixtures/ui-leak/{negative-leak,positive-good}`，随两包分发。
+
+**接入点（全部挂既有 Gate，不新增角色/Gate/阶段/Human Decision）**：`AGENTS.md` 默认继承段｜`PRODUCT_PLAN.template.md` 新增「APP 界面信息分层声明」＋3 FR/2 AC＋关键 AC 集合一条｜`docs/roles/qa.md` 界面信息分层专项验收｜四颗 Skill（`ux-interaction-contract` 用户可见/内部元数据、`interactive-product-prototype` 禁止内部信息上屏、`design-freeze` 冻结文案层级、`orca-design-pipeline` 路由级声明）＋另三颗引 `app-ui-layers.md`｜`ORCA治理体系说明.md` 规范行＋检查点 15｜`_sync-packages` 登记新 SOP｜`check-sync` 纳管 ui-leak 脚本/测试/夹具＋概览关键词。
+
+**回归（跑完先报告，未提交）**
+- `ui-leak.test.mjs` = **2/2**（负面识别 >0、正面 0 误伤）
+- **负面实测**：P046 真实原型 `prototype/` 扫出 **74** 处（internal-id 36／dynamic-render 17／evidence-grade 16／ac-fr 2／phase-gate 3），含真上屏点 `app.js:739 [t.ui.exampleId, esc(ex.id)]`、`app.js:422/746 evidence_grade` 上屏
+- **正面实测**：地区玩法名（四川/广东/海南）、玩法版本、查看来源、安全短提示 → **0 命中**
+- 全量门禁：`prototype-gate 9/9`｜`tm-qualification 17/17`｜`SYNC-OK`｜`CHANNEL-OK`｜7-Skill `VALID`；7 颗 Skill 已同步 library+10 Agent（**77/77 一致**）
+
+**存量兼容**：全局管理者**未改任何业务项目**——P046 的显示层修正由其编排者在原型验收前做（保留原始规则数据、16 条牌例与研究证据，不重写逻辑）；P045 按既有开发链局部处理不打断；P037 由编排者区分访客功能与项目方授权责任。
+
+## 87. 账本两本对不上：定性结论与不处置决定（2026-10-09，用户令选 1）
+
+**实测**（`1.Active/` 全项目汇总，排除 `_example`）：`TASK-MODEL-LOG` 共 1001 行、`DISPATCH-LOG` 共 1235 行，差 −234。
+
+**三类成因（逐项目核实，非推测）**
+1. **DISPATCH 多于 TASK＝设计如此，正常**。两账粒度不同：DISPATCH 记**每一次派工**（重派/返工/换模型就多写一行），TASK 记**任务最终结果**（一任务一行）。实测 016 有 9 个任务被重复派工，最多的 `SELF-TEST-V1-ENGLISH-TRUNCATION-FIX` 派了 **28 次**。全机 234 行差额绝大部分属此类。
+2. **TASK 多于 DISPATCH＝真漏，但漏的是「派工流水」不是「任务结果」**。异常项目：`015-photo-library`（+13，**DISPATCH 完全为空**）、`016`（+37）、`037`（+5）、`027`（+4）。成因是同一 session 连派多活只记最后一次、续 session 只顾写任务账、早期铺包时两账机制尚未强调。
+3. **两账任务集不重合**（016 有 50 个任务只在 TASK、14 个只在 DISPATCH；037 有 9 个只在 TASK、4 个只在 DISPATCH）——任务命名不一致导致无法按 `task` 精确对齐。
+
+**用户决定：选 1＝不补历史、不加机器门**
+理由：①漏的是历史派工流水，**任务结果账本身完整**，模型评估的核心指标（返工次数、是否升级、结果 PASS/FAIL）看的是 TASK 账，不受影响；②DISPATCH 本就允许重派产生多行，加"两账必须对齐"的机器门必然误报；③机制本身是好的——`AGENTS.md` 已要求 supervisor 拿 DISPATCH 对账、漏记按 `NO_NEXT_ACTION` 打回，**该由抽查发现，不该由脚本猜**。
+
+**结论**：本项为**已定性、非待办**。后续不得再当缺口翻出来重提；若将来要严肃做模型评估且确需完整派工流水，再按需补记。
