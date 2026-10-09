@@ -866,3 +866,15 @@
 **验证**：`SYNC-OK`｜`CHANNEL-OK`｜`tm-qualification 17/17`｜`VALID: 7-Skill simplified final-state regression PASS`｜7 颗均引 `app-navigation.md`｜10 Agent × 7 Skill = **70/70 逐字节一致**。
 
 **约束遵守**：未新增 Skill／角色／PROJECT_PHASE 状态／Human Gate；未改 P046 无底部 Tab 方案；未触碰 P045（其底栏跟随滚动问题留给 P045 编排者按既有 Change A 处理）；未改任何项目代码。
+
+## 81. 补建 CHANGELOG.md（2026-10-09，用户提问触发）
+
+**触发**：用户问「每次推送更新情况写清楚没有？」——查证结果是**母版与两包都没有 `CHANGELOG.md`**，此前一直只用 commit message ＋ HANDOFF 章节留痕。这**违反中央规则**（`~/.config/opencode/AGENTS.md`：Git 负责记录变更/回退/审计，具体变更说明记录在 `CHANGELOG.md`）。
+
+**为什么三者不可互相替代**：commit message 是给 git 看的（检索/回滚用）；HANDOFF 是给**当轮接续**看的（细节最全但只服务最近这一段）；CHANGELOG 是给**以后想知道这个体系改过什么**的人看的（一页纸讲清改了什么/为什么/影响谁/怎么验）。
+
+**已做**：新建 `CHANGELOG.md` 并回填 2026-10-07 起 8 笔变更；`AGENTS.md` 三件套扩为**四件套**（第 4 步＝必写 CHANGELOG，漏写＝体系更新未完成）；`_sync-packages.py` PAIRS 随包分发；`check-sync.sh` 纳管漂移＋概览新鲜度关键词；README 与对外概览各加一行。
+
+**防遗忘机制（非靠自觉）**：改包内任一 `CHANGELOG.md` → `check-sync.sh` 立刻 `DIFF` + `SYNC-FAIL`；概览若不提 CHANGELOG → `OVERVIEW-STALE`。已实测漂移可检出并复位。
+
+**本次自曝的失误**：属「规则要求了但没交差」的漏项，靠用户提问才暴露。以后每次 push 前除三件套外，必须核对 `CHANGELOG.md` 是否已追加。

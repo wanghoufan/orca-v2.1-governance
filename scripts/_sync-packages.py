@@ -13,6 +13,7 @@ PAIRS = [
     ("USER_MODEL_OVERRIDE.md", "USER_MODEL_OVERRIDE.md"),
     ("ORCA治理体系说明.md", "ORCA治理体系说明.md"),
     ("GOVERNANCE_VERSION", "GOVERNANCE_VERSION"),
+    ("CHANGELOG.md", "CHANGELOG.md"),  # 2026-10-09：变更说明正典随包分发
     ("经验一句话.md", "经验一句话.md"),
     ("docs/prompts/编排者提示词.md", "编排者提示词.md"),
     ("docs/prompts/外部开发者提示词.md", "外部开发者提示词.md"),

@@ -76,6 +76,7 @@ Phase2（DEVELOP）：builder 写→code-reviewer 复核→qa 测→supervisor �
 - `result`=任务级 PASS/FAIL（按表派单成功仍可 PASS；FAIL 须配 escalation_reason/备注说明是任务挂还是模型挂）。
 - 逐派记录：每次派工收工编排者往 `docs/model/DISPATCH-LOG.jsonl` 记一行（schema：**7 必需键** date/task/role/model/used/runtime/result（**note 为可选键**——切备原因、返工说明、TM 兜底/真机直驱说明时才必填；与 supervisor 校验块一致）/used恒填主/runtime＝override 表『执行通道／备用执行通道』列出现过的取值（本窗口／当前客户端窗口（自动探测）／codebuddy／codex／opencode／Claude Code／—）/result PASS或FAIL/note（切备时used仍填主＋note记切备原因，HANDOFF补一句）/executed_by 可选（同 TASK，派工角色≠实际执行者时填）；示例行不参与统计，首个真实派前删除；tokens/cost不记；寿命随任务账本归档）；与派工显式两行互验；supervisor抽查实派==表三处对得上。
 - 体系更新三件套（2026-09-29 定；原「两包同步」扩写）：①母版治理改动提交后用 `python3 scripts/_sync-packages.py` 同步两本地包（`新项目模板包/`、`老项目迁移模板包/`；布局裸名由该脚本统一处理，**禁手写 sed 复制**）；②**同步对外概览 `ORCA治理体系说明.md`**——任何影响体系对外表述的机制变更（新增/改动 Gate、完成口径、派工链角色职责、账本字段、通道、验收制度等），概览必须同步更新；概览只写结论与入口，不复述字段/模型 ID/列名，保持一页纸概览性质；**漏更新概览＝体系更新未完成**；③跑 `bash scripts/check-sync.sh`，须得 `SYNC-OK`（exit 0)；**若本轮动过分工表/通道模型，另跑 `bash scripts/check-channel-preflight.sh` 须 `CHANNEL-OK`**——该脚本同时做概览新鲜度检查（「对外必现机制」关键词清单），缺项报 `OVERVIEW-STALE` 打回。`diff` 非预期差零容忍（常驻同步，用户定）；HANDOFF 记一行。
+- **变更说明写 `CHANGELOG.md`（2026-10-09 补，四件套第 4 步）**：Git 负责记录变更/回退/审计，**`CHANGELOG.md` 负责说明「改了什么、为什么改、影响谁、怎么验」**。母版每次改动并 push **必须**在 `CHANGELOG.md` 顶部追加一条（最新在最上：日期＋commit＋why＋what＋影响谁＋验证结果）。**只写 commit message 或 HANDOFF 章节不算交差**（commit message 是给 git 看的，HANDOFF 是给当轮接续看的，CHANGELOG 是给"以后想知道这个体系改过什么"的人看的，三者不能互相替代）。漏写＝体系更新未完成；两包同步时一并带上（`CHANGELOG.md` 随 `PAIRS` 分发）。
 - 换模型决策先读账本：返工多、常升级的任务类型优先换强模型。
 
 ## Task Manager Qualification（增量；不新增角色，2026-09-26）

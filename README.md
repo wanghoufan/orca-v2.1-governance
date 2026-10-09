@@ -124,6 +124,7 @@ bash "<母版路径>/scripts/restore-framework.sh" <项目根>
 - `ORCA治理体系说明.md`：**对外概览**（体系更新三件套第 2 步必须同步它）
 - `USER_MODEL_OVERRIDE.md`：模型表（角色/模型/执行通道/调用方式，**唯一口径**，改表即生效，精确ID照抄执行）
 - `GOVERNANCE_VERSION`：版本指针文件（内容：以Git历史为准）
+- `CHANGELOG.md`：**变更说明正典**——每次改动并 push 必须在此追加一条（改了什么/为什么/影响谁/怎么验）；只写 commit message 或 HANDOFF 章节不算交差
 - `经验一句话.md`：收工一句经验（只追加）
 - `agent.md`：**审查交付约定**（审查者须一次性交付完整结论，不分批问；**临时材料，随交接更新，不受 check-sync 门禁**）。接续开工快照在 `temp/agent.md`，两者不是同一份
 
