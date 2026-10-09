@@ -5,7 +5,11 @@
 import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join, basename } from "node:path";
 
-const dir = process.argv[2] || "docs/model";
+// 参数解析（2026-10-09 修 P1-1）：旧写法取 argv[2]，导致只传开关
+// （`node check-ledger.mjs --allow-example`）把 "--allow-example" 当成目录 → 报
+// 一堆 MISSING，误导排查。现改为：取第一个不以 - 开头的参数作 dir，其余作开关。
+const argv = process.argv.slice(2);
+const dir = argv.find((a) => !a.startsWith("-")) || "docs/model";
 // --allow-example（2026-10-08）：仅供**母版/分发包自检**——模板包带 `_example` 空壳，
 // 直接跑必然 exit 1。真实项目禁用此开关，否则「示例行未删」失去强制力。
 const ALLOW_EXAMPLE = process.argv.includes("--allow-example");
@@ -144,6 +148,18 @@ const BRAND_AC = [
   ["Freeze 锁定最终四项", /最终拍板|最终定稿|Freeze.*锁定|锁定.*最终|冻结.*最终/],
 ];
 
+// APP 导航与视觉方向（2026-10-09 审查 B4 决议：加机器码）。单一真源 docs/sop/app-navigation.md
+// 注意：模板自带的小节标题「**APP 导航与视觉方向声明（…）**」会让宽松正则恒真，
+// 导致"空声明也算已填"。故 NAV_DECL 只认**实际填写的标记行**（行首无 ** 包裹）。
+const NAV_DECL = /^\s*-\s*APP\s*导航与视觉方向声明[：:]\s*\S/m;
+const NAV_AC = [
+  ["三方向同一核心页面对比", /同一核心页面|同页对比|同页并置|核心页面/],
+  ["非只改配色", /只改配色|换配色|配色变化|非只换色/],
+  ["底部导航决策已写明", /是否采用底部导航|底部导航.*(采用|不采用)|需不需要底部|是否需要底部/],
+  ["底栏滚动固定不遮挡", /底栏.*(固定|位置固定)|滚动.*独立|不被遮挡|内容不被遮挡/],
+  ["Android 真机证据", /真机|实机|运行截图|录屏|设备运行/],
+];
+
 // 关键词门只验字面，故必须同时接受中文等价说法——否则「主题三态：浅色/深色/跟随系统」
 // 这类完全合规的写法会被误判 FAIL（2026-10-08 实测正例暴露）。
 const APP_AC = [
@@ -245,11 +261,97 @@ function checkAppBaseline(root) {
         else warns.push(`${c.label}: WARN 非当前真源的 APP Plan 品牌资产关键 AC 未覆盖：${missB.join("、")}`);
       }
     }
+    // 导航与视觉方向：声明缺失 FAIL；关键 AC 未覆盖 FAIL（同构于品牌/主题）
+    // 兼容口径（同原型门）：只对**新规 Plan**判 FAIL——判据＝Plan 里带模板新增的
+    // 「APP 导航与视觉方向声明」小节。早于本规则的历史 Plan（含在开发的 P045/P046）
+    // 只报 WARN，不打断其开发链（用户令：不打断 P045；P046 先补 HTML 不被导航门卡住）。
+    const navNewRegime = /APP\s*导航与视觉方向声明/.test(text);
+    if (!NAV_DECL.test(text) && navNewRegime) {
+      const m = `缺「APP 导航与视觉方向声明」（底部导航是否采用及理由、三方向差异化轴、导航入口/图标/四态/排版/显隐/适配；`
+        + `见 docs/sop/app-navigation.md）。导航是产品决策，不是 Builder 临场发挥；未定清楚会导致底栏随意设计或跟随内容滚动。`;
+      if (c.isSrc) fails.push(`${c.label}: APP-NAV-DECL-MISSING — ${m} 未补齐不得进 Design Pipeline。`);
+      else warns.push(`${c.label}: WARN 非当前真源的 APP Plan ${m}`);
+    } else {
+      const missN = NAV_AC.filter(([, re]) => !re.test(pool)).map(([n]) => n);
+      if (missN.length) {
+        if (c.isSrc) fails.push(`${c.label}: APP-NAV-AC-INCOMPLETE — 导航关键 AC 未覆盖：${missN.join("、")}。`
+          + `这五类必须各自有一条标「关键：是」的 AC；缺任一类不得进 Human Review。`);
+        else warns.push(`${c.label}: WARN 非当前真源的 APP Plan 导航关键 AC 未覆盖：${missN.join("、")}`);
+      }
+    }
+    // Phase1 原型交付完整性（2026-10-09 用户定，P046 教训）
+    // Readiness Gate 的附加条件，不新增 Gate：APP 进 WAITING_HUMAN_APPROVAL 前必须有
+    // 可运行的交互原型，且「文件存在」与「真实运行」分开判定。
+    //   · PDF／截图／纯文档／在线概念图／单张示例预览 HTML 不算原型。
+    checkPrototypeDelivery(root, c.label, text);
+  }
+}
+
+// Phase1 原型交付完整性检查（Readiness Gate 附加条件）
+// 失败码：PROTO-MISSING / PROTO-NOT-RUNNABLE / PROTO-NO-RUNTIME-EVIDENCE
+const PROTO_DIR = "docs/design/prototype";
+// 计数用：真实运行证据（浏览器自动化冒烟测试记录）
+function protoHasRuntimeEvidence(root) {
+  const dirs = [join(root, PROTO_DIR), join(root, "docs/design")];
+  const hits = [];
+  for (const d of dirs) {
+    if (!existsSync(d)) continue;
+    let files = [];
+    try { files = readdirSync(d).filter((f) => /\.(md|json|log)$/i.test(f)); } catch { files = []; }
+    for (const f of files) {
+      const t = readIfExists(join(d, f));
+      // 浏览器自动化/真实运行证据的关键词：Playwright/Cypress/browser executed/console 等
+      if (/(playwright|cypress|puppeteer|browser[_ ]?executed|浏览器自动化|冒烟测试|smoke)/i.test(t)) hits.push(`${PROTO_DIR}/${f}`);
+    }
+  }
+  return hits;
+}
+
+function checkPrototypeDelivery(root, planLabel, planText) {
+  const ts = trueSource(root);
+  const isSrc = !!ts.src && normalizePath(planLabel) === normalizePath(ts.src);
+  // 兼容口径：本规则只对**新规下写的** Product Plan 判 FAIL。
+  // 判据＝Plan 里带模板新增的「原型交付完整性检查条件」小节；早于本规则的历史 Plan
+  // （如正在开发的 P045）没有该小节，只报 WARN，不打断其开发链（用户令：P045 不打断）。
+  const underNewRegime = /原型交付完整性检查条件/.test(planText);
+  const hard = isSrc && underNewRegime;
+
+  const protoDir = join(root, PROTO_DIR);
+  const htmls = [];
+  if (existsSync(protoDir)) {
+    try {
+      for (const f of readdirSync(protoDir)) {
+        if (/\.html$/i.test(f) && !/example|sample|demo-preview/i.test(f)) htmls.push(f);
+      }
+    } catch { /* ignore */ }
+  }
+
+  if (!htmls.length) {
+    const msg = `Phase1 未交付可运行交互原型（${PROTO_DIR}/ 下无可运行 HTML）。`
+      + `面向用户的 APP 在 Phase1 必须交付本地完整可运行的原型（核心页面完整、关键交互可操作、`
+      + `已确定名称/图标/品牌/真实图片落实、浅深色与语言及异常状态可演示、给出路径与打开命令）；`
+      + `PDF／截图／纯文档／在线概念图／单张示例预览 HTML 不算。见 AGENTS.md「Phase1 必须交付可运行交互原型」。`;
+    if (hard) fails.push(`${planLabel}: PROTO-MISSING — ${msg}`);
+    else warns.push(`${planLabel}: WARN 未交付可运行交互原型${underNewRegime ? "（非真源 Plan）" : "（本 Plan 早于原型规则，仅提醒）"}：${msg}`);
+    return;
+  }
+
+  // 文件存在 ≠ 真实运行：分开判定，不能拿「HTML 存在」代替交互冒烟测试
+  const evidence = protoHasRuntimeEvidence(root);
+  if (!evidence.length) {
+    const msg = `有原型文件但缺**真实运行验证证据**（浏览器自动化冒烟测试记录：路径、运行方式、`
+      + `跑了哪些交互、结果、已知限制）。文件存在检查与真实运行检查必须分开——不能拿「检查 HTML 存在」`
+      + `代替交互测试。`;
+    if (hard) fails.push(`${planLabel}: PROTO-NO-RUNTIME-EVIDENCE — ${msg}`);
+    else warns.push(`${planLabel}: WARN ${msg}`);
   }
 }
 
 const projectRoot = basename(dir) === "model" ? join(dir, "..", "..") : dir;
-if (existsSync(dir)) checkAppBaseline(projectRoot);
+// 母版/分发包自检（--allow-example）跳过 APP 门（2026-10-09 修 P1-5）：
+// 母版是**分发源**、不是受治理的真实项目——没有产品计划真源、没有 Phase2 APP 项目，
+// 跑 APP 门必然报 TRUEUT-UNRESOLVED 等，属噪声。真项目的 APP 门照常生效。
+if (existsSync(dir) && !ALLOW_EXAMPLE) checkAppBaseline(projectRoot);
 
 for (const w of warns) console.log(w);
 if (fails.length) { console.log(fails.join("\n")); process.exit(1); }

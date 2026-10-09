@@ -24,6 +24,9 @@ PAIRS = [
 ]
 # 全目录同步的（本来就只有规则/规范文件；docs/assets 是 README 用的示意图，按二进制拷贝）
 DIRS = ["docs/roles", "docs/sop", "scripts/model", "docs/assets"]
+# 需要**整树递归**同步的子目录：DIRS 只收文件，子目录（fixtures/）会被漏掉，
+# 导致包内测试脚本缺夹具、跑不起来（2026-10-09 补：prototype-gate 夹具）。
+TREE_DIRS = ["scripts/model/fixtures"]
 # 只同步 *.template.md 的（这几个目录里混有母版自己的实例记录：BUGS-*.md / CODE_REVIEW-*.md /
 #   GOVERNANCE_REVIEW-*.md / RESEARCH_REVIEW-*.md / PLAN-*.md / HANDOFF.md 等，**模板包不该带实例记录**）
 TEMPLATE_DIRS = ["docs/pm", "docs/plan", "docs/qa", "docs/review", "docs/handoff"]
@@ -69,6 +72,16 @@ def collect():
             p = os.path.join(d, name)
             if os.path.isfile(os.path.join(ROOT, p)):
                 out.append((p, p))
+    # 整树递归目录（DIRS 只收文件，子目录靠这里补齐）
+    for d in TREE_DIRS:
+        dd = os.path.join(ROOT, d)
+        if not os.path.isdir(dd):
+            continue
+        for dirpath, _dirnames, filenames in os.walk(dd):
+            for fn in sorted(filenames):
+                full = os.path.join(dirpath, fn)
+                rel = os.path.relpath(full, ROOT)
+                out.append((rel, rel))
     for e in EXTRA:
         if os.path.exists(os.path.join(ROOT, e)):
             out.append((e, e))

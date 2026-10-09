@@ -878,3 +878,112 @@
 **防遗忘机制（非靠自觉）**：改包内任一 `CHANGELOG.md` → `check-sync.sh` 立刻 `DIFF` + `SYNC-FAIL`；概览若不提 CHANGELOG → `OVERVIEW-STALE`。已实测漂移可检出并复位。
 
 **本次自曝的失误**：属「规则要求了但没交差」的漏项，靠用户提问才暴露。以后每次 push 前除三件套外，必须核对 `CHANGELOG.md` 是否已追加。
+
+## 82. Phase1 必须交付可运行交互原型（2026-10-09 用户定，P046 教训）
+
+**暴露的缺陷**：Phase1 的 builder 被限制为「只写 `docs/pm/` plan 正文」，AI 倾向把 HTML 原型当成「正式开发」而不敢做。结果 P046 **Product Plan 审查通过、Readiness 96 分**，却没有交付用户真正需要的**本地可点击 HTML**——文档满分，用户要的东西是零。
+
+**修复范围（全部挂既有 Gate，不新增 Gate/角色/顶层状态）**
+- **权限边界**：`AGENTS.md` 与 `docs/roles/builder.md` 明确 builder 在 Phase1 **可写 `docs/design/prototype/` 的设计验证用 HTML/CSS/JavaScript 原型**；这是**设计验证产物，不是正式业务代码，不代表进入 Phase 2**。**仍禁** Android APK／生产业务模块／正式后端服务／未批准的 SDD TASK；Phase1 可自检（打开、点关键交互、切浅深色与语言），**但不得启动 Phase2 的正式 qa 角色**。
+- **APP 默认交付要求**：本地完整可运行的原型，核心页面完整不以局部演示替代整套流程、关键按钮/跳转/返回/滚动/状态切换能实际操作、已确定名称/图标/品牌/**真实图片素材**全部落实、浅深色与语言及代表性异常状态可演示（模拟系统行为须标注）、**给出 HTML 路径与本地打开命令**。**PDF／截图／纯文档／在线概念图／单张示例预览 HTML 一律不算**。
+- **Readiness Gate 附加条件（非新 Gate）**：`PRODUCT_PLAN.template.md` 的 Gate 段新增「原型交付完整性检查条件」五项——①原型文件存在 ②本地能正常启动 ③关键页面与交互**通过浏览器自动化冒烟测试** ④用户能实际打开、不依赖编排者讲解 ⑤证据记录路径/运行方式/测试结果/已知限制。**文件存在检查与真实运行检查必须分开**，不能拿「检查 HTML 存在」代替交互测试。任一缺失 ⇒ 判**现有 Gate 不满足**，不得仅凭文档评分进 WAITING。
+- **机器强制点**：`scripts/model/check-ledger.mjs` 新增 `checkPrototypeDelivery`，对**真源且新规**的 APP Plan 报两个 FAIL 码：`PROTO-MISSING`（无可运行原型）／`PROTO-NO-RUNTIME-EVIDENCE`（有 HTML 但无浏览器自动化运行证据）；文件名带 `example/sample/demo-preview` 的示例预览 HTML 不计入。
+- **兼容性**（保护在开发项目）：新规判据＝Plan 内含「原型交付完整性检查条件」小节；**旧规 Plan（含正在开发的 P045）不判 FAIL、只 WARN**，故不打断 P045。
+- **文档/Skill 同步**：编排者提示词 Phase1 链、迁移提示词 5.10（仅新规）、归位表加勾选行、`ORCA治理体系说明.md` 加规范行＋检查点 13；`interactive-product-prototype` SKILL.md 加「Phase1 design-validation prototype」段（状态 `PROTOTYPE_PHASE1_DRAFT`，不等同正式验收）；`design-freeze` 加「原型输入须可运行、不能是文档」。
+
+**回归测试（隔离新 APP 样例，6 用例全过）**
+| 用例 | 场景 | 期望 exit | 实测 |
+|---|---|---|---|
+| 1 | 仅 Product Plan + PDF 截图 | 1（阻止进人工原型审批） | 1 ✅ |
+| 2 | 有 HTML 但无运行证据 | 1 | 1 ✅ |
+| 3 | 可运行 HTML + 交互冒烟证据 + 打开方式 | 0（放行） | 0 ✅ |
+| 4 | 旧规 Plan 无原型（模拟 P045） | 0（不打断） | 0 ✅ |
+| 5 | PDF 改名 `.html` 冒充 | 1 | 1 ✅ |
+| 6 | 仅单张示例预览 HTML | 1 | 1 ✅ |
+
+**门禁**：`SYNC-OK`｜`CHANNEL-OK`｜`tm-qualification 17/17`｜`VALID: 7-Skill simplified final-state regression PASS`；3 颗改动 Skill 已同步到 library + 10 个 Agent（逐字节一致）；validator 反向验证（删锚点→FAIL）确认防回退有效。
+
+**P046 结论**：规则已生效，**可按新规范继续交付可运行 HTML**；其 Plan 当前无「原型交付完整性检查条件」小节，故 `check-ledger` 只 WARN 不 FAIL——先补 HTML，安全；待其 Plan 补上该小节后才纳入 `PROTO-*` 强制。
+
+## 83. 测试纪律入规（2026-10-09 用户令：必跑测试 · 跑完先报告 · 夹具禁清场）
+
+**用户指出的问题**：本轮（§82 Phase1 原型门）我跑了 6 个回归用例，但**跑完把夹具删了**——测试只是一次性验证，用户**无法自行复跑**，也没法交审查者复核「体系完整性 + 测试合格性」。这是把测试当过程而非资产。
+
+**已入规（`AGENTS.md` 体系更新四件套旁）**
+- **必跑测试**：任何体系改动（尤其大改）收工前必须跑适用测试——门禁脚本（`check-sync.sh`／`check-channel-preflight.sh`）与回归套件（`tm-qualification.test.mjs`／`prototype-gate.test.mjs`／7-Skill validator）按改动范围取用，**不许用「改的是文档」当借口不跑**。
+- **跑完先报告**：跑完必须先向用户报告（跑了什么、结果、改了什么），**报告前不许自行提交、推送或清理现场**。
+- **夹具禁清场**：回归夹具一律落在**版本库内固定路径**（如 `scripts/model/fixtures/<套件名>/`），**禁用 `/tmp` 或一次性临时目录**，跑完**不得删除**。要证明测试非空跑，用「临时改坏→看用例 FAIL→还原」，**还原后夹具与证据目录仍须留着**。
+
+**顺带修掉的真缺口**：`_sync-packages.py` 的 `DIRS` **只同步文件、不同步子目录**，导致 `scripts/model/fixtures/` 这类夹具根本没进两包——包内测试脚本会因缺夹具跑不起来（既有 `tm-qual/fixtures` 也有此问题）。新增 `TREE_DIRS` 做**整树递归同步**，并给 `check-sync.sh` 加 `DIFFDIR` 比对防夹具漂移。实测：包内 `node scripts/model/prototype-gate.test.mjs` 亦得 `ALL PASS pass=6 fail=0`。
+
+**测试资产现状（供审查者复核）**
+| 套件 | 路径 | 期望 | 当前 |
+|---|---|---|---|
+| TM 资格 | `scripts/model/tm-qualification.test.mjs` | `ALL PASS pass=17 fail=0` | ✅ |
+| Phase1 原型门 | `scripts/model/prototype-gate.test.mjs` | `ALL PASS pass=6 fail=0` | ✅ |
+| 7-Skill 回归 | `orca-design-pipeline/validate_skillset.py` | `VALID ... PASS` | ✅ |
+| 同步一致性 | `scripts/check-sync.sh` | `SYNC-OK` | ✅ |
+| 通道预检 | `scripts/check-channel-preflight.sh` | `CHANNEL-OK` | ✅ |
+
+**原型门测试非空跑证据**：临时短路 `checkPrototypeDelivery(...)` 调用 → 6 用例中 4 个 FAIL；还原后 6/6 PASS。夹具未删。
+
+## 83.5 故障排查指引（2026-10-09 审查第四章 1 补）
+
+- **同时报 `APP-NAV-AC-INCOMPLETE` 与 `PROTO-*` 时**：先补**原型运行证据**（`docs/design/prototype/` 的 HTML + 浏览器自动化冒烟记录），再回看导航 AC。导航 AC 里的「真机证据」类与原型门关键词有重叠，同一缺项会同时触发两码，**按原型→导航的顺序补可避免返工走弯路**。
+- **判校验过不过只看校验命令自身的 exit 码**：`cmd | tail` 之后 `$?` 是 `tail` 的、不是校验命令的，会掩盖真实失败。**禁经 pipe 看 exit**（2026-10-09 审查第六章实测暴露）。
+
+## 85. 第二轮审查整改 P0 四项 ＋ P1 七项（2026-10-09）
+
+**依据**：`review/审查报告_2026-10-09_muse-spark-1.3-contributor-free.md`（第二轮全量复审，**CONDITIONAL PASS**：要求修完 P0 四项再 commit＋push）。报告已落盘保留。**报告声称未独立重验的三项（短路非空跑、7-Skill VALID、P045/P046 零拦截）本轮全部亲跑复验。**
+
+**P0 四项（执行者按字面会做错）**
+- **P0-1 supervisor 第1条与 Phase1 新链冲突**：原文「PLAN 阶段禁 Builder…只许 planner↔product-reviewer」会把合法的 Phase1 builder 派工（plan 正文＋原型）全判违规打回，**Phase1 直接停摆**。已加例外句：builder 在 PLAN 阶段**有且仅有两项例外**（`docs/pm/` plan 正文 ＋ `docs/design/prototype/` 设计验证原型），**其余业务派工含 APK/生产模块/正式后端/未批 SDD TASK 仍禁**；code-reviewer/qa 在 PLAN 仍禁派。
+- **P0-2 qa 卡解禁口径 stale**：卡内仍写「解禁仅限 QA 场景…其他角色禁带」，与 `AGENTS.md`（已放宽到 QA＋planner＋senior-expert）及分工表互斥——按 qa 卡会误拒给 planner（汇总落盘）/senior（写仓）带 `-s`，**产品审查汇总与升级任务必失败**。已改为「口径以 `AGENTS.md` 为准…只解沙箱不解职责边界，每次带须记账」。
+- **P0-3 标题与期望值 stale**：`AGENTS.md` 标题仍「三件套」但正文已四步 → 改四件套；`prototype-gate.test.mjs` 期望仍写 `pass=6` 但实测已 **9/9**（原型6＋导航3）→ 改 `pass=9 fail=0` 并标注构成；`README.md` L15「同步三件套」→ 四件套。**执行者按旧期望 6 会误判 9/9 为异常，或漏跑导航 3 用例。**
+- **P0-4 矩阵列数三处不一**：模板实为 **10 列**，但 `BUGS.template.md` 写 7 列、`编排者提示词.md` 写 9 列、`概览` 与 `qa.md` 写 7 列。统一为**「照模板，列数以模板为准、不复述数字」**——写死数字必然随模板演进漂移。（`BUGS.template` 里「旧 11 列」是废止说明，属历史记录，保留。）
+
+**P1 七项**
+- **P1-1 `check-ledger` 参数解析 bug**：只传 `--allow-example` 时 `argv[2]` 是开关、被当目录 → 报一堆 `MISSING` 误导排查。已改为取**第一个不以 `-` 开头**的参数作 dir。实测复现已修。
+- **P1-2 check-sync 夹具漂移只验 proto-gate**：nav-gate/tm-qual 漂移无卡点。已改为**整树比对 `scripts/model/fixtures`**。
+- **P1-3 概览检查点 4** 仍写「是否仅限 QA」→ 改按 `AGENTS.md` 口径。
+- **P1-4 TM 卡漏原型口子** → 已补「Phase1 可写两项」＋其余仍禁。
+- **P1-5 母版自检噪声**：母版是分发源非真实项目，跑 APP 门必报 `TRUEUT-UNRESOLVED`。已让 `--allow-example`（母版/包自检专用）**跳过 APP 门只验账本**；真项目 APP 门不受影响。
+- **P1-6 分工表版本** T25 → **T26**，写清 10-08/10-09 变更。
+- **P1-7 README `sed -i ''` 仅 macOS** → 补 Linux/Git-Bash 写法。
+
+**P2 处理**：`P2-1`（软链制 vs 包内实文件）/`P2-2`（`--untrack` 不提交不生效）各补半句澄清；`P2-5` **已实测确认** README.en 13B 差**仅为路径裸名归一化**（预期，非漂移）；`P2-3`/`P2-4`/`P2-6` 备案不改。
+
+**第四章补充**：HANDOFF §83.5 加故障排查指引——`PROTO-*` 与 `APP-NAV-AC-INCOMPLETE` 同时报时**先补原型证据再看导航 AC**（避免返工绕路）；**判校验过不过只看校验命令自身 exit，禁经 pipe 看**（`cmd | tail` 后 `$?` 是 tail 的）。
+
+**本轮亲跑复验（含报告未重验项）**
+- `prototype-gate.test.mjs` = **9/9**；`tm-qualification.test.mjs` = **17/17**；`check-sync.sh` = **SYNC-OK**；`check-channel-preflight.sh` = **CHANNEL-OK**；7-Skill validator = **VALID**
+- **短路非空跑（报告未独立重验）**：短路 `checkPrototypeDelivery` → `pass=5 fail=4`；还原 → `9/9`
+- **P045/P046 零拦截（报告未独立重验）**：两仓 PROTO-/APP-NAV- FAIL 计数均为 **0**
+- **P1-2 非空跑**：改包内 nav-gate 夹具 → `DIFFDIR: scripts/model/fixtures` + `SYNC-FAIL`；还原 → `SYNC-OK`
+
+**结论**：P0 四项已修，原「修完再 commit＋push」的前置条件已满足；**commit/push 仍等用户明确指令，未执行**。
+
+## 84. 审查整改（2026-10-09，用户拍板：评分不加码、导航加码）
+
+**依据**：`review/审查报告_2026-10-09_muse-spark.md`（muse-spark 审查母版全仓，12 项矛盾 ＋ 8 项落地评估 ＋ 7 项漏洞）。**报告已落盘保留，供后续复核。**
+
+**已修的真缺陷（7 项，审查确认属实）**
+- **C-07（风险最大）**：TM Qualification 的**采样门槛**（≥30 Episode / ≥3 项目）只写在 A/B 段，**不在 Gate 段**——照 Gate 读会凭小样本判 QUALIFIED。已补进 Gate 段并标「与 Gate 同权，不可只看上面那行」。
+- **C-02**：`USER_MODEL_OVERRIDE.md` qa 行标题仍写「QA 专用解禁沙箱／仅限 QA」，执行者先看标题会拒给 planner/senior 带 `-s`。口径不变，**只改标题字面**。
+- **C-11**：概览检查点有**两个 `11.`**（公开仓／汇报纪律），重复编号顺延为 14。
+- **C-01**：`README.md` 写「三件套第 2 步」，实为四件套，已改。
+- **文字债**：`supervisor.md` DISPATCH 校验注释「8键」实为 **7 必需键＋note 可选**，已改。
+- **C-10**：汇报 ≤10 行 vs 大改要详细报告冲突，补**唯一豁免**（体系改动测试报告/审查整改报告不受行数约束）。
+- **O-05**：`temp/` 同时是「待清理交付区」与「持久资产区」，纪律互斥。已明确分工——**回归夹具一律落 `scripts/model/fixtures/<套件名>/`，不放 temp/**。
+
+**用户拍板的两件事**
+- **A：Readiness 评分不加机器码**（备案）。理由：评分本为主观多维，加脚本易逼出「填关键词骗脚本」的形式合规。
+- **B：APP 导航加机器码**（已做）。与品牌/主题同构，新增两个 FAIL 码：`APP-NAV-DECL-MISSING`（缺声明）／`APP-NAV-AC-INCOMPLETE`（五类导航关键 AC 未覆盖）。
+
+**导航门实现中踩到并修掉的两个真坑**
+1. **模板自带的小节标题让宽松正则恒真**——`**APP 导航与视觉方向声明（…）**` 这行空标题也让 `NAV_DECL` 命中，等于「空声明也算已填」。已把 `NAV_DECL` 收紧为**只认实际填写的标记行**（`^\s*-\s*APP\s*导航与视觉方向声明[：:]\s*\S`）。
+2. **新门会打断在开发项目**——首版对 P045/P046 的真源 Plan 直接 FAIL。已加**新规兼容口径**（同原型门）：只对带该声明小节的**新规 Plan** 判 FAIL，历史 Plan（含 P045/P046）只 WARN。实测两仓新门拦截数 = 0。
+
+**不整改的（备案，属设计决策或需另立机制）**：E-01 评分无机器校验（用户令不加）、E-04 签收无格式/超时/拒签路径、B2 产品验收「只报不阻塞」、E-02 `CHANNEL-STALE` 死锁风险、E-03 Episode 自记账无独立数据源。**审查点名的 C-03 经核实不成立**——Phase1 边界已写清（仅限 `docs/design/prototype/`＋禁 APK/生产模块/正式后端/未批 SDD TASK），无需再补。
+
+**测试（跑完先报告，未提交）**：`prototype-gate.test.mjs` 扩到 **9 用例**（原型 6 ＋ 导航 3），母版与两包均 `ALL PASS pass=9 fail=0`；非空跑证明：短路 `navNewRegime` → 导航用例 FAIL，还原后 9/9。`SYNC-OK`｜`CHANNEL-OK`｜`tm-qualification 17/17`｜7-Skill `VALID`。

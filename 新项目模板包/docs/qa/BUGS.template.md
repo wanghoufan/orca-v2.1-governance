@@ -6,7 +6,7 @@
 
 ## AC 操作级记录（**AC 结论不在本表落**）
 
-> **唯一落盘位已定（2026-10-08 用户定）**：AC 级结论**只落** `docs/qa/产品验收追踪矩阵.md`（模板 `docs/qa/产品验收追踪矩阵.template.md`，7 列；状态枚举 `OPEN / PASS / FAIL / BLOCKED`）。本表**只记操作过程证据**，供矩阵引用。
+> **唯一落盘位已定（2026-10-08 用户定）**：AC 级结论**只落** `docs/qa/产品验收追踪矩阵.md`（模板 `docs/qa/产品验收追踪矩阵.template.md`，**列数以模板为准、不在此复述数字**（2026-10-09 修：曾写 7 列，与模板实际列数漂移）；状态枚举 `OPEN / PASS / FAIL / BLOCKED`）。本表**只记操作过程证据**，供矩阵引用。
 > 判定理由：①唯一真实落地实例（nightrec，44 条 AC）用的就是这套；②`OPEN/PASS/FAIL/BLOCKED` 与账本 `chain_status`（`DELIVERED`/`ACCEPTED`/`OPEN`）语义一致；③**取消旧表的 `人工判定` 中间态**——红线要求「状态只能由证据改写」，`人工判定` 是无证据改状态的口子。
 > 旧 11 列结构与 `PASS / FAIL / DEGRADED / 未测 / 人工判定` 状态枚举**自本版起废止**，不得再使用；`DEGRADED` 的整体结论口径仍按 `docs/sop/webqa.md` §六 走整体 `QA_RESULT`，但**不用于单条 AC 状态**。
 > `关键 AC` 判定以 `PRODUCT_PLAN` 的「关键 AC 集合」为准，禁在 QA 阶段自行升降级。

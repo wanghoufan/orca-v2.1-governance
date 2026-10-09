@@ -118,6 +118,7 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 | 交接 | `docs/handoff/HANDOFF.md` | 状态源（新节顺延，现至 §71；旧号冻结不重排；新节自 §72 起顺延，勿撞旧号） |
 | 迁移入口 | `迁移整理提示词.md`（老包根同名） | 自举取包＋冲突处理＋5.7 登记检查（迁移即登记，`LEDGER-OK` 才算完成） |
 | 新项目脚手架 | `新项目模板包/`（目录**空**→整包拷 `cp -R "<母版>/新项目模板包/." <项目根>/`，快且不漏文件；目录**非空**→只覆盖规则层＋补新增，实例层不碰，因整包拷会把计划/BUGS/HANDOFF/账本真实行静默顶成空模板且不报错；规则文件不挑行合并） | 老项目用 `老项目迁移模板包/`＋【迁移整理】提示词（同规则＋冲突改名铁律），不要用新项目这套 |
+| Phase1 可运行原型 | AGENTS.md「Phase1 必须交付可运行交互原型」＋`PRODUCT_PLAN.template.md` Gate 的「原型交付完整性检查条件」 | 有用户界面的 APP，Phase1 默认须交付 `docs/design/prototype/` 下本地可运行原型（核心页面完整／关键交互可操作／品牌与真实素材落实／浅深色与语言及异常状态可演示／给出路径与打开命令）；PDF、截图、纯文档、在线概念图、单张示例预览 HTML 都不算。**文件存在与真实运行分开判定**，五项须全过才进 WAITING，缺则判现有 Gate 不满足；`check-ledger` 报 `PROTO-MISSING`／`PROTO-NO-RUNTIME-EVIDENCE` |
 | APP 导航与视觉方向 | `docs/sop/app-navigation.md` | 三方向须在**同一核心页面**并置对比且逐轴不同（**只换配色不算方向**）；`LIGHT`/`DARK` 是主题适配非独立方向；批准后直接进 Freeze 不重复询问；**底部导航由产品决策**（不是所有 APP 都要 Tab），入口/图标/四态/排版/Token/显隐/适配由产品侧在 UX Contract 确定并在 COMPONENT Freeze 绑定；Android 优先 M3 `NavigationBar`/`Scaffold(bottomBar)`，**底栏固定不随内容滚动**；正式 Android QA 禁仅凭网页原型判定 |
 | 公开仓不带 ORCA | `scripts/orca-gitignore.sh`＋`scripts/orca-public-ignore.txt`（忽略清单单一真源）＋`scripts/restore-framework.sh` | 仅作品对外公开时启用一次：注入托管忽略块＋摘除已提交 ORCA 脚手架，**此后推送零操作**；只隐藏通用脚手架，本项目计划/评审/交接/账本保留作云备份，应用 README 不受影响；clone 回来用 restore 补框架（不覆盖任何自有文件）。私有仓跳过 |
 
@@ -126,7 +127,7 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 1. 进 WAITING 条件全满足：Readiness≥90、P0=0、blocking P1=0、关键事实已验证、核心假设已合理验证；Human Gate 是否被绕过。
 2. 派工实绩是否与分工表一致（supervisor 抽查三处对账）。
 3. Jev 是否只出现在模糊分叉、有无越权自动批；决策流水是否落盘且不含密。
-4. QA 是否后台静默、有无碰主 Chrome；普通 QA 沙箱解禁是否仅限 QA 且记账。
+4. QA 是否后台静默、有无碰主 Chrome；沙箱解禁是否按 `AGENTS.md` 口径（QA＋planner＋senior-expert，只解沙箱不解职责边界）且已记账。
 5. Secret（API Key、Cookie、Token）有无入仓。
 6. 账本是否记全（`model` 精确写法、新字段；无账本项目是否按要求记账）。
 7. 老项目迁移是否过登记检查（`check-ledger.mjs` 得 `LEDGER-OK`）。
@@ -135,4 +136,5 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 10. 客户端无关：派工口是否由探测决定而非人工填表；同一套包在别的客户端能否直接开工（不应出现 Orca 专属硬依赖）；小活有没有被硬套上体系。
 11. 公开作品仓：ORCA 通用脚手架是否已从公开仓摘除（`orca-gitignore.sh --untrack`，推送零操作）；应用 `README.md`/首页是否完好；本项目计划/评审/交接/账本是否仍留作云备份。
 12. APP 导航与视觉方向：三方向是否在**同一核心页面**并置且**非只换配色**；`LIGHT`/`DARK` 是否被误当独立方向；批准后是否重复询问风格；**底部导航是否由 Product Plan 决策（而非方向集自造）**；底栏是否固定不随内容滚动；Android 验收是否用了真机证据而非网页原型。
-11. 汇报纪律：编排者是否只报目标完成/工作完成/大影响三类，是否 ≤10 行，残留清理/备份旧文件/既有 warning 有没有被拿来反复问用户（发现即打回）。
+13. Phase1 可运行原型：有用户界面的 APP 是否带**可运行**原型进 Human Gate（而非 PDF/截图/纯文档）；**文件存在与真实运行是否分开判定**；用户能否自行打开而不靠编排者讲解。
+14. 汇报纪律：编排者是否只报目标完成/工作完成/大影响三类，是否 ≤10 行，残留清理/备份旧文件/既有 warning 有没有被拿来反复问用户（发现即打回）。

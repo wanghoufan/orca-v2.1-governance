@@ -12,7 +12,7 @@
 
 ![ORCA 两阶段治理总流程](./docs/assets/orca-two-phase-flow.png)
 
-**角色阵容与 Phase 2 派工主链**（9+1+1 · 自动探测派工口 · 账本与同步三件套）：
+**角色阵容与 Phase 2 派工主链**（9+1+1 · 自动探测派工口 · 账本与同步四件套）：
 
 ![ORCA 角色阵容与派工主链](./docs/assets/orca-roles-dispatch-chain.png)
 
@@ -60,7 +60,9 @@ cp -R "<母版>/新项目模板包/." <项目目录>/
 ls <项目目录>/docs/qa/产品验收追踪矩阵.template.md                  # 应存在
 ls <项目目录>/docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl    # 应存在（空壳）
 # 先删 docs/model/ 下各账本的 `_example` 行（母版/分发包里是模板空壳，新项目直接跑必然报「示例行未删」）
-sed -i '' "/\"_example\"/d" <项目目录>/docs/model/*.jsonl
+# 跨平台：macOS 用 -i ''（BSD sed）；Linux / Git-Bash 用 -i；Windows 请用 git-bash 或自行处理换行
+sed -i '' "/\"_example\"/d" <项目目录>/docs/model/*.jsonl     # macOS
+sed -i    "/\"_example\"/d" <项目目录>/docs/model/*.jsonl     # Linux / Git-Bash
 node <项目目录>/scripts/model/check-ledger.mjs                       # 期望 LEDGER-OK
 ```
 
@@ -121,7 +123,7 @@ bash "<母版路径>/scripts/restore-framework.sh" <项目根>
 **入口与规则**
 - `AGENTS.md`：全员规则（一页，全体系唯一真源之一）
 - `README.md`：本导航（先读我）；`README.en.md`：英文导航
-- `ORCA治理体系说明.md`：**对外概览**（体系更新三件套第 2 步必须同步它）
+- `ORCA治理体系说明.md`：**对外概览**（体系更新四件套第 2 步必须同步它）
 - `USER_MODEL_OVERRIDE.md`：模型表（角色/模型/执行通道/调用方式，**唯一口径**，改表即生效，精确ID照抄执行）
 - `GOVERNANCE_VERSION`：版本指针文件（内容：以Git历史为准）
 - `CHANGELOG.md`：**变更说明正典**——每次改动并 push 必须在此追加一条（改了什么/为什么/影响谁/怎么验）；只写 commit message 或 HANDOFF 章节不算交差

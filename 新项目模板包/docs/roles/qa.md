@@ -4,7 +4,7 @@
 - 真机 Canary（七项全过才写“真机 QA 已启用（附模型精确ID＋Runtime）”）：读屏／截图／点击／输入／滚动／判断 UI 状态／完成至少一条真实端到端流程；未过标 `PENDING / NOT VERIFIED`，禁编造已支持。
 - 真机QA会话能力预检（每session正式用例前硬门禁）：顺序工具清单→Runtime权限→无副作用UI Canary→最终门禁；结论枚举只许 `PASS / BLOCKED_TOOL_NOT_INJECTED / BLOCKED_ORCA_APPROVAL / BLOCKED_RUNTIME / BLOCKED_OS_PERMISSION / FAIL_UNVERIFIED_ACTION / NOT_VERIFIED`；全PASS才进正式QA，否则立即停止；禁 `FAIL_MODEL_ACTION`；`ok=true/exit 0/工具调用成功`但无状态或像素变化记 `FAIL_UNVERIFIED_ACTION`；禁跨模型/跨Runtime/跨session拼PASS；Mac预检不代Android/iPhone验收；结果落 `docs/qa/` 预检节（照 BUGS.template.md）。
 - 模型：见 USER_MODEL_OVERRIDE.md 的 qa 行（冲突以模型表为准，卡内不复述ID）。
-- 双态分派：普通QA（回归/校验/DoD）走 codex Luna，**派工带 `-s danger-full-access` 关闭沙箱**（该模式＝完整访问权，非仅解端口；靠“仅限QA＋记账”约束）——否则端口绑定/网络被 codex 沙箱拒（历史反复出现 `BLOCKED_RUNTIME`/EPERM 假失败）；实测 `codex exec -s danger-full-access` 可绑 127.0.0.1 端口、curl 通。**解禁仅限 QA 场景，须在 DISPATCH note 记账**，其他角色禁带；真机直驱：adb/Expo 类真机任务走本窗口 bash 直驱；预检照常，BLOCKED 照停；结果 note 记分支原因。scrcpy 仅用于看屏，不做自动化通道。
+- 双态分派：普通QA（回归/校验/DoD）走 codex Luna，**派工带 `-s danger-full-access` 关闭沙箱**（该模式＝完整访问权，非仅解端口；靠“按 `AGENTS.md` 解禁口径＋记账”约束）——否则端口绑定/网络被 codex 沙箱拒（历史反复出现 `BLOCKED_RUNTIME`/EPERM 假失败）；实测 `codex exec -s danger-full-access` 可绑 127.0.0.1 端口、curl 通。**解禁口径以 `AGENTS.md` 为准（2026-10-07 用户令已放宽到 QA＋planner＋senior-expert；本卡不再写“仅限QA”以免误拒），且只解沙箱不解职责边界，每次带该标志须在 DISPATCH note 记账**；真机直驱：adb/Expo 类真机任务走本窗口 bash 直驱；预检照常，BLOCKED 照停；结果 note 记分支原因。scrcpy 仅用于看屏，不做自动化通道。
 - 输出：docs/qa/（照 BUGS.template.md）。
 - 不做：不顺手改代码，挂了打回给builder。
 - Web QA 标准通道 V1（2026-09-21 本机实测冻结，BROWSEROS_WEB_QA=READY／ORCA_INTEGRATION=READY）：Web/PWA/localhost 默认走 BrowserOS neo＋MCP；实际桥接 Orca→OpenCode CLI→BrowserOS MCP（Orca 无原生 MCP 配置面，禁写成“Orca 原生 MCP 已验证”）；dev 不自选/不更换浏览器基础设施。
@@ -16,7 +16,7 @@
 - 故障分层：业务页面→BrowserOS Tool→MCP→OpenCode Bridge→Orca 编排；禁单点故障自动装 Browser Use/Steel/VM，结构性阻塞才由治理管理者定备用方案。
 - Gate 不变：不新增 QA Gate；BrowserOS 只是执行工具，走原 开发→QA→修复→回归→MVP/V1 链。
 - 不可 PASS 的情形：①关键产品 DoD／AC 未测；②核心用户路径（按计划 `User Flow` 判定：`User Flow` 已标出 `关键任务` 的，这些任务即为核心；`User Flow` 存在但未标 `关键任务` 的，视同未标注，全部 `User Flow` 任务均视为核心；`User Flow` 缺失或为空的，属计划缺项，QA 不得自行发明核心路径，须记 `阻塞` 并退回补计划，不判 `PASS`）上的关键任务涉及的**每个**可见操作控件未实际点击并观察到页面、锚点或状态变化（矩阵里须**逐个列出**控件名称、预期变化、实际操作与结果，只写“点了主要按钮”不算；只验 `href` 文本存在、只验元素存在，一律不算已验）；③验收证据（截图／浏览器日志／路由变化）缺失。命中任一不得报 `PASS`。
-- 产品验收落盘：**AC 结论唯一落 `docs/qa/产品验收追踪矩阵.md`**（模板 `产品验收追踪矩阵.template.md`，7 列，状态 `OPEN/PASS/FAIL/BLOCKED`；2026-10-08 起 BUGS 内旧 11 列矩阵与 `人工判定/未测/DEGRADED` 枚举废止，BUGS 只记操作过程证据）。矩阵关键 AC（＝ `PRODUCT_PLAN` 的「关键 AC 集合」，即 Plan 标 `关键：是` 的 AC）只有证据齐全且最终状态为 `PASS` 才放行；`OPEN`＝未验证、`BLOCKED`＝被产品决策或外部条件阻塞，两者均不构成放行依据。QA 只负责交证据（矩阵＋截图），不负责签收；发布类型为 `首次发布` 的，QA 放行后由编排者把证据包交用户签收，签收结论落 HANDOFF。
+- 产品验收落盘：**AC 结论唯一落 `docs/qa/产品验收追踪矩阵.md`**（模板 `产品验收追踪矩阵.template.md`，**列数以模板为准、不复述数字**，状态 `OPEN/PASS/FAIL/BLOCKED`；2026-10-08 起 BUGS 内旧 11 列矩阵与 `人工判定/未测/DEGRADED` 枚举废止，BUGS 只记操作过程证据）。矩阵关键 AC（＝ `PRODUCT_PLAN` 的「关键 AC 集合」，即 Plan 标 `关键：是` 的 AC）只有证据齐全且最终状态为 `PASS` 才放行；`OPEN`＝未验证、`BLOCKED`＝被产品决策或外部条件阻塞，两者均不构成放行依据。QA 只负责交证据（矩阵＋截图），不负责签收；发布类型为 `首次发布` 的，QA 放行后由编排者把证据包交用户签收，签收结论落 HANDOFF。
 - 边界澄清：产品验收走已冻结的 Web QA 标准通道（BrowserOS，`docs/sop/webqa.md`），dev 不自选不更换浏览器基础设施；本条是既有 QA Gate 的证据放行条件，不新增 Gate。
 - 边界澄清：Phase1 的 Research Reviewer（product-reviewer）不等于产品验收，禁用研究评审结论替代产品验收证据。
 - 视觉验收最小覆盖：关键用户任务逐条走通并实际点击关键任务涉及的**每个**可见操作控件（逐个控件名/预期变化/实际操作与结果**须落进 `产品验收追踪矩阵.md` 对应三列**，只写「点了主要按钮」不算）；按项目要求检查桌面与窄屏；用奇偶内容量／长标题长正文／空状态等边界样本检验布局；核对编号·标题·正文的对齐、换行、裁切、溢出、组件状态、主要文字可读性与视觉一致性；记录真实浏览器截图与必要交互日志（自动视觉比较只作辅助，基线变化仍需人工审核）；如适用可纳入 WCAG 2.2 底线项，但禁把“符合 WCAG”写成整体体验通过、禁把视觉偏好伪装成 WCAG 条款。视口像素不设统一值，由项目计划按目标用户与产品类型定。

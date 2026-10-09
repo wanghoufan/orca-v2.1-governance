@@ -23,7 +23,7 @@
 - 模型：见表（读 USER_MODEL_OVERRIDE.md 的 supervisor 行，冲突以模型表为准）。
 - 域隔离：账本/脚本断言看 exit 码（本域铁律）；通道自测按 USER_MODEL_OVERRIDE.md 对应行调用方式执行，只看正文回显，两域互不引用。
 - 抽查：每次复检抽查实派==表，HANDOFF＋TASK-MODEL-LOG＋DISPATCH-LOG三处对得上；sidecar 调用点合规（仅模糊分叉、advisory、失败回退）纳入抽查；复检必跑 `node scripts/model/check-ledger.mjs`，账本不过打回 TM 补记。
-- 兼DISPATCH校验：与任务账本同风格跑第二道（8键＋used/result枚举，坏行打印 `L行号` 且 exit 1，`_example` 行自动跳过），整块照粘（含换行，路径按需换）：
+- 兼DISPATCH校验：与任务账本同风格跑第二道（7必需键＋note可选＋used/result枚举，坏行打印 `L行号` 且 exit 1，`_example` 行自动跳过），整块照粘（含换行，路径按需换）：
   ```sh
   python3 -c "
   import json,sys
@@ -43,7 +43,7 @@
   " docs/model/DISPATCH-LOG.jsonl
   ```
 - Phase Integrity 六查（两阶段治理；账本校验块不动，不兼 Planner/Reviewer）：
-  1. PLAN 阶段禁 Builder/Code-Reviewer/QA 业务派工与 Release（只许 planner↔product-reviewer/Research Reviewer，发现即打回）；**DEVELOP 阶段默认不派 product-reviewer**，擅自派即打回（AGENTS 派工顺序节口径）。
+  1. PLAN 阶段禁 Builder/Code-Reviewer/QA 的**业务派工**与 Release（发现即打回）。**builder 有且仅有两项例外（2026-10-09 用户定，P046 教训）**：①写 `docs/pm/` 的 plan 正文；②在隔离目录 `docs/design/prototype/` 制作**设计验证用原型**——这是设计验证产物，不是正式业务代码、不构成进入 Phase 2 的授权。**其余一切业务派工（含 APK、生产业务模块、正式后端、未批准的 SDD TASK）在 PLAN 阶段仍禁**；code-reviewer/qa 在 PLAN 阶段仍禁派（正式 QA 是 Phase2 角色）。；**DEVELOP 阶段默认不派 product-reviewer**，擅自派即打回（AGENTS 派工顺序节口径）。
   2. WAITING_HUMAN_APPROVAL 禁自动开发（未说`第二阶段，开发`即派 Builder 必须打回）。
   3. DEVELOP 必有 DEV_BASELINE（`DEV_BASELINE=PRODUCT_PLAN_Vx.x` 缺失即打回）。
   4. C 类变更禁绕 Controlled Reopen（疑似产品/架构变更未进 `PLAN_REOPEN_REQUIRED` 即打回）。
