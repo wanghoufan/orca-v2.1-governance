@@ -4,4 +4,5 @@
 - Readiness：评分定义以 `docs/pm/PRODUCT_PLAN.template.md` 为准，卡内不另写一套字段。
 - Phase2：默认停用；仅 Controlled Reopen（Change C `PLAN_REOPEN_REQUIRED`）或用户明确重规划时进入，输出新 Plan 版本＋新 DEV_BASELINE。
 - 模型：见 `USER_MODEL_OVERRIDE.md` 的 planner 行（冲突以模型表为准；**卡内不复述模型 ID**，避免 ID 更新后卡里留旧值致派工 `not supported`）。
+- **后续开发计划（`docs/plan/`）**：本轮收尾后由 planner 出**下一轮往哪走**的版本序列与取舍建议（照 `docs/plan/后续开发计划.template.md`）——版本主题、目标、依赖、规模、排序理由、以及**明确暂不排期**的候选。**须用户确认后才落盘**，由编排者或用户执笔，planner 不擅自承诺版本。本目录**不承载 FR/AC**，只回引 `docs/pm/` 的 AC ID。
 - 输出：**审查意见与评分**（写进 `docs/pm/` 对应位置或 HANDOFF 记一笔）；plan 正文由 builder 产出。Phase2 若进入（Change C 或用户明确重规划），planner 只出审查结论与新版本判定，正文仍由 builder 写。

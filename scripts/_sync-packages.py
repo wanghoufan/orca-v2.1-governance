@@ -25,7 +25,7 @@ PAIRS = [
 DIRS = ["docs/roles", "docs/sop", "scripts/model", "docs/assets"]
 # 只同步 *.template.md 的（这几个目录里混有母版自己的实例记录：BUGS-*.md / CODE_REVIEW-*.md /
 #   GOVERNANCE_REVIEW-*.md / RESEARCH_REVIEW-*.md / PLAN-*.md / HANDOFF.md 等，**模板包不该带实例记录**）
-TEMPLATE_DIRS = ["docs/pm", "docs/qa", "docs/review", "docs/handoff"]
+TEMPLATE_DIRS = ["docs/pm", "docs/plan", "docs/qa", "docs/review", "docs/handoff"]
 EXTRA = ["scripts/detect-client.sh", "scripts/model/check-ledger.mjs",
          "scripts/check-channel-preflight.sh",  # weekly-channel-check.sh 是母版 launchd 专用，不随包分发
          # 账本空壳（2026-10-07 补）：此前不在同步清单里，母版改动后 check-sync 报 SYNC-FAIL。

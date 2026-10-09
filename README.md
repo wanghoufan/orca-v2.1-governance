@@ -72,6 +72,34 @@ node <项目目录>/scripts/model/check-ledger.mjs                       # 期�
 
 **`USER_MODEL_OVERRIDE.md` 在包里是实文件**（不是软链），落地后按 `AGENTS.md` 的软链制改成软链指母版真源；改之前先备份旧实文件。
 
+## 公开仓怎么不带 ORCA、丢了怎么恢复（可选，仅作品对外公开时用）
+
+**为什么**：默认铺包会把 ORCA 脚手架铺在项目根，推到**公开作品仓**后，克隆的人会看到一堆与产品无关的治理文件。本节给一条**零操作**解法：设一次忽略，此后推送多少次都不会把 ORCA 上传；本地文件一个不少、开发照旧。
+
+**启用（每个要公开的仓跑一次）**：
+
+```bash
+bash "<母版路径>/scripts/orca-gitignore.sh" <项目根> --untrack
+```
+
+- 会把一段「ORCA 治理块」（托管、带标记、幂等）写进项目根 `.gitignore`；
+- 并把**已经提交过**的 ORCA 脚手架从 git 索引摘除（`--untrack`）——**只影响仓库里要不要收，本地文件不动**；
+- 边界＝**只隐藏"每个项目都一样"的通用脚手架**（角色卡／规范／脚本／模板／`AGENTS.md` 等）；**本项目自己的**产品计划、评审、交接、账本、经验**保留在公开仓**作云端备份；应用的 `README.md` 绝不会被藏（那是作品首页）。清单单一真源＝`scripts/orca-public-ignore.txt`。
+
+> 提示：`.gitignore` 只对**未跟踪**的文件生效，所以已经推上去过的 ORCA 文件必须配 `--untrack` 摘一次；摘除后下一次提交公开仓就不再收。本工具**不会自动 commit/push**。
+
+**恢复（万一项目文件夹从云端 clone 回来、发现没有 ORCA）**：
+
+```bash
+bash "<母版路径>/scripts/restore-framework.sh" <项目根>
+```
+
+- 从本机母版把通用框架补回项目（脚本会自己认母版路径，不用填）；
+- **绝不覆盖**你的应用代码、`README.md`、产品计划、评审、交接、账本、经验；
+- 补完按提示跑两条自检（`check-channel-preflight.sh` / `check-ledger.mjs`）即可继续开发。
+
+> 本机母版（`4.Templates…/ORCA V2.1 治理模板`）本身就是云端公开仓（`wanghoufan/orca-v2.1-governance`），本机丢了还能拉回来——治理体系本身永远丢不了。
+
 ## 用户只需记住三个口令
 
 - `第一阶段，计划`：进 Phase1（PLAN），Planner＋Research Reviewer 出 PRODUCT_PLAN，≥90 且模板 Gate 全条件满足（P0=0＋blocking P1=0＋事实/假设验证）才找你。
@@ -100,6 +128,7 @@ node <项目目录>/scripts/model/check-ledger.mjs                       # 期�
 - `model/check-ledger.mjs`：**两本**账校验（`TASK-MODEL-LOG`／`DISPATCH-LOG`；`TASK-MANAGER-QUALIFICATION-EVENTS` 由 `tm-qualification.mjs` 校验）；另含 **APP 基线硬门**（`APP-BASELINE-MISSING`／`APP-CRITICAL-AC-EMPTY`／`APP-CRITICAL-AC-INCOMPLETE`，2026-10-08 起为 FAIL 不再是 WARN）。母版/分发包自检用 `--allow-example`（**真实项目禁用**，否则等于放过「示例行未删」）
 - `decision/orca-decide.mjs`：决策侧车；`orchestration/`：L3 watchdog（仅外部/终端编排时部署）
 - `check-sync.sh`：母版↔两包一致性门禁（归一化裸名后逐字节比对），须 `SYNC-OK`
+- `orca-gitignore.sh` ＋ `orca-public-ignore.txt` ＋ `restore-framework.sh`：**公开仓不带 ORCA** 三件套（注入忽略块＋摘除已跟踪 ORCA / 忽略清单单一真源 / clone 回来补回框架）。仅作品对外公开时用，详见上方「公开仓怎么不带 ORCA」
 
 **包**
 - `新项目模板包/`（新项目初始化）、`老项目迁移模板包/`（老项目迁移，入口【迁移整理】提示词）。两包内容由 `scripts/_sync-packages.py` 从母版生成，**不要手改包内文件**。
@@ -110,7 +139,7 @@ node <项目目录>/scripts/model/check-ledger.mjs                       # 期�
 - `prompts/`：编排者/外部开发者/迁移整理三份提示词（迁移整理含自举取包＋冲突处理，可当老项目唯一入口）＋《Orca 通用编排者持续推进协议》（防停摆三层监督收编版；其动态角色论与十卡制冲突，不采用）＋《Orca 编排治理监督者提示词》（总监督wake-only收编版，平时只喊编排者）
 - `history/`：重塑说明、更新说明、ORCA 模型与双阶段治理整改方案（历史，看现行先看根）
 - `templates/`：归位表模板
-- `pm/` `qa/` `review/`：计划/测试/评审落盘（各照 template）
+- `pm/` `plan/` `qa/` `review/`：计划/测试/评审落盘（各照 template）。`pm/` 是**本轮**计划（Phase1 产品计划、Phase2 Stage/Task），`plan/` 是**后续开发计划**（V2/V3 路线图，版本序列/排序/取舍/暂不排期候选），两者分开不混
 - `handoff/`：交接（含模板）；`model/`：模型账本（TASK 首个真实任务前、DISPATCH 首个真实派工前删示例行）＋ TM 资格测试（`TASK-MANAGER-QUALIFICATION.md` 规范/报告、`TASK-MANAGER-QUALIFICATION-EVENTS.jsonl` 事件，评分 `scripts/model/tm-qualification.mjs`）
 - `sop/`：基础设施规范（docker.md、supabase.md、sqlite.md、android.md、android-machine-profile.md、webqa.md、decision-router.md、**app-theme-i18n.md**（APP 基础能力：主题三态＋中英双语）、**app-brand-assets.md**（APP 品牌资产：中文名／英文名／安卓图标／启动画面，面向用户 APP 默认继承）、**background-services.md**，去版本号引用），新项目自建
 - `scripts/decision/`：Decision Sidecar orca-decide（用法见其 README 与 docs/sop/decision-router.md）

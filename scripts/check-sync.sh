@@ -29,6 +29,7 @@ for pkg in "新项目模板包" "老项目迁移模板包"; do
   check USER_MODEL_OVERRIDE.md "$pkg/USER_MODEL_OVERRIDE.md"
   for f in docs/roles/*.md docs/sop/*.md docs/assets/*; do check "$f" "$pkg/$f"; done
   for f in docs/pm/PLAN.template.md docs/pm/PRODUCT_PLAN.template.md \
+           docs/plan/后续开发计划.template.md \
            docs/qa/BUGS.template.md docs/qa/产品验收追踪矩阵.template.md \
            docs/review/CODE_REVIEW.template.md \
            docs/review/RESEARCH_REVIEW.template.md docs/review/PRODUCT_BACKLOG.template.md \

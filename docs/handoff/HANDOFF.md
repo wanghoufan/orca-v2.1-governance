@@ -794,3 +794,42 @@
 **验证**：`tm-qualification 17/17` / `SYNC-OK` / `CHANNEL-OK` / 五用例全过。
 
 **仍未处置的旁路**（审查第二节，需用户定方向）：APP 适用性靠关键词推断可主动规避（写「不适用/后端服务」即跳过）｜关键词门只验字面不验语义（已放宽中文等价，仍非语义校验）｜AC 巡检只报不阻塞｜升级只数 supervisor FAIL｜Human Gate 口头放行不校验 `PLAN_GATE`｜双审同版本不重跑｜断链项目永久漂移｜小活豁免旁路。
+
+## 78. 新增 `docs/plan/` 后续开发计划落盘位（2026-10-08，用户令）
+
+**缺口**：体系只有 `docs/pm/`（管**本轮**计划：Phase1 产品计划、Phase2 Stage/Task），**「这个产品做完 V1 之后往哪走」没有落盘位**——版本序列、排序取舍、暂不排期候选全靠口头或散在别处。
+
+**新增**：`docs/plan/后续开发计划.template.md`（母版 + 两包各一份）。
+
+**与 `docs/pm/` 的分工**（不混）：
+| 目录 | 管什么 |
+|---|---|
+| `docs/pm/` | **本轮**：Phase1 产品计划、Phase2 Stage/Task Plan |
+| `docs/plan/` | **往后每一轮**：版本序列（V2/V3 路线图）、每版主题与目标、依赖、规模、排序理由、**明确暂不排期的候选**、变更记录 |
+
+**归属**：`planner` 出排序与取舍建议 → **用户确认后由编排者或用户落笔**；planner 不擅自承诺版本。**本目录不承载 FR/AC**，只回引 `docs/pm/` 的 AC ID（需求真源仍是 `docs/pm/`）。版本号一经发布不改，调整走 Change C。
+
+**接入 6 处**：`docs/plan/后续开发计划.template.md`（新建）｜`_sync-packages.py` 的 `TEMPLATE_DIRS` 加 `docs/plan`（57/58 文件）｜`check-sync.sh` 纳管该模板（实测改包内即 `SYNC-FAIL`）｜`AGENTS.md`「谁写哪」表加一行（planner 出建议、用户确认后落笔、不承载 FR/AC）｜`docs/roles/planner.md` 补职责段｜`docs/templates/归位表.template.md` 把 `docs/pm/` 与 `docs/plan/` 分两行写清｜`README.md` docs 地图说明两者区别。
+
+## 79. 公开作品仓不带 ORCA（2026-10-09，用户令「默认全要」）
+
+**问题**：ORCA 铺包后脚手架摊在项目根，作品推公开仓后克隆者看到一堆与产品无关的治理文件；而用户一天推十几次，任何"推送前打包/解包"的做法都不可接受。
+
+**选定方案（A1 + C1）**：**不动 ORCA 布局、不改任何路径引用**，只在项目根 `.gitignore` 注入一段母版托管的忽略块 + 摘除已提交的通用脚手架。
+- 边界 A1＝**只隐藏"每个项目都一样"的通用脚手架**；**本项目自己的**产品计划/评审/交接/账本/经验**保留在公开仓**作云备份；应用 `README.md`（作品首页）绝不被藏。
+- C1＝**只清当前视图**（`git rm --cached`），**不动历史、不强制推送**。
+
+**新增 3 个工具（母版 `scripts/`，母版专用、不随包分发）**
+- `orca-public-ignore.txt`：忽略清单**单一真源**（gitignore 语法，framework 组）。
+- `orca-gitignore.sh <项目根> [--untrack] [--list <file>]`：幂等注入/更新带 BEGIN/END 标记的托管块；`--untrack` 用 `git ls-files`+`git rm --cached` 摘除已跟踪项（**本地文件不动**）；**绝不自动 commit/push**。
+- `restore-framework.sh <项目根> [--source <母版根>]`：从本机母版补回通用框架，**硬拒覆盖**应用 README/真实账本/实例文档/经验；重建 `USER_MODEL_OVERRIDE.md` 软链；末了打印自检命令。
+
+**踩坑并修掉**：`git ls-files` 的 pathspec **不认前导 `/`**（gitignore 认），初版直接透传导致 untrack 静默摘 0 个；已改为剥前导 `/` 再查。沙盒实测：幂等注入（重跑块不重复）、untrack（本地文件仍在、索引已摘）、restore（框架回来、账本与 App README 完好）。
+
+**落地范围**：全机 **19 个公开作品仓**（001/002/003/006/010/011/015/018/020/022/025/026/028/036/039/040/041/042/044）已注入忽略块并 untrack，合计摘除 **948 个** ORCA 文件。**安全校验**：每仓比对 `README.md`/真实账本/`HANDOFF.md`/`经验一句话.md` 的 HEAD 指纹未变；全量扫描确认**零应用源码/构建/图片/规格文件被误删**（`scripts/decision/package.json` 属 ORCA 侧车，非应用文件）。私有仓（含 `p045`）**不动**。
+
+**文档接入**：母版 `README.md` 新增「公开仓怎么不带 ORCA、丢了怎么恢复」节＋脚本清单条目｜`docs/prompts/迁移整理提示词.md` 加 5.9（仅公开仓跑，私有仓跳过）｜`docs/templates/归位表.template.md` 加一行勾选｜`ORCA治理体系说明.md` 规范表加一行＋审查检查点第 11 条。
+
+**验证**：`SYNC-OK`（两包已同步，README 新节进包）｜`CHANNEL-OK`｜`tm-qualification 17/17`。
+
+**待办**：19 个公开仓与母版的 commit＋push **尚未执行**（commit/push 属红线，须用户明确授权）；且部分仓存在**与本次无关的既有未提交改动**（HANDOFF/GOVERNANCE-STATE/经验/备份文件/应用缓存），提交时只取 `.gitignore` ＋ ORCA 删除，不打包这些。

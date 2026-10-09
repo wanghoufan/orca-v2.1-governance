@@ -27,6 +27,7 @@ task-manager=编排者（唯一对人说话）｜supervisor=监督者（只对�
 | 谁 | 写哪 | 模板 |
 |---|---|---|
 | planner | `docs/pm/`（**只审查打分与列缺项，不写正文**） | Phase1照PRODUCT_PLAN.template.md 的 Readiness 清单逐项核；Phase2照PLAN.template.md 审查 |
+| planner（会用户/编排者落笔） | `docs/plan/`（**后续开发计划**：V2/V3 路线图，与 `docs/pm/` 的本轮计划分开） | 照 `docs/plan/后续开发计划.template.md`；由 planner 出排序与取舍、**用户确认后落盘**；不承载 FR/AC |
 | builder | 业务仓库本身；**Phase1 例外：限拟制与修改 `docs/pm/` 的 plan 正文**（不得碰业务代码/其他目录） | Phase1照PRODUCT_PLAN.template.md（拟稿与改稿） |
 | code-reviewer | `docs/review/` | CODE_REVIEW.template.md |
 | qa | `docs/qa/` | BUGS.template.md |
