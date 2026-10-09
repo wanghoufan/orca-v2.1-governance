@@ -135,6 +135,14 @@ NDK 和 CMake 可在同一 SDK 下并存多个版本。缺少组件时先报告�
 
 release 构建不等于正式发布包。发布前必须检查 release 签名、包名、版本号、keystore 安全和是否误用 signingConfigs.debug。keystore、密码和 Token 不得进入 Git。
 
+## 7.5 底部导航（采用时）
+
+采用底部导航的 Android APP，**优先官方 Material 3 组件** `NavigationBar` / `NavigationBarItem` / `Scaffold(bottomBar = …)`，**不自造导航框架**；既有 Reuse Audit 仍按既定顺序确认版本／License／维护情况。
+
+**底栏固定于正常页面的导航位，滚动内容独立滚动；禁止把底栏放进可滚动内容**（禁止 `Column` + `verticalScroll` 包住底栏，禁止把底栏塞进 `LazyColumn`／`RecyclerView` 的 item）。正确形态是 `Scaffold` 承载底栏、滚动内容放进 `content` 作用域并消费 `innerPadding`，保证内容滚到底不被遮挡。沉浸式页面是否隐藏底栏以产品批准规则为准（记在 UX Contract 与 COMPONENT Freeze），不得由实现者自行决定。
+
+**正式 Android 验收禁仅凭网页静态原型判定**，须依据真机实际运行截图／录屏／交互测试。完整规范见 `docs/sop/app-navigation.md`。
+
 ## 8. 真机、验证与高风险操作
 
 每 session 真机 QA 前先过能力预检（scan→deps→preflight→smoke），预检不过不进正式，不计入账本；真机直驱走本窗口 bash（codex 沙箱必 BLOCKED），Maestro 为备用通道，scrcpy 只看屏。

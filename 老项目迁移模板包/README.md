@@ -78,7 +78,13 @@ node <项目目录>/scripts/model/check-ledger.mjs                       # 期�
 
 **启用（每个要公开的仓跑一次）**：
 
+> 多数情况下**不用你管**：开工跑 `bash "<母版路径>/scripts/orca-public-guard.sh"` 会按可见性自动补齐——公开仓缺忽略块就自动注入并摘除，私有仓跳过（私有仓保留 ORCA 作云备份）。下面两条是手动等价物。
+
 ```bash
+# 全机自动补齐（推荐）
+bash "<母版路径>/scripts/orca-public-guard.sh"
+
+# 或手动：单个要公开的仓
 bash "<母版路径>/scripts/orca-gitignore.sh" <项目根> --untrack
 ```
 
@@ -129,6 +135,7 @@ bash "<母版路径>/scripts/restore-framework.sh" <项目根>
 - `decision/orca-decide.mjs`：决策侧车；`orchestration/`：L3 watchdog（仅外部/终端编排时部署）
 - `check-sync.sh`：母版↔两包一致性门禁（归一化裸名后逐字节比对），须 `SYNC-OK`
 - `orca-gitignore.sh` ＋ `orca-public-ignore.txt` ＋ `restore-framework.sh`：**公开仓不带 ORCA** 三件套（注入忽略块＋摘除已跟踪 ORCA / 忽略清单单一真源 / clone 回来补回框架）。仅作品对外公开时用，详见上方「公开仓怎么不带 ORCA」
+- `orca-public-guard.sh`：**自动**按可见性补齐——扫全部项目，公开仓缺忽略块就自动注入并摘除，私有仓跳过；开工跑一次即可，无需逐仓交代
 
 **包**
 - `新项目模板包/`（新项目初始化）、`老项目迁移模板包/`（老项目迁移，入口【迁移整理】提示词）。两包内容由 `scripts/_sync-packages.py` 从母版生成，**不要手改包内文件**。

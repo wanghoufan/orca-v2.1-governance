@@ -840,3 +840,29 @@
 **第三类非 bug 但需记**：个别仓本地分支名是 `wanghoufan/master`（p011），`git push origin <当前分支>` 会**建出同名远端杂分支**。已改为快进推到真实 `master` 并删除 stray 分支。**批量操作前必须确认分支名与远端默认分支一致。**
 
 **已执行（用户令 A1B1）**：母版 commit `02020ee` 已推 `orca-v2.1-governance`；19 个公开仓全部 commit+push（每仓两笔：主体 + 中文名补摘）。**线上复核**：按忽略清单精确比对，19 仓 ORCA 脚手架残留 **0**；应用 `README.md`／本项目计划/评审/交接/账本/经验**全部保留**。私有仓（含 `p045`）未动。旧提交历史里仍有 ORCA（C1，不重写历史）。
+
+## 80. APP 导航与视觉方向规范（2026-10-09 云端产品顾问 V1.3 对齐，用户令）
+
+**要解决的三个反复出现的失败**：① AI 生成的 APP 风格高度雷同（只换配色）；② 导航组件由 Builder 临场随意设计；③ Android 底栏被放进可滚动内容、跟着内容滚走。
+
+**新增单一真源** `docs/sop/app-navigation.md`（与 `app-theme-i18n.md`、`app-brand-assets.md` 并列，不互相覆盖），八节：默认继承与覆盖／视觉方向探索（三方向同一核心页面并置、逐轴差异化、`LIGHT`/`DARK` 非独立方向、批准后直接进 Freeze）／底部导航决策（**不是所有 APP 都要 Tab**）／组件视觉交付清单七项／Android M3 实现与底栏位置铁律／各阶段前置检查／原型必覆盖场景与 QA 最小验证集／与既有体系关系。
+
+**关键口径（防走样）**
+- 三方向**必须同一核心页面**并置；差异轴＝布局/密度/**字体/图标/组件造型/留白**/品牌调性；**只换配色＝未做方向**（`VISUAL_DIRECTION=BLOCKED`）。
+- `LIGHT`/`DARK` 是**已选风格的主题适配**，不得充当 A/B/C 的差异轴。
+- 用户批准方向后**直接进既有 Design Freeze**，不重复询问、不重选风格；方向变更属 Change C。
+- 底部导航**由产品决策**：`PRODUCT_PLAN` 必写是否采用及理由；单主任务/单屏工具默认不设；**方向集不得自行发明 Tab**。
+- 采用时入口名/数量/顺序、图标资源与**线条或填充**风格、**选中/未选中/点击/焦点**四态、字体字重间距、语义 Token、显隐条件、小屏/英文长文案/系统手势区适配，**全部由产品侧在 UX Contract 显式确定并在 COMPONENT Freeze 绑定，禁 Builder 自决**。
+- Android 优先官方 M3 `NavigationBar`/`NavigationBarItem`/`Scaffold(bottomBar)`；**底栏固定于正常页面导航位、滚动内容独立滚动，禁止把底栏放进可滚动内容**；沉浸式是否隐藏底栏以产品批准规则为准。
+- **正式 Android QA 禁仅凭网页静态原型判定**，须依据真机实际运行截图/录屏/交互测试。
+
+**接入点（不另建真源）**：`AGENTS.md`「何时起这套体系」加一条默认继承 ｜`PRODUCT_PLAN.template.md` 新增「APP 导航与视觉方向声明」＋9 FR/10 AC＋关键 AC 集合增四类硬约束 ｜`docs/roles/qa.md` 导航与视觉方向专项验收 ｜`docs/sop/android.md` 新增 §7.5 底部导航 ｜`ORCA治理体系说明.md` 规范表加行＋审查检查点第 12 条 ｜`_sync-packages.py` EXTRA 登记新 SOP ｜`check-sync.sh` 概览关键词加 `app-navigation`/`底部导航`/`NavigationBar`/`同一核心页面`。
+
+**7 颗 Skill 同步（全部引 `app-navigation.md`，validator 加防回退锚点）**：`visual-direction-exploration` 加 SAME CORE PAGE／LIGHT-DARK 非方向轴／COLOR-ONLY BLOCKED／批准后进 Freeze／导航决策门（缺 Product Plan 声明即 `BLOCKED_REQUIREMENT_SOURCE`）｜`ux-interaction-contract` 加「导航是产品决策非 Builder 猜测」七项交付表＋底栏固定位铁律，契约新增 `navigation` 对象｜`interactive-product-prototype` 加必覆盖场景＋覆盖令牌（`SCROLL_TOP`…`ZH_EN`，`BOTTOM_BAR_FIXED`）＋「网页原型不是 Android 证据」｜`design-freeze` 加 Navigation at Freeze＋`navigation` 语义块（`inside_scrollable_content:false`）｜`orca-design-pipeline` 加路由级段落｜`design-reference-research`／`requirements-traceability` 补引用与追踪口径。
+**`validate_skillset.py` 加防回退**：`app-navigation.md` 七颗必备＋5 颗语义锚点（防止改词悄悄削弱规范）。
+
+**Skill 部署踩坑（重要，已修）**：`skills-manager-cli` 的 `deploy`/`undeploy` **必须带 `--agent`**，漏带会静默失败；且这 7 颗在 registry 里 `source_ref` 为空导致 `update` 报 "missing its original source path"、按名解析报 "ambiguous"。处置：备份 `skills-manager.db.bak-20261009-orca-nav` → 把原行（带 scenario 关联与 10 部署记录）`source_ref` 回填中央真源 → 删掉 adopt 产生的孤儿行 → `rsync` 中央→library→10 个 Agent 目录 → **70/70 逐字节一致**。教训：**registry 行有 scenario/部署关联，不可删原行**，只补 `source_ref`。
+
+**验证**：`SYNC-OK`｜`CHANNEL-OK`｜`tm-qualification 17/17`｜`VALID: 7-Skill simplified final-state regression PASS`｜7 颗均引 `app-navigation.md`｜10 Agent × 7 Skill = **70/70 逐字节一致**。
+
+**约束遵守**：未新增 Skill／角色／PROJECT_PHASE 状态／Human Gate；未改 P046 无底部 Tab 方案；未触碰 P045（其底栏跟随滚动问题留给 P045 编排者按既有 Change A 处理）；未改任何项目代码。
