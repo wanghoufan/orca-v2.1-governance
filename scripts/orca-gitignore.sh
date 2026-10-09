@@ -69,19 +69,27 @@ echo "GITIGNORE: $action managed ORCA block in $PROJ_ROOT/.gitignore"
 if [ "$UNTRACK" = "1" ]; then
   echo "UNTRACK: scanning currently-tracked ORCA files..."
   removed_total=0
+  ls_tmp="$(mktemp)"
   while IFS= read -r pat || [ -n "$pat" ]; do
     [ -z "$pat" ] && continue
     # gitignore 的前导 "/" 是"锚定仓库根"，但 git pathspec 不认，必须剥掉
     spec="${pat#/}"
-    tracked="$(git ls-files -- "$spec" 2>/dev/null || true)"
-    [ -z "$tracked" ] && continue
-    while IFS= read -r f || [ -n "$f" ]; do
+    # ⚠️ 必须用 -z + core.quotepath=false，且经**文件**中转（bash 变量装不下 NUL 字节）：
+    #    否则含中文的文件名会被 git 引用成 "ORCA\346\262\273..." 这种转义串，
+    #    传给 git rm 会静默失败（初版实测漏摘中文名文件 12 个）。
+    : > "$ls_tmp"
+    git -c core.quotepath=false ls-files -z -- "$spec" > "$ls_tmp" 2>/dev/null || true
+    [ -s "$ls_tmp" ] || continue
+    while IFS= read -r -d '' f; do
       [ -z "$f" ] && continue
       if git rm --cached --quiet -- "$f" 2>/dev/null; then
         removed_total=$((removed_total+1))
+      else
+        echo "  WARN: 摘除失败 $f"
       fi
-    done <<< "$tracked"
+    done < "$ls_tmp"
   done < "$patterns_file"
+  rm -f "$ls_tmp"
   echo "UNTRACK: unstaged $removed_total ORCA file(s) from index (local files kept)."
   if [ "$removed_total" -gt 0 ]; then
     echo "NOTE: run 'git status' to review; commit only after you authorize it (ORCA red line: no push without explicit instruction)."

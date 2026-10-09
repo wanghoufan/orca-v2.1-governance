@@ -832,4 +832,11 @@
 
 **验证**：`SYNC-OK`（两包已同步，README 新节进包）｜`CHANNEL-OK`｜`tm-qualification 17/17`。
 
-**待办**：19 个公开仓与母版的 commit＋push **尚未执行**（commit/push 属红线，须用户明确授权）；且部分仓存在**与本次无关的既有未提交改动**（HANDOFF/GOVERNANCE-STATE/经验/备份文件/应用缓存），提交时只取 `.gitignore` ＋ ORCA 删除，不打包这些。
+**上线实测抓到的两个真 bug（都已修）**
+1. **`git ls-files` 不认 gitignore 前导 `/`**：初版直接透传 `/AGENTS.md` 作 pathspec，`git ls-files` 全部 0 匹配，untrack 静默摘 0 个。已改为剥前导 `/`。
+2. **中文文件名被静默漏摘**：`git ls-files` 默认 `core.quotepath=true`，把中文名输出成 `"ORCA\346\262\273…"` 转义串；脚本把该串喂给 `git rm`，**静默失败**（ASCII 名成功、中文名失败）——041 因此 106 预测只摘 96。已改为 `-z` + `core.quotepath=false`，且**经临时文件中转**（bash 变量装不下 NUL 字节，`$(...)` 会把多文件黏成一条）。修后 19 仓补摘 130 个中文名文件。
+   - 教训：**凡用 `git ls-files` 喂给别的 git 命令，必须 `-z` ＋ 关 quotepath**，否则中文/特殊名静默漏。
+
+**第三类非 bug 但需记**：个别仓本地分支名是 `wanghoufan/master`（p011），`git push origin <当前分支>` 会**建出同名远端杂分支**。已改为快进推到真实 `master` 并删除 stray 分支。**批量操作前必须确认分支名与远端默认分支一致。**
+
+**已执行（用户令 A1B1）**：母版 commit `02020ee` 已推 `orca-v2.1-governance`；19 个公开仓全部 commit+push（每仓两笔：主体 + 中文名补摘）。**线上复核**：按忽略清单精确比对，19 仓 ORCA 脚手架残留 **0**；应用 `README.md`／本项目计划/评审/交接/账本/经验**全部保留**。私有仓（含 `p045`）未动。旧提交历史里仍有 ORCA（C1，不重写历史）。
