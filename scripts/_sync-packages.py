@@ -40,7 +40,8 @@ EXTRA = ["scripts/detect-client.sh", "scripts/model/check-ledger.mjs",
 "docs/model/JEV-DECISION-LOG.jsonl",
           "docs/sop/app-brand-assets.md",  # 2026-10-08：APP 品牌资产单一真源
           "docs/sop/app-navigation.md",  # 2026-10-09：APP 导航与视觉方向单一真源（云端产品顾问 V1.3 对齐）
-          "docs/sop/app-ui-layers.md"]  # 2026-10-09：APP 界面信息分层（L1/L2/L3）单一真源
+          "docs/sop/app-ui-layers.md",  # 2026-10-09：APP 界面信息分层（L1/L2/L3）单一真源
+          "docs/sop/app-simplicity.md"]  # 2026-10-10：APP 产品简化门槛单一真源
 # 母版正文里的路径引用 -> 包内裸名
 STRIP = ["docs/prompts/编排者提示词", "docs/prompts/外部开发者提示词",
          "docs/prompts/Orca 编排治理监督者提示词", "docs/prompts/Orca 通用编排者持续推进协议",

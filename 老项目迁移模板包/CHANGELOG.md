@@ -1,3 +1,46 @@
+## 2026-10-10 (PENDING) docs(governance): 简化门槛第五轮收口——两处结论修正＋两条口径落地
+
+**为什么**：第五轮验收裁决 A2 B1 C1，整改收口。本轮不新增任何规则，只修正两处过强的结论并把两条回执口径落到文件。
+
+**改了什么**
+- **结论修正 1（Gate A）**：旧项目缺 A3／A4 等新模板字段，**只能说明不符合新文档要求，不能单独证明存在过度设计**；此前「Gate A 就会拦」的推论撤回。过度设计只认 Gate B 的源码级实据。
+- **结论修正 2（Gate D）**：原 QA **已涉及**部分可读性、裁切与界面问题；新增门槛定位为**补齐核心任务操作体验**，**不是否定原有验收**。
+- `docs/sop/app-simplicity.md` §3：豁免的是「**安全信息本身**」而非「安全相关界面」——安全能力不得随意删除，但其**页面排版、提示时机与操作流程仍可接受 Gate B 简化审查**。
+- 同文件 §4 ＋ `PRODUCT_PLAN.template.md`：**A3／A4 轻量项目各用一句话回答即可**；确认无冗余可写「无须删减」及简单理由；**不强制新建独立表格**；**`Out of Scope` 不得代替已纳入范围的可删减分析**。
+
+**影响谁**：评审与执行者对「缺新字段」与「过度设计」的判读口径。
+
+**怎么验**：`SYNC-OK`｜`CHANNEL-OK`｜tm-qualification 17/17｜prototype-gate 9/9｜ui-leak 2/2｜7-Skill `VALID`；条件依赖端到端 30/30；7 颗 Skill 同步 77/77。
+
+**未做（按回执）**：不批量更新旧项目 SOP；不改 P045／P046 业务代码；不新增角色／Gate／状态／评分／检查表／自动检查器。**母版未 commit、未 push。**
+
+---
+
+## 2026-10-10 (PENDING) feat(governance): 产品简化门槛（Gate A/B/C/D 挂既有 Gate）
+
+**为什么**：P045 两版对照显示，「完整走流程」的复杂版（`main-2` / `com.p045.pelvicfloor`，174 文件 / 26,005 行 / 88 Composable）出现首页三处入口同指 `onOpenAbility`、`NextLevelChoice()` 常驻训练 HUD 与暂停页、记录页「回今日自由选择等级」实跳能力页；而只做核心任务的轻量版（`045-ing-凯格尔训练` / `com.orca.kegel`，17 文件 / 3,057 行）体验更干净。**根因是 ORCA 每层都在检查「做得对不对、对不完整」，没有任何一层问「这些是不是多余的」**；Readiness 7 维度更对完整性正激励（核心方案完整性 20 分、风险与异常场景 10 分），对冗余零敏感。
+
+**改了什么**
+- 新增单一真源 `docs/sop/app-simplicity.md`（11 节）：三条总则／PASS·CONDITIONAL·FAIL 判定／**豁免清单**（安全停止·隐私告知·空状态·删除确认·数据完整性·异常恢复一律不得判冗余）／Gate A 范围与 MVP／治理强度分级（五项判据，不得仅凭单屏单任务）／Gate B 信息架构（**不得 Freeze**）／Gate C 防膨胀／Gate D 真实体验（**证据按低/中/高风险分级**）／§11 SOP 依赖五情形判定。
+- 四门槛**全部挂既有 Gate**：Readiness／Design Freeze／DEV_BASELINE／产品验收追踪矩阵。**未新增角色、独立 Gate、Phase、账本字段、状态枚举、评分指标或管理系统；未改 Readiness 评分结构。**
+- 7 颗 Skill 加**条件式 SOP 依赖声明**（每条写明触发条件，**仅当任务需要时才读取**），并按 §11 五情形判定：项目缺失+母版可读→回退母版不判缺失／内容不一致→`DEPENDENCY-STALE` 不静默用旧规则／仅项目可用→允许读取但标明无法核对母版／两处不可读且本任务需要→`DEPENDENCY-MISSING` 阻断且**不得判 PASS**／本任务不需要→不检查不阻断。
+- 复用 `orca-design-pipeline/validate_skillset.py`：新增 `--master`／`--runtime-project`／`--required`，按运行时真实顺序（项目副本→母版）校验，**不做「母版存在即通过」**。
+
+**影响谁**：所有面向用户的产品与网站；Reviewer/Planner/QA 职责各增一段。
+
+**怎么验**
+- 全量门禁：`SYNC-OK`｜`CHANNEL-OK`｜tm-qualification **17/17**｜prototype-gate **9/9**｜ui-leak **2/2**｜7-Skill validator `VALID`
+- 条件依赖端到端：7 颗 × 共 **30 条依赖全部解析→读取→判据可用**
+- 反向测试：旧版副本→`STALE` 阻断／两处不可读且 required→`DEPENDENCY-MISSING` 阻断／不需要→**0 阻断**
+- 新项目模板包运行时校验：**0 MISSING、0 STALE**；7 颗 Skill 同步 library+10 Agent **77/77 一致**
+- 复验中修复：概览缺 `DEPENDENCY-MISSING`/`DEPENDENCY-STALE` 关键词导致 `OVERVIEW-STALE`（已补机制说明行）；validator 采集器误把说明正文里的引用当依赖声明（已限定为依赖表格行）
+
+**已知遗留（非本次引入）**：既有项目 `docs/sop/` 副本陈旧——如 `main-2` 的 `app-theme-i18n.md` 缺母版后加的姊妹规范交叉引用行，运行时正确报 `DEPENDENCY-STALE`；按批准范围本轮不批量刷新历史副本。`check-sync` 的 AC-MATRIX 巡检显示多个既有项目缺产品验收矩阵（该段按设计只报、不影响门禁主结论）。
+
+**PoC v1/v2 保留在 `temp/`，不入母版、不自动决定 Gate。**
+
+---
+
 # ORCA 治理体系变更记录（CHANGELOG）
 
 > **这是母版的变更说明正典。** 每次改动母版并 push，必须在本文件追加一条（最新在最上）。
@@ -6,7 +49,7 @@
 
 ---
 
-## 2026-10-09 (待提交) docs(governance): 新建 CHANGELOG.md 并接进体系更新四件套
+## 2026-10-09 (829ead5) docs(governance): 新建 CHANGELOG.md 并接进体系更新四件套
 
 **为什么**：用户问「每次推送更新情况写清楚没有」——查下来母版与两包**都没有 `CHANGELOG.md`**，此前只靠 commit message ＋ HANDOFF 章节留痕，**违反了中央规则**「具体变更说明记录在 `CHANGELOG.md`」。三者各有用途不能互相替代：commit message 给 git 看、HANDOFF 给当轮接续看、CHANGELOG 给「以后想知道这个体系改过什么」的人看。
 
@@ -23,7 +66,7 @@
 
 ---
 
-## 2026-10-09 (待提交) docs(governance): 账本两本对不上——定性为「非待办」
+## 2026-10-09 (249821b) docs(governance): 账本两本对不上——定性为「非待办」
 
 **为什么**：用户问「派工账跟任务账对不上的话，中间有什么问题吗？还是之前漏了但后面发挥作用了？」经全项目实测核实后定性。
 
@@ -40,7 +83,7 @@
 
 ---
 
-## 2026-10-09 (待提交) feat(governance): 禁止开发内部信息污染用户界面（L1/L2/L3 隔离）
+## 2026-10-09 (249821b) feat(governance): 禁止开发内部信息污染用户界面（L1/L2/L3 隔离）
 
 **为什么**：开发智能体常把内部审查信息、技术约束、版本编号、授权流程直接渲染到普通用户界面，APP 冗长复杂，甚至出现与产品目标无关的阻断式操作。
 
@@ -58,7 +101,7 @@
 
 ---
 
-## 2026-10-09 (待提交) fix(governance): 第二轮审查 P0 四项 ＋ P1 七项整改（CONDITIONAL PASS 复审）
+## 2026-10-09 (f6c5f5e) fix(governance): 第二轮审查 P0 四项 ＋ P1 七项整改（CONDITIONAL PASS 复审）
 
 **为什么**：第二轮全量复审（`review/审查报告_2026-10-09_muse-spark-1.3-contributor-free.md`，CONDITIONAL PASS）报 4 项 P0 文字债会让执行者按字面做错，要求修完再 commit＋push。
 
@@ -78,7 +121,7 @@
 
 ---
 
-## 2026-10-09 (待提交) fix(governance): 审查整改 7 项真缺陷 ＋ APP 导航纳入机器门
+## 2026-10-09 (f6c5f5e) fix(governance): 审查整改 7 项真缺陷 ＋ APP 导航纳入机器门
 
 **为什么**：muse-spark 审查母版全仓（报告落盘 `review/审查报告_2026-10-09_muse-spark.md`）报 12 项矛盾。用户拍板：**评分不加机器码、导航加机器码**。
 
@@ -99,7 +142,7 @@
 
 ---
 
-## 2026-10-09 (待提交) chore(governance): 测试纪律入规 ＋ 测试资产持久化
+## 2026-10-09 (f6c5f5e) chore(governance): 测试纪律入规 ＋ 测试资产持久化
 
 **为什么**：用户指出——跑完测试把临时夹具删了，等于测试只是一次性验证，用户无法自行复跑，也没法交审查者复核「体系完整性 + 测试合格性」。
 
@@ -114,7 +157,7 @@
 
 ---
 
-## 2026-10-09 (待提交) fix(governance): Phase1 必须交付可运行交互原型（P046 教训）
+## 2026-10-09 (f6c5f5e) fix(governance): Phase1 必须交付可运行交互原型（P046 教训）
 
 **为什么**：Phase1 的 builder 只被允许写 plan 正文，AI 倾向把 HTML 原型当「正式开发」而不敢做。P046 **Readiness 96 分、Plan 审查通过**，却没交付用户真正需要的本地可点击 HTML——文档满分，用户要的东西是零。
 
