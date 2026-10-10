@@ -108,6 +108,38 @@ bash "<母版路径>/scripts/restore-framework.sh" <项目根>
 
 > 本机母版（`4.Templates…/ORCA V2.1 治理模板`）本身就是云端公开仓（`wanghoufan/orca-v2.1-governance`），本机丢了还能拉回来——治理体系本身永远丢不了。
 
+## 单智能体开发使用说明（2026-10-10 用户定）
+
+**只需说这一句：`你是唯一开发者`**，不需要复制任何长提示词。说出即立即启用单智能体模式，**智能体不会再问你是否启用，也不会自动派其他智能体**。
+
+项目开始时，智能体**自行读取 `AGENTS.md`**，并根据其中的单智能体规则继续执行：它会**自己判断当前项目处在哪个阶段、该读哪些规范**（产品规划／UI 规范／SDD／技术 SOP／自审／QA／HANDOFF），**你不需要逐项指定要读哪个文件**。
+
+> 这一句**只决定执行模式**，**不代表**可以跳过产品方案确认、必要的 Human Gate 或授权要求。
+
+**你明确说「单智能体」后直接采用，不再询问**，也不会因为当前客户端支持子智能体就自动派工。
+
+**按阶段按需读，读到哪个阶段才开哪个文件——不要开工就全量加载角色卡与 SOP。**
+
+| 工作阶段 | 读取现有规范 |
+|---|---|
+| 产品规划 | `docs/pm/PRODUCT_PLAN.template.md`、`docs/sop/app-simplicity.md`（产品简化门槛） |
+| UI 与交互 | 适用才读：`docs/sop/app-theme-i18n.md`、`app-brand-assets.md`、`app-navigation.md`、`app-ui-layers.md` |
+| 开发 | `docs/roles/builder.md`；涉基础设施再加 `docs/sop/` 对应规范（Docker／DB／SQLite／Android／Web QA） |
+| 代码自审 | `docs/roles/code-reviewer.md`（照 `CODE_REVIEW.template.md` 落 `docs/review/`） |
+| 实际测试 | `docs/roles/qa.md`、`docs/qa/产品验收追踪矩阵.template.md` |
+| 交付 | `docs/handoff/HANDOFF.template.md` |
+
+**四条硬约束**：
+
+1. **自审与真实 QA 两步一个都不能省**，只是执行者是你自己。落盘照旧（`docs/review/`、`docs/qa/`），**必须如实标注「自审」还是「独立审查」，不得伪造独立审查**。
+2. **必须真实运行应用、操作关键功能**；没有实际验证的项目不得直接标 `PASS`。**通道按项目类型选**（Web/PWA 用真实浏览器，Android 用模拟器／ADB／真机）；真机 Canary 与会话能力预检**只在本项目确实适用时强制**，不得因缺少无关工具而阻断开发——细则见 `docs/roles/qa.md`「单智能体 QA 执行细则」。
+3. **产品简化、APP 基础能力（主题／中英双语／品牌资产／导航／信息分层）、安全、隐私、异常恢复、数据正确性、首次发布用户签收、产品验收追踪矩阵——一条不减。** 原有 Human Gate 同样适用：开发前方案批准、Change C 受控重开、首次发布签收、生产／付费／凭据／不可逆操作的授权限制。
+4. **规范读不到就如实报告缺哪个、为什么**，不要假装执行，也不要凭印象编内容。
+
+**减少的是管理成本，不是质量**：不造派工记录（`DISPATCH-LOG.jsonl` 无派工就留空）、不逐个模拟角色；普通局部修改不重走完整产品规划；计划批准后可连续开发→自审→测试→修复→复验直到完成，只在需要你授权（secrets、不可逆删除、生产／他人项目、commit／push）时才暂停。
+
+> 本节只说明**如何使用现有规范**，各规范正文一律在 `docs/sop/` 与 `docs/roles/`，不在此复述。多智能体是默认，两种方式**共用同一套规范与模板包**，本体系不存在「单智能体专属 SOP／模板包」。
+
 ## 用户只需记住三个口令
 
 - `第一阶段，计划`：进 Phase1（PLAN），Planner＋Research Reviewer 出 PRODUCT_PLAN，≥90 且模板 Gate 全条件满足（P0=0＋blocking P1=0＋事实/假设验证）才找你。
