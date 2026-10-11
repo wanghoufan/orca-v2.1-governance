@@ -27,7 +27,7 @@
 
 **为什么**：（a）清扫时发现 TM 评分里 `else { s_lat = 15 }` —— 响应速度维度**从没测过却给满分**，观感上像测过了。
 （b）`收工前必跑 check-ledger` 规则只写在 `docs/roles/task-manager.md`，但真正执行收工的是**编排者**，
-而 `docs/prompts/编排者提示词.md` 从未提到校验 —— 规则等于没接上。
+而「编排者提示词」（docs/prompts 下）从未提到校验 —— 规则等于没接上。
 
 **改了什么**
 - `scripts/model/tm-qualification.mjs`：无 latency 数据时该维度记为**未测**、不参与加权；总分按**已测权重**归一（85 而非 100），
@@ -43,7 +43,7 @@
 ## 2026-10-11 (a877044) fix(wiring): 记账后与收工前必跑 check-ledger（接入编排者提示词）
 
 **为什么**：规则只写在 `docs/roles/task-manager.md`，但真正执行收工的是**编排者**，
-而 `docs/prompts/编排者提示词.md` 从未提到校验 —— 规则等于没接上。
+而「编排者提示词」（docs/prompts 下）从未提到校验 —— 规则等于没接上。
 
 **改了什么**：编排者提示词记账段补入强制校验 —— 每次记账后与收工前必跑
 `node scripts/model/check-ledger.mjs docs/model`，须得 `LEDGER-OK`；exit 1 先修账本再走，
