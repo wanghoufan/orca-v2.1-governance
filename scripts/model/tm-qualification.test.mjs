@@ -88,6 +88,17 @@ ok("Test9c tm_model 非字符串被拦(exit1)", run([SCORE, join(tmp, "num.jsonl
      `score=${NL.score} subs=${JSON.stringify(NL.subscores)}`);
 }
 
+// Test 11｜Episode 防重复计分（2026-10-11）
+// AGENTS.md：不得改写历史行，补记/改判另起新行 —— 但不拦截就会原行＋更正行各算一次。
+{
+  ok("Test11a 重复 episode_id 被拦(exit1)", run([SCORE, join(FIX, "dup-id.jsonl")]).code === 1);
+  const r = scoreOf("superseded.jsonl"); const R = r[Object.keys(r)[0]];
+  ok("Test11b supersedes 使原行退出计分（更正行满分为准）", R.subscores.dispatch === 30,
+     `dispatch=${R.subscores.dispatch}（原行若仍计分则<30）`);
+  ok("Test11c supersedes 使原行退出计分（progress 同理）", R.subscores.progress === 25,
+     `progress=${R.subscores.progress}`);
+}
+
 // Test 8｜评分确定性
 const a = JSON.stringify(scoreOf("stall.jsonl")), b = JSON.stringify(scoreOf("stall.jsonl"));
 ok("Test8 评分可重复", a === b);

@@ -89,3 +89,16 @@ A/B 期间即使不同项目用不同 TM 模型，**每个项目仍只能有一�
 
 ## 11. 本轮验证
 `node scripts/model/tm-qualification.test.mjs` → 全绿（Ledger 回归／正常 Episode／TM Stall／Human Gate／错误路由／切换区分／基础设施分离／评分确定性）。详见最终报告。
+
+
+## 2026-10-11 增补：防重复计分（机器强制）
+
+- **`episode_id` 全文件唯一**：重复即 `tm-qualification.mjs` exit 1，不参与任何评分。一次 Episode 只能有一行。
+- **更正用 `supersedes`**，取值是被更正行的 `episode_id`（可选字段，非空字符串）。
+  带 `supersedes` 的行生效后，被它指到的原行**保留文件里但不参与计分**（不违反「不得改写历史行」——
+  原行字节未动，只是不再计入样本与分数）。
+- **为什么**：AGENTS.md 要求「不得改写历史行，补记/改判另起新行」，但此前**没有任何机器约束**把两者接起来——
+  一次打回若先记 FAIL 后补记 PASS，两行会被各算一次，样本量与分数双重虚高，可能凭重复计数越过
+  `Score>=90 且 ≥30 Episode` 的 QUALIFIED 门槛。
+- **回归**：`fixtures/tm-qual/dup-id.jsonl`、`fixtures/tm-qual/superseded.jsonl`；Test11a-c（见
+  `scripts/model/tm-qualification.test.mjs`）。反向验证：去掉重复拦截 → 1 条 FAIL；让原行仍计分 → 2 条 FAIL。

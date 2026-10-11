@@ -23,6 +23,23 @@
 **怎么验**：`SYNC-OK`｜`CHANNEL-OK`｜tm-qualification 17/17｜prototype-gate 9/9｜ui-leak 2/2｜**solo-agent 15/15**（新增 C3–C8 触发口令用例）。**另做真实执行验证**（隔离副本 `solo-demo`，非用户业务项目）：铺新项目模板包 → 小型局部开发（折扣门槛取等＋按分取整）→ 自审七查 → 实际运行测试发现缺陷 → 切回开发修复 → 复验 **5/5 PASS、exit 0**；`DISPATCH-LOG` 留空不造行、账本 `LEDGER-OK`；全程未派任何其他智能体。多智能体路径核对：Human Gate 保留条款在位、三张角色卡「只约束多智能体」在位、四段主链关键串未被覆盖。
 
 
+## 2026-10-11 (PENDING) fix(tm): Episode 防重复计分（`supersedes` 机器强制）
+
+**为什么**：AGENTS.md 要求「不得改写历史行，补记/改判另起新行」，但此前**没有任何机器约束**把两者接起来。
+一次打回若先记 FAIL、后补记 PASS，两行会被各算一次 —— 样本量与分数双重虚高，可能凭重复计数越过
+`Score>=90 且 ≥30 Episode` 的 QUALIFIED 门槛。校验器此前**完全不检查 `episode_id` 重复**。
+
+**改了什么**
+- `scripts/model/tm-qualification.mjs`：`episode_id` 全文件唯一，重复即 **exit 1**；新增可选字段
+  `supersedes`（非空字符串）写被更正行的 `episode_id` —— 带它的行生效后，被指到的原行**保留文件里但不参与计分**
+  （原行字节未动，不违反「不得改写历史行」；审计痕迹完整）。`hard`／`humanGate` 判定同步切到 `active` 集合。
+- `AGENTS.md` Episode 记账条 ④ 补写该机制；`docs/model/TASK-MANAGER-QUALIFICATION.md` 增补同名章节。
+- `scripts/_sync-packages.py`：`docs/model/TASK-MANAGER-QUALIFICATION.md` **此前不在分发清单里**，
+  母版更新后包内仍是旧副本（check-sync DIFF）⇒ 下游会按过时规则记 Episode。现已纳入。
+- 回归：新增 `fixtures/tm-qual/dup-id.jsonl`、`superseded.jsonl`，tm 测试 21→**24 条**（Test11a-c）。
+
+**怎么验**：`SYNC-OK`｜ledger-fields 17/17｜**tm 24/24**｜proto 9/9｜ui-leak 2/2｜solo 15/15｜7-Skill `VALID`。
+反向验证：去掉重复 id 拦截 → 1 条 FAIL；让 superseded 原行仍计分 → 2 条 FAIL。
 ## 2026-10-11 (9a94698) refactor(supervisor): 删除两份手写账本校验副本，统一走中央校验入口
 
 **为什么**：`docs/roles/supervisor.md` 内嵌两段手写 Python 逐行校验器（TASK-MODEL-LOG 与 DISPATCH-LOG 各一份），

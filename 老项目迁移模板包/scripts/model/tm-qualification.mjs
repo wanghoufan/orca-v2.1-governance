@@ -29,12 +29,24 @@ const REQUIRED_BOOL = ["dispatch_correct","progressed","governance_ok","human_ga
 
 function validate(records) {
   const issues = [];
+  const seenEp = new Set();
   for (const [i, e] of records.entries()) {
     for (const k of REQUIRED) if (!(k in e)) issues.push(`#${i + 1} 缺键 ${k}`);
     for (const k of REQUIRED_BOOL)     if (k in e && typeof e[k] !== "boolean") issues.push(`#${i + 1} ${k} 须为 boolean`);
     if (!("tm_model" in e)) { /* 已由 REQUIRED 报缺键 */ }
     else if (typeof e.tm_model !== "string") issues.push(`#${i + 1} tm_model 须为字符串`);
     else if (!/^[\w.-]+\/[\w.-]+$/.test(e.tm_model)) issues.push(`#${i + 1} tm_model 非 provider/model: ${e.tm_model}`);
+    // 2026-10-11 防重复计分：AGENTS.md 规定「不得改写历史行，补记/改判另起新行」，
+    // 但若不拦截，同一 episode 会被原行＋更正行各算一次，样本量与分数双重虚高。
+    if ("episode_id" in e) {
+      if (typeof e.episode_id !== "string" || !e.episode_id.trim())
+        issues.push(`#${i + 1} episode_id 须为非空字符串`);
+      else if (seenEp.has(e.episode_id))
+        issues.push(`#${i + 1} episode_id 重复=${e.episode_id}（同一次 Episode 只能记一行；改判用 supersedes 另起新行）`);
+      else seenEp.add(e.episode_id);
+    }
+    if (e.supersedes != null && (typeof e.supersedes !== "string" || !e.supersedes.trim()))
+      issues.push(`#${i + 1} supersedes 须为非空字符串（被本行更正掉的 episode_id）`);
     if (e.anomaly != null && !ANOMALIES.includes(e.anomaly)) issues.push(`#${i + 1} 未知 anomaly=${e.anomaly}`);
     if (e.switch_reason != null && !SWITCH_REASONS.includes(e.switch_reason)) issues.push(`#${i + 1} 未知 switch_reason=${e.switch_reason}`);
   }
@@ -58,10 +70,15 @@ function load(p) {
 }
 
 function scoreGroup(eps) {
-  const considered = eps.filter((e) => e.infra_error !== true);
+  // 2026-10-11 防重复计分：带 supersedes 的更正行生效，被它指到的原行退出计分
+  // （原行**不删**，只保留审计痕迹；这与「不得改写历史行」不冲突）。
+  const superseded = new Set(eps.filter((e) => typeof e.supersedes === "string" && e.supersedes.trim())
+                             .map((e) => e.supersedes));
+  const active = superseded.size ? eps.filter((e) => !superseded.has(e.episode_id)) : eps;
+  const considered = active.filter((e) => e.infra_error !== true);
   const n = considered.length || 1;
-  const hard = eps.filter(HARD).length;
-  const humanGate = eps.filter((e) => e.human_gate_violation === true).length;
+  const hard = active.filter(HARD).length;
+  const humanGate = active.filter((e) => e.human_gate_violation === true).length;
   const projects = new Set(considered.map((e) => e.project)).size;
   const meetsSample = considered.length >= MIN_EPISODES && projects >= MIN_PROJECTS;
 
