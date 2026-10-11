@@ -23,6 +23,36 @@
 **怎么验**：`SYNC-OK`｜`CHANNEL-OK`｜tm-qualification 17/17｜prototype-gate 9/9｜ui-leak 2/2｜**solo-agent 15/15**（新增 C3–C8 触发口令用例）。**另做真实执行验证**（隔离副本 `solo-demo`，非用户业务项目）：铺新项目模板包 → 小型局部开发（折扣门槛取等＋按分取整）→ 自审七查 → 实际运行测试发现缺陷 → 切回开发修复 → 复验 **5/5 PASS、exit 0**；`DISPATCH-LOG` 留空不造行、账本 `LEDGER-OK`；全程未派任何其他智能体。多智能体路径核对：Human Gate 保留条款在位、三张角色卡「只约束多智能体」在位、四段主链关键串未被覆盖。
 
 
+## 2026-10-11 (0464982) fix(tm): 未测维度不得白送满分 ＋ 记账校验真正接入执行者提示词
+
+**为什么**：（a）清扫时发现 TM 评分里 `else { s_lat = 15 }` —— 响应速度维度**从没测过却给满分**，观感上像测过了。
+（b）`收工前必跑 check-ledger` 规则只写在 `docs/roles/task-manager.md`，但真正执行收工的是**编排者**，
+而 `编排者提示词.md` 从未提到校验 —— 规则等于没接上。
+
+**改了什么**
+- `scripts/model/tm-qualification.mjs`：无 latency 数据时该维度记为**未测**、不参与加权；总分按**已测权重**归一（85 而非 100），
+  输出显式标注 `⚠ 未测维度（不计分、不按满分算）`。
+- `scripts/model/tm-qualification.test.mjs` 17→**21 条**（Test10a-d），新增 `fixtures/tm-qual/no-latency.jsonl`
+  （与 `good.jsonl` **仅** `decision_latency_ms` 不同的同输入对照）。
+
+**怎么验**：母版 `LEDGER-OK`｜`SYNC-OK`｜ledger-fields 17/17｜**tm 21/21**｜proto 9/9｜ui-leak 2/2｜solo 15/15｜7-Skill `VALID`。
+反向验证：把实现改回「未测=满分且不标注」→ 立即 2 条 FAIL，证明回归保护有效。
+
+---
+
+## 2026-10-11 (a877044) fix(wiring): 记账后与收工前必跑 check-ledger（接入编排者提示词）
+
+**为什么**：规则只写在 `docs/roles/task-manager.md`，但真正执行收工的是**编排者**，
+而 `编排者提示词.md` 从未提到校验 —— 规则等于没接上。
+
+**改了什么**：编排者提示词记账段补入强制校验 —— 每次记账后与收工前必跑
+`node scripts/model/check-ledger.mjs docs/model`，须得 `LEDGER-OK`；exit 1 先修账本再走，
+不许带着不过的账本报完工；并注明取消历史豁免后旧写法判错属预期、当场改对。
+
+**怎么验**：隔离副本走完整收工流程 —— 正常记账零错；故意写错 date/role/rework 三处**当场全部抓到**；改对后零错。
+
+---
+
 ## 2026-10-11 (1391857) fix(ledger): 历史兼容返工——整文件指纹改为审批清单逐行白名单
 
 **为什么**：审查实测一版「整文件 sha256 指纹豁免」两处硬伤——①追加一条合法新记录后整文件哈希变化，旧记录重新 FAIL（**正常做下一次任务就失去兼容**）；②环境变量可自行签发资格（新写非法 runtime→算哈希→传入即 exit 0）。另有三处：豁免对全部 fieldRules 生效导致 result=null 被放行；cost_cny 未验有限性；存量行数 48 被我误报 49。
