@@ -23,7 +23,7 @@
 **怎么验**：`SYNC-OK`｜`CHANNEL-OK`｜tm-qualification 17/17｜prototype-gate 9/9｜ui-leak 2/2｜**solo-agent 15/15**（新增 C3–C8 触发口令用例）。**另做真实执行验证**（隔离副本 `solo-demo`，非用户业务项目）：铺新项目模板包 → 小型局部开发（折扣门槛取等＋按分取整）→ 自审七查 → 实际运行测试发现缺陷 → 切回开发修复 → 复验 **5/5 PASS、exit 0**；`DISPATCH-LOG` 留空不造行、账本 `LEDGER-OK`；全程未派任何其他智能体。多智能体路径核对：Human Gate 保留条款在位、三张角色卡「只约束多智能体」在位、四段主链关键串未被覆盖。
 
 
-## 2026-10-11 (PENDING) refactor(supervisor): 删除两份手写账本校验副本，统一走中央校验入口
+## 2026-10-11 (9a94698) refactor(supervisor): 删除两份手写账本校验副本，统一走中央校验入口
 
 **为什么**：`docs/roles/supervisor.md` 内嵌两段手写 Python 逐行校验器（TASK-MODEL-LOG 与 DISPATCH-LOG 各一份），
 与 `scripts/model/check-ledger.mjs` **重复实现同一套规则**。两份规则各自漂移——改一处忘另一处，
