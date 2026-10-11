@@ -1,7 +1,0 @@
-{
-  "case": "05-same-content-other-project",
-  "note": "不同来源的同名项目（同内容）→ 不继承他人授权，exit 1",
-  "exit_code": 1,
-  "baseline_used": "<fixtures>/baseline.test.json",
-  "stdout_lines": 2
-}

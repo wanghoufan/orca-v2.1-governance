@@ -85,11 +85,6 @@ for (const [fixture, wantExit, mustInclude] of CASES) {
   void r;
 }
 
-// ── 历史豁免（逐行白名单机制）已迁至 ledger-legacy.test.mjs 专项覆盖 ──
-// 二轮方案取代了本文件中的「整文件指纹」试验：追加新记录即失效、且环境变量可自签发资格。
-// 现行机制＝审批清单 + 逐行 sha256 + 仅限指定字段，见 scripts/model/ledger-legacy-baseline.json。
-check("历史豁免不再由本文件的环境变量试验覆盖（已迁 ledger-legacy.test.mjs）", true);
-
 // ── 升级计数口径不被破坏：role=supervisor,result=FAIL 仍须可用 ────────
 {
   const r = withFixture("case01-valid", (d) => {

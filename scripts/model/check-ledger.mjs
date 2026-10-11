@@ -103,155 +103,21 @@ const fieldRules = {
   escalated: { kind: "string", nullable: false, enum: ["YES", "NO"], enumLabel: "escalated" },
 };
 
-// ── 历史兼容：逐行白名单（2026-10-11 二轮返工，替换整文件指纹）──────
+// ── 历史兼容：**已按 2026-10-11 用户决策整体移除** ────────────────────
 //
-// 三轮（2026-10-11 审查二轮）修三处阻断：
-//   ③ **PENDING 未生效**：原实现不检查审批状态，未批准清单照样授权且显示「已审批」。
-//      → 顶层与条目**都要**通过审批状态校验，否则整份清单/单条条目不授权。
-//   ④ **任意清单路径可自签发**：LEDGER_BASELINE 能指向任何 JSON。
-//      → **生产校验只读受治理的固定基线路径**，不接受环境变量提供新授权清单；
-//        codex 审查 2026-10-11 实测「环境变量双开关」仍可自签发，故**彻底移除该能力**：
-//        codex 第二轮复审：换成 CLI 参数**仍是**普通调用方可用的能力，不构成隔离。
-//        **最终处置**：正式 CLI 完全无注入通道；注入改由测试驱动复制隔离副本完成。
-//   ⑥ **条目缺审批人继承顶层**：`e.approved_by ?? j.approved_by` 让「仅删条目审批人」仍授权，已禁止继承。
-//   ⑦ **来源只绑 basename**：另一来源的同名目录可继承 → 改为 source_id 身份文件匹配。
-//   ⑧ **同行多字段被整行键去重吞掉** → 授权键改为 (来源, 文件, 物理行号, **字段**)。
-//   ⑤ **行内容哈希可无限复用**：把已获批错误行原样复制到第二行，两行都获豁免。
-//      → 授权键加入**物理行号**，且同键只允许**首次出现**生效一次（occurrence=1）。
-//
-// 授权粒度（四要素 + 一次性）：(项目目录名, 账本文件, 物理行号, 该行完整 sha256, 字段)
-//   · 追加新记录不影响旧行（授权按行号定位，不按文件哈希）；
-//   · **逐字节相同的新增行不会继承豁免**（行号不符 → 不授权）；
-//   · 仅对 used/runtime/rework 生效；result/结构类永不可豁免；
-//   · 清单未经审批 → 零授权。
-//
-// 关于行号：**物理行号**＝原文件按 \n 切分后的 1-based 下标（空行也占位），
-// 不做空行过滤，避免「过滤后下标 ≠ 原文件行号」。行号与 sha256 **双重校验**：
-// 行号对但内容被改 → sha 不符 → 失效；内容相同但位置不同 → 行号不符 → 失效。
-const GRACEABLE_FIELDS = new Set(["used", "runtime", "rework"]);  // 唯一可豁免集合
-const APPROVED_OK = (s) => typeof s === "string" && s.trim() !== "" && !/^PENDING$/i.test(s.trim());
-let baselineEntries = new Map();   // key: project\0file\0lineNo -> { sha, fields:Set, reason }
-let baselineState = { loaded: false, path: null, approved: false, rejected: [], entries: 0 };
+// 用户裁定：「以前的不管，以后的为准。」
+// 旧做法是给存量历史行开一份豁免白名单（逐行授权 + 来源绑定 + 审批门 + 物理行号 +
+// 行内容哈希 + 字段粒度，共十道防线）。用户决定**不开这个后门**：
+//   · 母版不再有 scripts/model/ledger-legacy-baseline.json；
+//   · checkFields 中不再有任何「降级为 WARN」的路径——所有字段错误一律 FAIL；
+//   · used / runtime / rework 的历史写法**同样按现行规则判错**，需由各项目自行修正。
+// 保留原则（未变）：不动任何真实账本。存量项目的历史行由**项目自己**决定何时改。
 
-// ── 来源身份（codex 审查 2026-10-11 指出 basename 不足）───────────────
-// 另一来源的同名目录（内容、位置完全相同）曾能继承授权。现改为：
-// 清单必须写 source_id（受治理来源标识），运行时由项目内的身份文件
-// `docs/model/GOVERNANCE-SOURCE.json` 提供 source_id 供匹配；
-// 无身份文件 → 只能用清单里显式登记的 source_id，且**目录名不同一律不匹配**。
-// 目标：阻止「同名即继承」，不要求庞大身份系统。
-const SOURCE_ID_FILE = "docs/model/GOVERNANCE-SOURCE.json";
-function currentSourceId(projectRoot, projectName) {
-  try {
-    const j = JSON.parse(readFileSync(join(projectRoot, SOURCE_ID_FILE), "utf8"));
-    return typeof j.source_id === "string" && j.source_id.trim() ? j.source_id.trim() : null;
-  } catch { return null; }
-}
-// 匹配键：优先用清单条目的 source_id；清单未写则回退到登记的目录名。
-// 若项目自带身份文件，则**必须**与条目 source_id 完全一致才算同一来源。
-function sourceIdentity(entrySourceId, entryProject) {
-  return `${entrySourceId || "name:" + entryProject}`;
-}
-function sameSource(entrySourceId, entryProject, projectRoot, projectName) {
-  const actual = currentSourceId(projectRoot, projectName);
-  if (actual) return !!entrySourceId && actual === entrySourceId;   // 有身份文件 → 必须显式匹配
-  // 无身份文件：仅按清单登记的目录名匹配（不同名不继承）
-  return entryProject === projectName;
-}
 
-// 正式入口：**只**读受治理的固定基线路径，无任何注入开关。
-// 演进：① 环境变量 LEDGER_BASELINE ② 环境变量双开关 ③ CLI --baseline-test-inject
-//      —— 三种都被 codex 审查实测可自签发，因为它们都是「普通调用方可设置的能力」。
-// 现正式 CLI 已移除全部三种；测试通过**复制隔离副本并改写副本内的 BASELINE_PATH**
-// 来注入（见 ledger-legacy.test.mjs 的 makeIsolatedLedger），正式文件不被触碰。
-// 正式入口：**唯一**基线路径，不可由调用参数改变。
-// codex 审查两轮均指出「环境变量双开关」与「--baseline-test-inject 参数」都是普通调用方可用的
-// 能力，不构成隔离。注入改由**测试驱动**完成：测试把本脚本复制到隔离副本，
-// 在副本里改写基线路径常量后运行（见 ledger-legacy.test.mjs 的 makeIsolatedLedger）。
-const BASELINE_PATH = join(dirname(fileURLToPath(import.meta.url)), "ledger-legacy-baseline.json");
-
-function loadBaseline() {
-  const p = BASELINE_PATH;
-  baselineState = { loaded: false, path: p, approved: false, rejected: [], entries: 0 };
-  if (!existsSync(p)) return p;                       // 无清单 → 严格模式，零豁免
-  let j;
-  try { j = JSON.parse(readFileSync(p, "utf8")); }
-  catch { baselineState.rejected.push("清单不是合法 JSON"); return p; }
-  baselineState.loaded = true;
-  // 顶层审批：approved_by 与 approved_at 必须都存在且非 PENDING，否则整份清单不授权
-  if (!APPROVED_OK(j.approved_by)) baselineState.rejected.push(`顶层 approved_by 未获批：${j.approved_by ?? "(缺)"}`);
-  if (!APPROVED_OK(j.approved_at)) baselineState.rejected.push(`顶层 approved_at 未获批：${j.approved_at ?? "(缺)"}`);
-  if (baselineState.rejected.length) return p;        // 顶层未批 → 一条都不授权
-  baselineState.approved = true;
-  for (const e of (j.entries || [])) {
-    // 条目审批：与顶层同规则，缺一不授权该条
-    // 两级各自审批：**条目缺 approved_by 不再继承顶层**（codex 审查 2026-10-11 指出
-    // `e.approved_by ?? j.approved_by` 让「仅删条目审批人」仍 exit0）。契约：顶层与条目
-    // 各自必须显式非 PENDING，缺失即该条目不授权。
-    if (!APPROVED_OK(e.approved_by)) { baselineState.rejected.push(`${e.file}#${e.line_no} approved_by 未获批`); continue; }
-    if (!APPROVED_OK(e.approved_at)) { baselineState.rejected.push(`${e.file}#${e.line_no} approved_at 未获批`); continue; }
-    if (!GRACEABLE_FIELDS.has(e.field)) { baselineState.rejected.push(`${e.file}#${e.line_no} 字段 ${e.field} 不可豁免`); continue; }
-    // 来源格式：必须形如 orca-src-<16 位十六进制>。缺失／空串／非法一律**在加载期拒绝**，
-    // 不进授权表——避免「格式非法但恰好等于项目身份」这类边角命中。
-    if (typeof e.source_id !== "string" || !/^orca-src-[0-9a-f]{16}$/.test(e.source_id)) {
-      baselineState.rejected.push(`${e.file}#${e.line_no} source_id 缺失或格式非法（须 orca-src-＋16位十六进制）`);
-      continue;
-    }
-    if (!/^[0-9a-f]{64}$/.test(e.line_sha256 || "")) { baselineState.rejected.push(`${e.file}#${e.line_no} sha256 非法`); continue; }
-    if (!Number.isInteger(e.line_no) || e.line_no < 1) { baselineState.rejected.push(`${e.file}#${e.line_no} line_no 非法`); continue; }
-    // 授权键含**来源指纹 + 字段**（codex 审查指出：只取项目 basename 时，
-    // 另一来源的同名目录会继承授权；且同行多字段被整行去重吞掉）。
-    // · source_id：受治理的项目身份（见 sourceIdentity），不只是 basename；
-    // · key 含 field：同一物理行可分别批准 used 与 runtime，互不影响。
-    const key = `${sourceIdentity(e.source_id, e.project)}\u0000${e.file}\u0000${e.line_no}\u0000${e.field}`;
-    if (baselineEntries.has(key)) { baselineState.rejected.push(`${e.file}#${e.line_no}/${e.field} 重复条目，后者忽略`); continue; }
-    baselineEntries.set(key, { sha: e.line_sha256, field: e.field,
-      expected: e.expected_value, reason: e.reason || "",
-      sourceId: e.source_id || null, project: e.project, file: e.file });
-    baselineState.entries++;
-  }
-  return p;
-}
-
-// 授权匹配：来源 → (文件, 物理行号, 字段) → 行内容 sha256 → expected_value。
-// 来源判定（codex 审查 2026-10-11：只绑 basename 不足，同名目录会继承）：
-//   · 项目内存在 docs/model/GOVERNANCE-SOURCE.json → 该文件的 source_id 必须与
-//     清单条目 source_id **完全一致**才可能命中；
-//   · 项目无身份文件 → 只按清单条目登记的 project 目录名匹配，不同名不继承。
-function graceFor(ctx, file, physicalLineNo, rawLine, field, value) {
-  const sha = createHash("sha256").update(rawLine).digest("hex");
-  const identity = currentSourceId(ctx.projectRoot, ctx.projectName);   // null | source_id
-  const SEP = "\u0000";
-  for (const [key, e] of baselineEntries) {
-    const parts = key.split(SEP);
-    if (parts.length !== 4) continue;
-    const [eIdent, eFile, eLine, eField] = parts;
-    if (eFile !== file || eLine !== String(physicalLineNo) || eField !== field) continue;
-    // 来源判定（codex 第三轮 2026-10-11 裁决：正式兼容方案放行前必须堵死「无来源回退」）：
-    //   条目**必须**声明 source_id，且项目必须提供完全一致的 GOVERNANCE-SOURCE.json。
-    //   无 / 空 / 无效 source_id 一律不授权——**不再回退到项目目录名**。
-    //   理由：目录名可被随意复制，回退等于「复制文件即可继承他人授权」。
-    // 纵深防御：加载期已校验 source_id 格式，此处再挡一次（若加载期被绕过仍不放行）。
-    // 说明：该道**当前无独立测试覆盖**——去掉它，39 条仍全绿，因为加载期格式校验
-    // 已拦下全部无/非法 source_id 的条目。属有意保留的冗余，非失效代码。
-    if (!e.sourceId) continue;
-    if (!identity || e.sourceId !== identity) continue; // 项目无身份文件或不匹配 → 不授权
-    if (sha !== e.sha) continue;                       // 行号对但内容被改 → 失效
-    if (e.expected !== undefined && JSON.stringify(e.expected) !== JSON.stringify(value)) continue;
-    return { reason: e.reason };
-  }
-  return null;
-}
-
-// 2026-10-11 二轮：豁免粒度收到「行 × 字段」，且只对 GRACEABLE_FIELDS 开放。
-// 审查要求：获批历史的 used 错误可兼容，但同文件的 result 错误、结构错误、
-// 以及任何新增非法行仍必须 FAIL。
-function checkFields(file, physicalLineNo, d, ctx, rawLine) {
-  // push 时先问：该 (项目,文件,行,字段) 是否在**审批清单**内。仅此一种情况降 WARN。
-  const push = (field, value, msg) => {
-    const g = GRACEABLE_FIELDS.has(field) ? graceFor(ctx, file, physicalLineNo, rawLine, field, value) : null;
-    if (g) warns.push(`${file}#${physicalLineNo}: WARN(历史豁免·已审批清单) ${msg}｜依据：${g.reason || "清单条目"}`);
-    else fails.push(`${file}#${physicalLineNo}: ${msg}`);
-  };
+function checkFields(file, physicalLineNo, d) {
+  // 2026-10-11 用户裁定「以前的不管，以后的为准」：**不再有任何降级路径**，
+  // 所有字段错误一律 FAIL。存量历史行同样按现行规则判错，由项目自行修正。
+  const push = (field, value, msg) => fails.push(`${file}#${physicalLineNo}: ${msg}`);
   for (const [key, r] of Object.entries(fieldRules)) {
     if (!(key in d)) continue;                      // 缺键由必需键检查负责
     const v = d[key];
@@ -306,38 +172,12 @@ function checkFields(file, physicalLineNo, d, ctx, rawLine) {
 }
 
 // 基线须在任何 check() 之前载入（否则首轮豁免查不到条目）
-loadBaseline();
-
 function check(file, need, enums, evidence) {
   const p = join(dir, file);
   if (!existsSync(p)) { fails.push(`${file}: MISSING`); return; }
   const raw = readFileSync(p, "utf8");
   const projectRoot = dirname(dirname(dir));              // <proj>
   const projectName = basename(projectRoot);              // 项目目录名
-  // 来源判定上下文：清单条目若写了 source_id，则项目必须提供匹配的 GOVERNANCE-SOURCE.json
-  const ctx = {
-    projectName, projectRoot,
-    entrySourceOf: (file) => {
-      for (const e of baselineEntries.values()) if (e.file === file) return e.sourceId || null;
-      return null;
-    },
-    sourceOk(file) {
-      const actual = currentSourceId(projectRoot, projectName);
-      // 有身份文件：必须与条目 source_id 匹配；无身份文件：条目必须登记同名 project
-      if (actual) {
-        for (const [k, e] of baselineEntries) {
-          if (!k.includes(`\u0000${file}\u0000`)) continue;
-          if (e.sourceId && e.sourceId === actual) return true;
-        }
-        return false;
-      }
-      for (const [k, e] of baselineEntries) {
-        if (!k.includes(`\u0000${file}\u0000`)) continue;
-        if (e.project === projectName) return true;
-      }
-      return false;
-    },
-  };
   // **物理行号**（审查要求）：按 \n 切分后不过滤空行，下标即原文件行号。
   // 空行占位不跳号 —— 否则「过滤后下标」会与清单里的 line_no 错位。
   const physical = raw.split("\n");
@@ -356,7 +196,7 @@ function check(file, need, enums, evidence) {
     for (const [k, vs] of Object.entries(enums)) {
       if (k in d && d[k] !== null && !vs.includes(d[k])) fails.push(`${file}#${ln}: bad ${k}=${d[k]}`);
     }
-    checkFields(file, ln, d, ctx, l);   // ln 即物理行号
+    checkFields(file, ln, d);   // ln 即物理行号
     checkModel(file, ln, d);
     if ("executed_by" in d && d.executed_by !== null && !ROLES.includes(d.executed_by)) {
       fails.push(`${file}#${ln}: bad executed_by=${d.executed_by}`);
@@ -631,14 +471,6 @@ const projectRoot = basename(dir) === "model" ? join(dir, "..", "..") : dir;
 // 跑 APP 门必然报 TRUEUT-UNRESOLVED 等，属噪声。真项目的 APP 门照常生效。
 if (existsSync(dir) && !ALLOW_EXAMPLE) checkAppBaseline(projectRoot);
 
-// 基线加载诊断：把被拒条目显式打印出来（只提示，不影响 exit）。
-// 审查要求「拒绝授权应有可核对的原因」——否则清单里写错 source_id 会静默失效。
-if (baselineState.loaded && baselineState.rejected.length) {
-  for (const r of baselineState.rejected) warns.push(`[基线] 未授权条目：${r}`);
-}
-if (baselineState.loaded && baselineState.entries === 0 && !baselineState.rejected.length) {
-  warns.push("[基线] 清单已加载但无任何条目生效");
-}
 for (const w of warns) console.log(w);
 if (fails.length) { console.log(fails.join("\n")); process.exit(1); }
 console.log(warns.length ? "LEDGER-OK (含 WARN)" : "LEDGER-OK");

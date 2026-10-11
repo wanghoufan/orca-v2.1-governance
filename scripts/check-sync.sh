@@ -61,7 +61,7 @@ for pkg in "新项目模板包" "老项目迁移模板包"; do
   # 回归夹具整树比对（2026-10-09 修 P1-2）：原只验 proto-gate，nav-gate/tm-qual 漂移无卡点。
   # 夹具被改＝测试失去意义，故按整树卡。
   # evidence/ 只在母版（隔离证据含本机绝对路径与随机临时目录名，不随包分发，见 _sync-packages.py TREE_EXCLUDE）
-  if ! diff -rq --exclude=evidence scripts/model/fixtures "$pkg/scripts/model/fixtures" >/dev/null 2>&1; then
+  if ! diff -rq scripts/model/fixtures "$pkg/scripts/model/fixtures" >/dev/null 2>&1; then
     echo "DIFFDIR: scripts/model/fixtures vs $pkg"; fail=1
   fi
   if [ "$pkg" = "老项目迁移模板包" ]; then check_norm "docs/prompts/迁移整理提示词.md" "$pkg/迁移整理提示词.md"; fi # 迁移提示词仅老包有（根平铺）

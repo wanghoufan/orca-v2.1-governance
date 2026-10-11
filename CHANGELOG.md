@@ -39,6 +39,24 @@
 
 **未做（等审批）**：结果语义草案、Episode 去重、未测标注、Supervisor 统一入口、GATE/P0 分类核验、原始输入副本留存。
 
+## 2026-10-11 (PENDING) refactor(ledger): 按用户决策整体移除历史豁免机制（「以前的不管，以后的为准」）
+
+**为什么**：用户 2026-10-11 裁定「以前的不管，以后的为准」——不为存量历史行开豁免后门。
+
+**改了什么**
+- **删除整套历史兼容机制**：`scripts/model/check-ledger.mjs` 中所有「降级为 WARN」的路径（逐行白名单、来源绑定 `GOVERNANCE-SOURCE.json`、物理行号锚定、行内容 sha256、expected 绑定、两级审批门、字段粒度授权）**全部移除**。`checkFields` 现在只有一个出口：所有字段错误一律 FAIL。
+- 删除 `scripts/model/ledger-legacy-baseline.json`（48 条候选豁免，**未获批准**）。
+- 删除配套脚本与夹具：`ledger-legacy.test.mjs`、`ledger-evidence.mjs`、`ledger-stock-scan.mjs`、`fixtures/ledger-legacy/`。
+- `ledger-fields.test.mjs` 20→**17 条**（移除与已删机制相关的用例与注释）。
+- `check-sync.sh`：去掉 `--exclude=evidence`（该目录已不存在）。
+
+**后果（如实记录）**：5 个存量项目会持续报字段错误，直到**项目自己**决定何时修正历史行。实测只读跑（**未改任何真实账本**）：046 麻将 56 行、006 提示词 21 行、028 酒吧聚会 14 行。
+**治理侧不代改他人账本**——修正时机由各项目决定。
+
+**怎么验**：母版 `LEDGER-OK`｜`SYNC-OK`｜ledger-fields 17/17｜tm 17/17｜proto 9/9｜ui-leak 2/2｜solo 15/15｜7-Skill `VALID`。反向验证：删掉 `checkFields` 调用 → 12 条 FAIL，证明检查仍在生效。
+
+**未做（等审批）**：结果语义草案、Episode 防重复、未测标注、Supervisor 统一入口、实际记账入口接线、两次打回升级实测、GATE/P0 分类核验、TM 未测维度贯通、原始输入副本留存、下一任务落实清单。
+
 ## 2026-10-11 (1391857) fix(ledger): 来源回退堵死 ＋ 十道防线回归有效性（经六轮独立审查）
 
 **为什么**：前一轮独立审查（codex/gpt-6.1-sol）指出「新来源门遮盖了旧负向夹具，导致审批／SHA／expected／禁止注入的回归重新失去有效性」「B4 参数传给了 Node 而非校验脚本」「B4a 不是同一输入对照」「B4b 用 PENDING 清单遮盖 CLI 注入」。逐条实测均成立。

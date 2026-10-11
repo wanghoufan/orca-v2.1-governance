@@ -1,2 +1,0 @@
-{"date":"2026-09-20","task":"T1","role":"qa","model":"codebuddy/glm-5.3-flash","used":"备用","runtime":"codex","result":"PASS"}
-{"date":"2026-10-11","task":"T2","role":"builder","model":"codebuddy/glm-5.3-flash","used":"主","runtime":"codex","result":"PASS"}
