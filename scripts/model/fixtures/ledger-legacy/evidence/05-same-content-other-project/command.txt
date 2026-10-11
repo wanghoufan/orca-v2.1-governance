@@ -1,0 +1,7 @@
+不同来源的同名项目（同内容）→ 不继承他人授权，exit 1
+
+# 复现方式（在本仓母版根执行）
+node scripts/model/check-ledger.mjs --baseline-test-inject <基线路径> <持久化输入>/docs/model
+
+# 实际退出码
+1

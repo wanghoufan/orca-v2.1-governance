@@ -1,0 +1,2 @@
+- PROJECT_PHASE：DEVELOP
+- PLAN_VERSION：不适用（本夹具为账本校验夹具，非产品项目）

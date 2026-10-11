@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "purpose": "账本字段校验的历史兼容白名单。逐行授权：只有本清单点名的 (项目, 文件, 行, 字段) 降为 WARN；追加新记录不影响旧行。",
+  "approved_by": "TEST-FIXTURE（隔离回归用，非真实审批）",
+  "approved_at": "2026-10-11",
+  "notes": [
+    "仅 used / runtime / rework 可豁免；result / date / role / 缺键 / BAD_JSON 永不可豁免。",
+    "本清单只授权历史原样保留，不构成新记录的写法示范。",
+    "禁止由调用方通过环境变量新增条目；LEDGER_BASELINE 只可指向只读副本。",
+    "fixtures/ledger-legacy/ 下的 proj-approved / proj-unapproved 为回归夹具项目，非真实项目。"
+  ],
+  "entries": [
+    {
+      "project": "proj-approved",
+      "file": "DISPATCH-LOG.jsonl",
+      "line_no": 1,
+      "line_sha256": "22b91e4813ab128e3d3bf06794bcffed87307f9d4f2f9681c577cfc103240d18",
+      "field": "used",
+      "expected_value": "备用",
+      "reason": "回归夹具：模拟已审批的历史 used 写法",
+      "approved_at": "2026-10-11",
+      "approved_by": "TEST-FIXTURE（非真实审批，仅供隔离回归）"
+    },
+    {
+      "project": "006-ing-提示词管理器",
+      "file": "DISPATCH-LOG.jsonl",
+      "line_no": 1,
+      "line_sha256": "d19b4a1c6d1e9b8b2f0a5c4e7b3d6f9a2c1e5b8d7f3a6c9e2b4d1f8a5c7e3b6d9",
+      "field": "runtime",
+      "expected_value": "本窗口subagent",
+      "reason": "2026-09 历史写法：本窗口变体。新记录应改用现行枚举「本窗口」，分析层映射旧写法，不提升为规范。",
+      "approved_at": "2026-10-11",
+      "approved_by": "TEST-FIXTURE（非真实审批，仅供隔离回归）"
+    }
+  ]
+}

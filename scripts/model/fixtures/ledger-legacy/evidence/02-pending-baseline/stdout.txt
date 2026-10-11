@@ -1,0 +1,4 @@
+TASK-MODEL-LOG.jsonl: 空账本（首个真实任务/派工前正常）
+[基线] 未授权条目：顶层 approved_by 未获批：PENDING
+[基线] 未授权条目：顶层 approved_at 未获批：PENDING
+DISPATCH-LOG.jsonl#1: bad used="备用"（合法取值：主）

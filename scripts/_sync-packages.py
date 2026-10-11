@@ -27,6 +27,8 @@ DIRS = ["docs/roles", "docs/sop", "scripts/model", "docs/assets"]
 # 需要**整树递归**同步的子目录：DIRS 只收文件，子目录（fixtures/）会被漏掉，
 # 导致包内测试脚本缺夹具、跑不起来（2026-10-09 补：prototype-gate 夹具）。
 TREE_DIRS = ["scripts/model/fixtures"]
+# 证据目录里的隔离脚本副本含本机绝对路径与随机临时目录名，随包分发既无意义又会污染下游项目。
+TREE_EXCLUDE = ["/evidence/"]
 # 只同步 *.template.md 的（这几个目录里混有母版自己的实例记录：BUGS-*.md / CODE_REVIEW-*.md /
 #   GOVERNANCE_REVIEW-*.md / RESEARCH_REVIEW-*.md / PLAN-*.md / HANDOFF.md 等，**模板包不该带实例记录**）
 TEMPLATE_DIRS = ["docs/pm", "docs/plan", "docs/qa", "docs/review", "docs/handoff"]
@@ -80,6 +82,9 @@ def collect():
         if not os.path.isdir(dd):
             continue
         for dirpath, _dirnames, filenames in os.walk(dd):
+            rel_dir = os.path.relpath(dirpath, ROOT)
+            if any(x in ("/" + rel_dir.replace(os.sep, "/") + "/") for x in TREE_EXCLUDE):
+                continue
             for fn in sorted(filenames):
                 full = os.path.join(dirpath, fn)
                 rel = os.path.relpath(full, ROOT)

@@ -1,0 +1,7 @@
+已审批清单 + 原历史行 → 豁免生效（WARN），exit 0
+
+# 直接可执行（在母版根）：
+#   node scripts/model/check-ledger.mjs "/Users/zzymima0000/Developer/coding/4.Templates（PC）/2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11/scripts/model/fixtures/ledger-legacy/evidence/01-approved-baseline/input/docs/model"
+#   （若用隔离脚本注入基线，见 baseline.json 与 result.json.script）
+# 实际退出码：0
+采集时间：2026-10-11T14:05:21.706Z

@@ -1,0 +1,7 @@
+{
+  "case": "07-no-baseline-strict",
+  "note": "无基线（严格模式）→ 零豁免，exit 1",
+  "exit_code": 1,
+  "baseline_used": null,
+  "stdout_lines": 2
+}

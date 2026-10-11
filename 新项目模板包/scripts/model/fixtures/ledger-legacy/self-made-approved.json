@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "approved_by": "我自己填写的审批人",
+  "approved_at": "2026-10-11",
+  "entries": [
+    {
+      "project": "proj-unapproved",
+      "source_id": "orca-src-3121769421e1cba7",
+      "file": "DISPATCH-LOG.jsonl",
+      "line_no": 1,
+      "line_sha256": "22b91e4813ab128e3d3bf06794bcffed87307f9d4f2f9681c577cfc103240d18",
+      "field": "used",
+      "approved_by": "我自己填写的审批人",
+      "approved_at": "2026-10-11",
+      "reason": "自造清单"
+    }
+  ]
+}

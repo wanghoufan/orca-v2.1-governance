@@ -1,0 +1,3 @@
+TASK-MODEL-LOG.jsonl: 空账本（首个真实任务/派工前正常）
+DISPATCH-LOG.jsonl#1: WARN(历史豁免·已审批清单) bad used="备用"（合法取值：主）｜依据：同行多字段-used
+DISPATCH-LOG.jsonl#1: bad runtime="火星通道"（合法取值：本窗口 / 当前客户端窗口（自动探测） / codebuddy / codex / opencode / Claude Code / —）

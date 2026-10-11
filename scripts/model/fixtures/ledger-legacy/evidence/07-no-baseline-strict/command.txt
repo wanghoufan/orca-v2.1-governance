@@ -1,0 +1,7 @@
+无基线（严格模式）→ 零豁免，exit 1
+
+# 复现方式（在本仓母版根执行）
+node scripts/model/check-ledger.mjs  <持久化输入>/docs/model
+
+# 实际退出码
+1

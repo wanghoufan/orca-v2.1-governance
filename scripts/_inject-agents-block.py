@@ -33,6 +33,7 @@ BLOCK = f"""{BEGIN}
 - **升级口径（2026-10-05 补，覆盖项目正文旧口径）**：计数单元＝**同一 task id（含返工子任务）**，只数 **supervisor 判 FAIL/打回该 Task 交付** 的次数（QA 自身任务判 FAIL 不计）；累计 2 次自动升 senior-expert（当次生效，不打断用户）；**senior 接手后被打回 2 次即停线找人**（不再升）。与项目正文旧口径（如"builder 连续失败 2 次"）冲突时**以本区块为准**。
 - **Phase Integrity 补两条抽查（2026-10-05）**：supervisor 复检须抽查①派工口是否由 `detect-client.sh` 的 `mode` 决定、禁通道角色套进客户端 subagent；②派工前是否跑过 `check-channel-preflight.sh` 且非 `CHANNEL-STALE`（STALE 仍派即打回）。详见 `docs/roles/supervisor.md` 第 8/9 条。
 - **红线（2026-09-29 增补）**：产品验收未落盘或关键 AC 未测、不得报完工/收工；首次发布未取得用户签收、不得报完工/收工；汇报只报三类小事自决（口径见上「汇报与自决」）。
+- **两种执行方式（2026-10-10 用户定）**：本体系支持**多智能体**（默认，角色分工与独立审查照旧）与**单智能体**。**触发口令「你是唯一开发者」**：用户说出这一句即启用单智能体模式——**不派其他智能体、不造派工记录**，智能体自行按项目阶段读适用规范（产品规划与简化审查／UI 规范／SDD／技术 SOP／Code Review 自审／真实 QA 与缺陷修复复验／HANDOFF）。**用户没有要求切换时，不得擅自改变既定执行方式。** 该口令**只决定执行方式**，不代表可跳过产品方案确认、必要 Human Gate 或授权要求。**执行方式与治理强度分开判断**——质量门禁（产品简化、安全、真机验收、首次发布签收、产品验收矩阵）一条不减，角色卡「禁止兼任／独立 Session／独立派工」**只约束多智能体执行**；单智能体可按阶段引用这些角色的质量标准，但结论**必须如实标注「自审」还是「独立审查」，不得伪造**。完整口径见治理母版 `AGENTS.md`「两种执行方式」节。
 - **本项目迁移状态**：`docs/model/GOVERNANCE-STATE.json`（`rules_version`／`synced_at`／`project_phase_field`／`task_ledger_rows`／`agents_block_injected`／`product_acceptance_ac_added`）。
 - **存量项目待办（不自动做，需项目 TM 判断）**：本项目实绩 Plan 需补「视觉与交互验收标准（AC 编号）＋关键 AC 集合＋发布类型」，否则新规则下收尾会被判**计划缺项**；完成后把 `product_acceptance_ac_added` 置 `true`。
 {END}"""

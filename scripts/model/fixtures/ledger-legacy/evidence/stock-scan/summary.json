@@ -1,0 +1,636 @@
+{
+  "root": "/Users/zzymima0000/Developer/coding/1.Active",
+  "projects": 35,
+  "strict": {
+    "exit0": 1,
+    "fieldFailProjects": 5,
+    "fieldFailLines": 48
+  },
+  "candidate": {
+    "exit0": 1,
+    "fieldFailProjects": 5,
+    "fieldFailLines": 48
+  },
+  "details": [
+    {
+      "project": "000-alw-个人偏好-电脑治理仓库-skill管理",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — docs/handoff/HANDOFF.md 不存在，无法判定需求真源。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "000-alw-数据库管理专家",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 无 PLAN_VERSION 行，需求真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "001-ing-家庭保单数据看板",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 无 PLAN_VERSION 行，需求真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "002-ing-第三周作业-24-生活物种测试",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 无 PLAN_VERSION 行，需求真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "003-ing-个人网站项目-site",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 无 PLAN_VERSION 行，需求真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "005-ing-家族图谱管理器",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 无 PLAN_VERSION 行，需求真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "006-ing-提示词管理器",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 6,
+        "other": 1,
+        "sample": [
+          "DISPATCH-LOG.jsonl#1: bad runtime=\"本窗口subagent\"（合法取值：本窗口 / 当前客户端窗口（自动探测） / codebuddy / codex / opencode / Claude Code / —）",
+          "DISPATCH-LOG.jsonl#2: bad runtime=\"本窗口subagent\"（合法取值：本窗口 / 当前客户端窗口（自动探测） / codebuddy / codex / opencode / Claude Code / —）",
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 无 PLAN_VERSION 行，需求真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 6,
+        "other": 1,
+        "sample": [
+          "DISPATCH-LOG.jsonl#1: bad runtime=\"本窗口subagent\"（合法取值：本窗口 / 当前客户端窗口（自动探测） / codebuddy / codex / opencode / Claude Code / —）",
+          "DISPATCH-LOG.jsonl#2: bad runtime=\"本窗口subagent\"（合法取值：本窗口 / 当前客户端窗口（自动探测） / codebuddy / codex / opencode / Claude Code / —）"
+        ]
+      }
+    },
+    {
+      "project": "008-ing-语音输入法",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 无 PLAN_VERSION 行，需求真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "010-ing-DS-GPT桌面额度显示工具",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 的 PLAN_VERSION 未用反引号标出 Plan 文件路径，真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "011-ing-个人打卡小工具",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 2,
+        "other": 1,
+        "sample": [
+          "TASK-MODEL-LOG.jsonl#1: bad rework=\"1(记录铅笔图标换成 Lucide pencil 后重出包)\"（须有限整数）",
+          "DISPATCH-LOG.jsonl#1: bad used=\"direct\"（合法取值：主）",
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 无 PLAN_VERSION 行，需求真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 2,
+        "other": 1,
+        "sample": [
+          "TASK-MODEL-LOG.jsonl#1: bad rework=\"1(记录铅笔图标换成 Lucide pencil 后重出包)\"（须有限整数）",
+          "DISPATCH-LOG.jsonl#1: bad used=\"direct\"（合法取值：主）"
+        ]
+      }
+    },
+    {
+      "project": "014-ing-山寨滚仓网站",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 无 PLAN_VERSION 行，需求真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "015-ing-photo-library",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 的 PLAN_VERSION 未用反引号标出 Plan 文件路径，真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "016-ing-懒得打字-安卓版本",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 无 PLAN_VERSION 行，需求真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "017-ing-RSS聚合-个人信息雷达",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 的 PLAN_VERSION 未用反引号标出 Plan 文件路径，真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "018-ing-本地视频转文字工具",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "docs/pm/PRODUCT_PLAN.md: APP-BASELINE-MISSING — 缺「APP 基础能力声明」（主题三态/语言集/系统跟随/回退/持久化；见 docs/sop/app-theme-i18n.md）。不进 Design Pipeline，补齐后再收工。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "019-ing-摄影图库app",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 的 PLAN_VERSION 未用反引号标出 Plan 文件路径，真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "020-ing-拉伸换边app",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 无 PLAN_VERSION 行，需求真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "021-ing-workbuddy-switch",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — docs/handoff/HANDOFF.md 不存在，无法判定需求真源。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "022-ing-葫芦军师红利指数看板",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 的 PLAN_VERSION 未用反引号标出 Plan 文件路径，真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "025-ing-拉伸语音播报 app",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 的 PLAN_VERSION 未用反引号标出 Plan 文件路径，真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "026-ing-夜间补光灯",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 的 PLAN_VERSION 未用反引号标出 Plan 文件路径，真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "027-ing-蛋白质计算器",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 的 PLAN_VERSION 未用反引号标出 Plan 文件路径，真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "028-ing-酒吧聚会社交导演",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 6,
+        "other": 1,
+        "sample": [
+          "DISPATCH-LOG.jsonl#237: bad used=\"备用\"（合法取值：主）",
+          "DISPATCH-LOG.jsonl#253: bad used=\"备用\"（合法取值：主）",
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 的 PLAN_VERSION 未用反引号标出 Plan 文件路径，真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 6,
+        "other": 1,
+        "sample": [
+          "DISPATCH-LOG.jsonl#237: bad used=\"备用\"（合法取值：主）",
+          "DISPATCH-LOG.jsonl#253: bad used=\"备用\"（合法取值：主）"
+        ]
+      }
+    },
+    {
+      "project": "030-ing-skill 日报体系",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 无 PLAN_VERSION 行，需求真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "036-ing-中美汇率看板",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 无 PLAN_VERSION 行，需求真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "037-ing-AI 编程训练营网站",
+      "strict": {
+        "exit": 0,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "LEDGER-OK"
+        ]
+      },
+      "candidate": {
+        "exit": 0,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "038-ing-keep 运动健身仓库",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 无 PLAN_VERSION 行，需求真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "039-ing-酒吧游戏",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 6,
+        "other": 1,
+        "sample": [
+          "DISPATCH-LOG.jsonl#237: bad used=\"备用\"（合法取值：主）",
+          "DISPATCH-LOG.jsonl#253: bad used=\"备用\"（合法取值：主）",
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 无 PLAN_VERSION 行，需求真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 6,
+        "other": 1,
+        "sample": [
+          "DISPATCH-LOG.jsonl#237: bad used=\"备用\"（合法取值：主）",
+          "DISPATCH-LOG.jsonl#253: bad used=\"备用\"（合法取值：主）"
+        ]
+      }
+    },
+    {
+      "project": "040-ing-才艺展示厅",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 的 PLAN_VERSION 未用反引号标出 Plan 文件路径，真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "041-ing-nightrec",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 的 PLAN_VERSION 未用反引号标出 Plan 文件路径，真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "042-ing-AIHOT 热点日报站",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — docs/handoff/HANDOFF.md 不存在，无法判定需求真源。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "044-ing-AI 图文短剧分镜生成器",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 无 PLAN_VERSION 行，需求真源不可判定。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    },
+    {
+      "project": "045-ing-凯格尔训练",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 8,
+        "sample": [
+          "docs/pm/PRODUCT_PLAN_V1.0.md: WARN 非当前真源的 APP Product Plan 缺「APP 基础能力声明」（主题三态/语言集/系统跟随/回退/持久化；见 docs/sop/app-theme-i18n.md）（历史版本可不补；若将启用则须先补）"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 8,
+        "sample": []
+      }
+    },
+    {
+      "project": "046-ing-麻将小白助手",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 28,
+        "other": 4,
+        "sample": [
+          "DISPATCH-LOG.jsonl#1: bad used=\"codebuddy/glm-5.3-flash\"（合法取值：主）",
+          "DISPATCH-LOG.jsonl#2: bad used=\"codebuddy/deepseek-v4.1-flash\"（合法取值：主）",
+          "docs/pm/PRODUCT_PLAN_V1.0.md: WARN 非当前真源的 APP Plan 导航关键 AC 未覆盖：三方向同一核心页面对比、非只改配色、底部导航决策已写明、底栏滚动固定不遮挡"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 28,
+        "other": 4,
+        "sample": [
+          "DISPATCH-LOG.jsonl#1: bad used=\"codebuddy/glm-5.3-flash\"（合法取值：主）",
+          "DISPATCH-LOG.jsonl#2: bad used=\"codebuddy/deepseek-v4.1-flash\"（合法取值：主）"
+        ]
+      }
+    },
+    {
+      "project": "main-2",
+      "strict": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": [
+          "APP-TRUEOUT-SOURCE-UNRESOLVED — HANDOFF 的 PLAN_VERSION 指向的文件不存在：temp/用户草稿-Product Plan V1.1.md。docs/pm 下有 Product Plan 但无法确认哪份是真源时，不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 `路径.md` 为需求真源）后重跑。"
+        ]
+      },
+      "candidate": {
+        "exit": 1,
+        "fieldFails": 0,
+        "other": 1,
+        "sample": []
+      }
+    }
+  ]
+}

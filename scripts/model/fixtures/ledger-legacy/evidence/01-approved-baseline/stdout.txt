@@ -1,0 +1,4 @@
+TASK-MODEL-LOG.jsonl: 空账本（首个真实任务/派工前正常）
+DISPATCH-LOG.jsonl#1: WARN(历史豁免·已审批清单) bad used="备用"（合法取值：主）｜依据：回归夹具：模拟已审批的历史 used 写法
+[基线] 未授权条目：DISPATCH-LOG.jsonl#1 source_id 缺失或格式非法（须 orca-src-＋16位十六进制）
+LEDGER-OK (含 WARN)

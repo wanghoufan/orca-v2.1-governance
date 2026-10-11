@@ -1,0 +1,19 @@
+{
+  "case": "07-two-fields-one-row",
+  "note": "同一物理行 used+runtime，只批 used → used 豁免、runtime 仍 FAIL，exit 1",
+  "argv": [
+    "/Users/zzymima0000/Developer/coding/4.Templates（PC）/2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11/scripts/model/fixtures/ledger-legacy/evidence/07-two-fields-one-row/check-ledger.isolated.mjs",
+    "/var/folders/mp/mnxk3h8x4wq5ztr7__vlplp40000gn/T/orca-ev-RD4pAz/proj-two-fields/docs/model"
+  ],
+  "cwd": "/Users/zzymima0000/Developer/coding/4.Templates（PC）/2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11/scripts/model",
+  "env_overrides": [],
+  "started_at": "2026-10-11T14:05:21.956Z",
+  "exit_code": 1,
+  "baseline": "/Users/zzymima0000/Developer/coding/4.Templates（PC）/2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11/scripts/model/fixtures/ledger-legacy/baseline.two-fields-used-only.test.json",
+  "baseline_sha256": "873049e3481939684edf42e64be9554e159a3e9d5ef56e6eddeb6805001a7ebf",
+  "script_sha256": "de0adb1f6d5e3d101777e59f9bcb6731755c0a37ce3215f2b40fbdd4332cabcf",
+  "script_used": "隔离副本（改写 BASELINE_PATH）",
+  "script_copy_path": "/Users/zzymima0000/Developer/coding/4.Templates（PC）/2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11/scripts/model/fixtures/ledger-legacy/evidence/07-two-fields-one-row/check-ledger.isolated.mjs",
+  "input_copy": "/Users/zzymima0000/Developer/coding/4.Templates（PC）/2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11/scripts/model/fixtures/ledger-legacy/evidence/07-two-fields-one-row/input/docs/model",
+  "stdout_lines": 3
+}

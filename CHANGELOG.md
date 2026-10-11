@@ -23,6 +23,122 @@
 **怎么验**：`SYNC-OK`｜`CHANNEL-OK`｜tm-qualification 17/17｜prototype-gate 9/9｜ui-leak 2/2｜**solo-agent 15/15**（新增 C3–C8 触发口令用例）。**另做真实执行验证**（隔离副本 `solo-demo`，非用户业务项目）：铺新项目模板包 → 小型局部开发（折扣门槛取等＋按分取整）→ 自审七查 → 实际运行测试发现缺陷 → 切回开发修复 → 复验 **5/5 PASS、exit 0**；`DISPATCH-LOG` 留空不造行、账本 `LEDGER-OK`；全程未派任何其他智能体。多智能体路径核对：Human Gate 保留条款在位、三张角色卡「只约束多智能体」在位、四段主链关键串未被覆盖。
 
 
+## 2026-10-11 (PENDING) fix(ledger): 历史兼容返工——整文件指纹改为审批清单逐行白名单
+
+**为什么**：审查实测一版「整文件 sha256 指纹豁免」两处硬伤——①追加一条合法新记录后整文件哈希变化，旧记录重新 FAIL（**正常做下一次任务就失去兼容**）；②环境变量可自行签发资格（新写非法 runtime→算哈希→传入即 exit 0）。另有三处：豁免对全部 fieldRules 生效导致 result=null 被放行；cost_cny 未验有限性；存量行数 48 被我误报 49。
+
+**改了什么**（`scripts/model/check-ledger.mjs` ＋ 新增基线与测试）
+- **逐行白名单取代整文件指纹**：豁免绑定 `(项目目录名, 账本文件, 该行完整 sha256, 字段)`，**追加新记录不影响旧行**；清单落版本库固定路径 `scripts/model/ledger-legacy-baseline.json`，调用方只能引用不能自行新增（旧 `LEDGER_LEGACY_GRACE` 已完全失效）。
+- **豁免仅限 used/runtime/rework 三个字段**；result/date/role/缺键/BAD_JSON **永不可豁免**。已实测：获批历史 used 可兼容，同文件 result=null 与 BAD_JSON 仍 FAIL。
+- **补数值有限性**：`Number.isFinite` 拦 `1e309→Infinity`；`tokens` 另加 `isSafeInteger`；布尔显式排除。Infinity 报错显示还原为字面量（原先被 `JSON.stringify` 显示成 null 致误判）。
+- 新增 `ledger-legacy.test.mjs` **17 条** ＋ 夹具 `fixtures/ledger-legacy/`（含 proj-approved/proj-unapproved 两个项目）；`ledger-fields.test.mjs` 20→18 条（迁走已废弃的指纹试验）。
+
+**存量核对（修正上轮 48→49 的错报）**：逐文件逐行明细已写入基线 `entries`，共 **48 条**（used 41／runtime 6／rework 1，涉 5 个项目 6 个文件）。全量跑修复后的校验器：**本轮字段校验导致的 FAIL 为 0 个**；31 个项目仍 exit 1 全部是既有 `APP-TRUEOUT-SOURCE-UNRESOLVED`，3 个是既有 APP 门/WARN。
+
+**怎么验**：`ledger-legacy 17/17`｜`ledger-fields 18/18`｜母版 `LEDGER-OK`｜`SYNC-OK`｜tm 17/17｜proto 9/9｜ui-leak 2/2｜solo 15/15。反向验证：短路 checkFields → 两套分别 12 条 FAIL；基线路径指向 /dev/null → ledger-legacy 1 条 FAIL（证明豁免确由清单驱动）。
+
+**未做（等审批）**：结果语义草案、Episode 去重、未测标注、Supervisor 统一入口、GATE/P0 分类核验、原始输入副本留存。
+
+## 2026-10-11 (PENDING) fix(ledger): 来源回退堵死 ＋ 十道防线回归有效性（经六轮独立审查）
+
+**为什么**：前一轮独立审查（codex/gpt-6.1-sol）指出「新来源门遮盖了旧负向夹具，导致审批／SHA／expected／禁止注入的回归重新失去有效性」「B4 参数传给了 Node 而非校验脚本」「B4a 不是同一输入对照」「B4b 用 PENDING 清单遮盖 CLI 注入」。逐条实测均成立。
+
+**改了什么**（`scripts/model/check-ledger.mjs` ＋ 测试与夹具）
+- **堵死无来源回退**：删去「条目未声明 source_id → 回退项目目录名」的逻辑。条目必须声明 `source_id`，项目必须提供完全一致的 `docs/model/GOVERNANCE-SOURCE.json`，否则零授权。加载期新增格式校验 `^orca-src-[0-9a-f]{16}$`，非法条目**显式报出拒绝原因**（此前写错 source_id 会静默失效）。
+- **修复遮盖**：为 A5／A6／F5／F6／B1／B2 等负向夹具补合法 `source_id` 与项目身份文件，使它们只测自己声明的那一件事。
+- **修复假 PASS**：B4 参数改放脚本路径之后并断言「脚本确实启动」；自造清单生成器补 `source_id`（原每次运行覆写抹除）；改用两份**内容相同、仅审批状态不同**的具名清单做同输入对照，消除执行顺序依赖。
+- 新增 `ledger-evidence.mjs`（8 用例持久现场：输入副本／基线副本／argv／时间／哈希／可执行命令）与 `ledger-stock-scan.mjs`（严格／未批候选／已批对照三口径）；`evidence/` 含本机绝对路径，不随两包分发。
+- 删除冗余 `graceConsumed` 消费集合（实测删除后仍全绿，防复制归因于行号＋来源＋哈希＋字段＋expected 五重匹配）。
+
+## 十道防线逐条反向验证（全部可被抓到）
+
+| 防线 | 破坏后结果 |
+|---|---|
+| ① 字段匹配 eField | 47 PASS / 1 FAIL（J5 捕获） |
+| ② 顶层 approved_by | 47 / 1（A9） |
+| ③ 顶层 approved_at | 47 / 1（A8） |
+| ④ 条目 approved_by | 47 / 1（A7） |
+| ⑤ 条目 approved_at | 47 / 1（A3） |
+| ⑥ 加载期格式校验 | 47 / 1（I7／I8／I10） |
+| ⑦ 运行期来源判定 | 44 / 4（I3／I4／I9 等） |
+| ⑧ 行内容哈希 | 47 / 1（F5） |
+| ⑨ expected 绑定 | 47 / 1（F6） |
+| ⑩ 字段校验主体 | 4 / 44 |
+
+另两条注入通道（`LEDGER_BASELINE` 环境变量、`--baseline-test-inject` CLI 参数）恢复后 B1／B2／B4b 均失败。
+
+**一处有意保留的冗余**：`graceFor` 的 `!e.sourceId` 判断当前**无独立测试覆盖**（加载期格式校验已拦下全部无/非法条目，删掉它仍全绿）。属纵深防御，已在代码注释标明，未硬造用例。
+
+**测试规模演进**：ledger-legacy 17 → 20 → 23 → 30 → 33 → 35 → 37 → 39 → 43 → 45 → **48**。
+
+**怎么验**：`ledger-legacy 48/48`｜`ledger-fields 18/18`｜母版 `LEDGER-OK`｜`SYNC-OK`｜tm 17/17｜proto 9/9｜ui-leak 2/2｜solo 15/15｜7-Skill `VALID`。
+
+**审查状态**：六轮独立审查均为「限定范围通过」，C 组**尚未整体放行**（第十二节标准未全满足）；A—F 整体远未完成。审查者全程未批准任何豁免。
+
+**未做（等审批）**：结果语义草案、Episode 防重复、未测标注、Supervisor 统一入口、实际记账入口接线、两次打回升级实测、GATE/P0 分类核验、TM 未测维度贯通、原始输入副本留存、下一任务落实清单。
+
+## 2026-10-11 (PENDING) fix(ledger): 历史兼容三轮返工收口——审批门/来源绑定/字段粒度（附对前两轮结论的更正）
+
+**为什么**：两轮独立审查（codex/gpt-6.1-sol）连续判定「需修改」，逐条实测出漏洞。
+
+**本轮修的三个阻断**
+1. **正式入口可自签发**：先后出现过三种注入通道（`LEDGER_BASELINE` 环境变量 → `LEDGER_ALLOW_TEST_BASELINE`+`LEDGER_BASELINE_TESTONLY` 双开关 → `--baseline-test-inject` CLI 参数），审查实测**每一种都能让调用方签发豁免**——参数和环境变量都是普通调用方可用的能力，不构成隔离。**现正式 CLI 已无任何注入开关**，测试改为**复制隔离副本并改写副本内 `BASELINE_PATH` 常量**，正式文件不被触碰。
+2. **条目审批继承顶层**：`e.approved_by ?? j.approved_by` 让「仅删条目审批人」仍 exit0。改为顶层与条目**各自必须显式非 PENDING**，缺失即零授权。
+3. **来源只绑 basename／同行多字段被吞**：授权键改为 `(source_id, 文件, 物理行号, 字段)` ＋ 行内容 sha256 ＋ expected_value 全中才授权；**48 条候选条目已全部补上 `source_id`**（`orca-src-` + sha256(项目目录名) 前 16 位），项目侧需提供 `docs/model/GOVERNANCE-SOURCE.json`。
+
+**同时删除**：`graceConsumed` 消费集合。审查实测「删除后 33/33 仍全绿」——现行 CLI 每物理行只遍历一次，防复制完全由 line_no＋来源＋sha＋expected 四重匹配承担，该集合无可观察作用。
+
+## ⚠️ 对本文件前两条结论的更正（务必以本条为准）
+
+- 上条写「全量跑修复后的校验器：**本轮字段校验导致的 FAIL 为 0 个**」——**该结论不成立**。当时用的是**尚未获批**的清单，属候选方案模拟，不能作为已批准兼容或正式落实的证明。
+- 更早一条写「仅 6 个文件 **49 行**」——**算术错误，逐行明细合计为 48**（used 41／runtime 6／rework 1）。
+- 更早一条提到 `LEDGER_LEGACY_GRACE` 整文件指纹豁免——该机制**已被逐行白名单取代并完全退役**，历史记录保留仅为沿革。
+
+## 存量三套口径（现行，实测可复现）
+
+| 模式 | 项目数 | exit 0 | 本轮字段 FAIL |
+|---|---|---|---|
+|---|---|---|---|
+| 严格（正式基线 PENDING，零授权） | 35 | 1 | 5 项目 / **48 行** |
+| 未获批候选清单 | 35 | 1 | 5 项目 / 48 行（与严格一致，因 PENDING 不生效） |
+| 已批对照（仅测试，且项目须先有 `GOVERNANCE-SOURCE.json`） | 35 | 1 | **0 行** |
+
+**「exit 0 = 1」不是「35 个项目全部通过」**：其余 34 个的 exit 1 来自既有 `APP-TRUEOUT-SOURCE-UNRESOLVED` 等 APP 门禁，与本轮字段校验无关，两者不可混计。
+
+**已知残留边界（如实记录，未修复）**：条目**未声明** `source_id` 且项目无身份文件时，同 basename 的另一来源仍会命中（用例 I6 明确断言 exit 0，不隐藏）。正式清单启用 `source_id` 后该路径自动收紧。
+
+**怎么验**：`ledger-legacy 33/33`｜`ledger-fields 18/18`｜母版 `LEDGER-OK`｜`SYNC-OK`｜tm 17/17｜proto 9/9｜ui-leak 2/2｜solo 15/15。反向验证对 7 处防线逐条做「破坏→看 FAIL→还原」：顶层审批门／条目审批门／source_id 判定／行号匹配／sha 绑定／expected 绑定／字段校验**均被抓到**；删除冗余消费集合后仍 33/33（证明其确为冗余）。
+
+**未做（等审批）**：结果语义草案、Episode 去重、未测标注、Supervisor 统一入口、实际记账入口接线、两次打回升级实测、GATE/P0 分类核验、TM 未测维度贯通、原始输入副本留存、下一任务落实清单。
+
+## 2026-10-11 (PENDING) fix(ledger): 派工/任务账本字段校验补齐（反例实测确认的零校验漏洞）
+
+**为什么**：账本报告复评指出中央校验与 supervisor 卡内联块覆盖面不同。审查进一步用反例确认**非法 date／role／used／runtime、result=null、rework 的 null／负数／字符串／小数全部 exit 0 通过**。根因＝枚举检查写作 `d[k] !== null` 使 null 整体绕过，且这四个字段根本没进枚举表。
+
+**改了什么**（仅 `scripts/model/check-ledger.mjs`，中央规则文本未改）
+- 按字段分别定义类型与可空性，**覆盖缺键／null／空串／错误类型／非法枚举**：`date` 须真实日历日期（`2026-02-30` 已拦，不自动归一化）、`role` 两本账本都校验（保留 `orchestrator`／`迁移整理工` 等既有合法标识）、`used` **维持恒填主语义一字未改**、`runtime` 限定 7 个现行取值、`rework` **整数且 ≥0（不照 tokens/cost 放 null）**、`tokens`/`cost_cny` 允许 null 但有值时校验。
+- 新增 `LEDGER_LEGACY_GRACE` 内容指纹豁免：**只认文件内容 sha256，不认可伪造的 date**；命中则新增项降 WARN；**既有结构硬错误（缺键／BAD_JSON／result 非法）一律不放宽**，与新增项区别处理；**不自动改写任何历史**。
+- 新增回归 `scripts/model/ledger-fields.test.mjs` ＋ 夹具 `scripts/model/fixtures/ledger-fields/`（14 个隔离项目，20 条断言）。
+
+**存量影响（只读扫描 1.Active 全量）**：37 个含真实行文件／2341 行中，**仅 6 个文件 49 行**受影响（used≠主 41 行、runtime 变体 6 行、rework 字符串 1 行）；`date`／`role`／`result` 零影响。另发现 **039 与 028 账本内容指纹完全相同**，疑同源，未深查。
+
+**怎么验**：ledger-fields **20/20**；反向验证「短路 `checkFields` → 15 条 FAIL」「豁免改为按 date 放行 → 1 条 FAIL」证明非空跑；`SYNC-OK`｜母版自检 `LEDGER-OK`｜tm 17/17｜proto 9/9｜ui-leak 2/2｜solo 15/15｜7-Skill `VALID`。
+
+**未做（等审批）**：结果语义草案（**已确认会破坏 `supervisor+FAIL` 升级计数，上一版撤回**）、Episode 去重（实测评分器无去重）、未测维度标注、GATE_VIOLATION 分类核验、F 组原始输入留存。
+
+## 2026-10-10 (PENDING) fix(governance): A 项留痕缺口 + 触发口令补进老项目注入区块
+
+**为什么**：①A 项——外部独立会话两次复现「铺了包却按小活免留痕」；②老项目迁移——注入区块不含触发口令，老项目 `AGENTS.md` 拿不到这个入口，规则到不了已治理的老仓。
+
+**改了什么**
+- `AGENTS.md`「何时起」节补「**小活豁免只管还没铺包的项目**：判据是**要不要铺包**，不是**任务大不大**；已铺包（`docs/review/`、`docs/qa/`、`docs/model/`、`docs/handoff/` 任一在位）＝已在体系内，无论单多小，自审与 QA 留痕照旧落盘、账本照旧记账；拿「这是个小活」当免留痕理由＝**半套**，按红线打回」。
+- 同文件「自审仍须留痕」条补：**已铺包的项目这是硬要求**，留痕可极简三五行但不能没有；`TASK-MODEL-LOG` 记一行。
+- `scripts/_inject-agents-block.py` 的注入区块补「**两种执行方式**」一条，含触发口令「你是唯一开发者」、不得擅自切换、质量门禁不减、只约束多智能体等要点——**只增不删**，老项目下次跑 `sync-old-projects.sh` 即获得该入口。
+
+**怎么验**：注入幂等实测（临时项目连跑两次 → 区块仍 1 个、口令 1 处、项目专属内容保留）；包内角色卡已含口令（`老项目迁移模板包/docs/roles/qa.md` 命中）；`SYNC-OK`｜`CHANNEL-OK`｜tm 17/17｜proto 9/9｜ui-leak 2/2｜solo 15/15｜7-Skill `VALID`。
+
+**未做**：按用户裁决 B3，**未批量铺开老项目**（`sync-old-projects.sh` 未实跑），等有具体项目要升级时单个处理。
+
 ## 2026-10-10 (cedfa79) docs(review): 对 10-10 审查报告 P0 项的复核与反驳（结论：不采纳 P0-1～P0-4）
 
 **为什么**：独立审查给出 CONDITIONAL PASS 并列 P0-1～P0-4 四处「文字矛盾」。逐条实测后，三项已不成立、一项属误读；若照报告改会把已正确的表述改坏（P0-1 若删禁 Builder 措辞会连带移除 P046 边界）。故出书面反驳交回复审者。

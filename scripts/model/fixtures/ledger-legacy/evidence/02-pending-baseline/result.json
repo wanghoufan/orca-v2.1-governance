@@ -1,0 +1,19 @@
+{
+  "case": "02-pending-baseline",
+  "note": "PENDING 清单 → 零授权，used 仍 FAIL，exit 1",
+  "argv": [
+    "/Users/zzymima0000/Developer/coding/4.Templates（PC）/2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11/scripts/model/fixtures/ledger-legacy/evidence/02-pending-baseline/check-ledger.isolated.mjs",
+    "/var/folders/mp/mnxk3h8x4wq5ztr7__vlplp40000gn/T/orca-ev-J8Zsxy/proj-approved/docs/model"
+  ],
+  "cwd": "/Users/zzymima0000/Developer/coding/4.Templates（PC）/2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11/scripts/model",
+  "env_overrides": [],
+  "started_at": "2026-10-11T14:05:21.751Z",
+  "exit_code": 1,
+  "baseline": "/Users/zzymima0000/Developer/coding/4.Templates（PC）/2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11/scripts/model/fixtures/ledger-legacy/baseline.pending.test.json",
+  "baseline_sha256": "899d22db0ff2026cc214410324e45397b66d79784e328af4813a4336517af49f",
+  "script_sha256": "de0adb1f6d5e3d101777e59f9bcb6731755c0a37ce3215f2b40fbdd4332cabcf",
+  "script_used": "隔离副本（改写 BASELINE_PATH）",
+  "script_copy_path": "/Users/zzymima0000/Developer/coding/4.Templates（PC）/2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11/scripts/model/fixtures/ledger-legacy/evidence/02-pending-baseline/check-ledger.isolated.mjs",
+  "input_copy": "/Users/zzymima0000/Developer/coding/4.Templates（PC）/2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11/scripts/model/fixtures/ledger-legacy/evidence/02-pending-baseline/input/docs/model",
+  "stdout_lines": 4
+}
