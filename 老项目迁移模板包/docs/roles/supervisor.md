@@ -1,47 +1,31 @@
 # supervisor（监督者，只对编排者说话）
 
 - 职责：复检每一派——P0没完打回，审查意见没闭环打回，缺输出打回。平时不找人。
-- 兼账本校验：整文件跑第二道 schema 校验（缺键/错枚举/rework非int含bool必打回，好文件 exit 0 静默，坏行打印 L行号: 原因且 exit 1，_example 行自动跳过），整块照粘（含换行，路径按需换）：
+- **账本校验（2026-10-11 统一走中央入口，删两份手写副本）**：本卡此前内嵌两段手写 Python
+  逐行校验（TASK-MODEL-LOG 与 DISPATCH-LOG 各一份），与 `scripts/model/check-ledger.mjs`
+  **重复实现同一套规则** —— 两份规则各自漂移（改一处忘另一处），会让抽查放行中央校验本该拦下的坏行。
+  **现统一以中央校验器为准**：
   ```sh
-  python3 -c "
-  import json,sys
-  req={'task','project','date','role','model','result','rework','escalated','escalation_reason','tokens','cost_cny'}
-  bad=0
-  for n,l in enumerate(open(sys.argv[1]),1):
-   s=l.strip()
-   if not s or '\"_example\"' in s: continue
-   try: o=json.loads(s)
-   except Exception as e: print(f'L{n}: JSON坏:',e); bad+=1; continue
-   if not req<=set(o): print(f'L{n}: 缺键',sorted(req-set(o))); bad+=1
-   if o.get('result') not in ('PASS','FAIL'): print(f'L{n}: result枚举错:',o.get('result')); bad+=1
-   if o.get('escalated') not in ('YES','NO'): print(f'L{n}: escalated枚举错:',o.get('escalated')); bad+=1
-   if not isinstance(o.get('rework'),int) or isinstance(o.get('rework'),bool): print(f'L{n}: rework非int:',o.get('rework')); bad+=1
-  sys.exit(1 if bad else 0)
-  " docs/model/TASK-MODEL-LOG.jsonl
+  node scripts/model/check-ledger.mjs docs/model
   ```
+  一次调用同时校验两个账本（11 必需键＋`note`/`executed_by`/`chain_status` 可选＋各字段类型与枚举＋
+  `date` 日历有效性＋`model` 写法白名单），坏行打印 `文件名#行号: 原因` 且 exit 1，`_example` 行自动跳过。
+  **supervisor 不得再另写校验副本**；发现中央校验器有缺口 → 按 `WRONG_ROUTE` 上报编排者补中央校验器
+  并补回归，不在角色卡里就地打补丁。
   单行粘贴先落临时文件再跑整文件第二道：`echo '<单行JSON>' > /tmp/one.jsonl` 后把上式路径换成 `/tmp/one.jsonl` 再跑。坏了打回重写；返工数对齐本 Task 上下文中的打回次数，少报就打回。
 - 模型：见表（读 USER_MODEL_OVERRIDE.md 的 supervisor 行，冲突以模型表为准）。
 - 域隔离：账本/脚本断言看 exit 码（本域铁律）；通道自测按 USER_MODEL_OVERRIDE.md 对应行调用方式执行，只看正文回显，两域互不引用。
-- 抽查：每次复检抽查实派==表，HANDOFF＋TASK-MODEL-LOG＋DISPATCH-LOG三处对得上；sidecar 调用点合规（仅模糊分叉、advisory、失败回退）纳入抽查；复检必跑 `node scripts/model/check-ledger.mjs`，账本不过打回 TM 补记。
-- 兼DISPATCH校验：与任务账本同风格跑第二道（7必需键＋note可选＋used/result枚举，坏行打印 `L行号` 且 exit 1，`_example` 行自动跳过），整块照粘（含换行，路径按需换）：
+- 抽查：每次复检抽查实派==表，HANDOFF＋TASK-MODEL-LOG＋DISPATCH-LOG三处对得上；sidecar 调用点合规（仅模糊分叉、advisory、失败回退）纳入抽查；复检必跑中央校验器（见下一条），账本不过打回 TM 补记。
+- **DISPATCH 校验（2026-10-11 统一走中央入口，删手写副本）**：本卡此前内嵌一段手写 Python
+  逐行校验 DISPATCH-LOG，与 `scripts/model/check-ledger.mjs` **重复实现同一套规则** —— 两份规则各自
+  漂移（改一处忘另一处），会让抽查放行中央校验本该拦下的坏行。**现统一以中央校验器为准**：
   ```sh
-  python3 -c "
-  import json,sys
-  req={'date','task','role','model','used','runtime','result'}  # 2026-10-08：note 为可选（与 check-ledger 对齐；note 仅切备/返工/兜底时必填）
-  bad=0
-  for n,l in enumerate(open(sys.argv[1]),1):
-   s=l.strip()
-   if not s or '\"_example\"' in s: continue
-   try: o=json.loads(s)
-   except Exception as e: print(f'L{n}: JSON坏:',e); bad+=1; continue
-   if not req<=set(o): print(f'L{n}: 缺键',sorted(req-set(o))); bad+=1
-   if o.get('used') != '主': print(f'L{n}: used非常量主:',o.get('used')); bad+=1
-   if o.get('result') not in ('PASS','FAIL'): print(f'L{n}: result枚举错:',o.get('result')); bad+=1
-   RT=('本窗口','当前客户端窗口（自动探测）','codebuddy','codex','opencode','Claude Code','—')  # 2026-10-05 补：取值集合以 override 表通道列为准（自动探测/备用通道新增两值）
-   if o.get('runtime') not in RT: print(f'L{n}: runtime枚举错:',o.get('runtime')); bad+=1
-  sys.exit(1 if bad else 0)
-  " docs/model/DISPATCH-LOG.jsonl
+  node scripts/model/check-ledger.mjs docs/model
   ```
+  该入口同时校验 `TASK-MODEL-LOG.jsonl` 与 `DISPATCH-LOG.jsonl`（7 必需键＋`note` 可选＋`used` 恒为
+  「主」＋`result`／`runtime` 枚举＋`date` 日历有效性＋`model` 写法白名单），坏行打印 `文件名#行号` 且
+  exit 1，`_example` 行自动跳过。**supervisor 不得再另写校验副本**；发现中央校验器有缺口 → 按
+  `WRONG_ROUTE` 上报编排者补中央校验器并补回归，不在角色卡里就地打补丁。
 - Phase Integrity 六查（两阶段治理；账本校验块不动，不兼 Planner/Reviewer）：
   1. PLAN 阶段禁 Builder/Code-Reviewer/QA 的**业务派工**与 Release（发现即打回）。**builder 有且仅有两项例外（2026-10-09 用户定，P046 教训）**：①写 `docs/pm/` 的 plan 正文；②在隔离目录 `docs/design/prototype/` 制作**设计验证用原型**——这是设计验证产物，不是正式业务代码、不构成进入 Phase 2 的授权。**其余一切业务派工（含 APK、生产业务模块、正式后端、未批准的 SDD TASK）在 PLAN 阶段仍禁**；code-reviewer/qa 在 PLAN 阶段仍禁派（正式 QA 是 Phase2 角色）。；**DEVELOP 阶段默认不派 product-reviewer**，擅自派即打回（AGENTS 派工顺序节口径）。
   2. WAITING_HUMAN_APPROVAL 禁自动开发（未说`第二阶段，开发`即派 Builder 必须打回）。
