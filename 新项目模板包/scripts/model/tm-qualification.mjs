@@ -88,13 +88,21 @@ function scoreGroup(eps) {
     const sc = lat.reduce((a, e) => a + (e.decision_latency_ms <= LAT_NORMAL_MS ? 1
       : e.decision_latency_ms <= LAT_SLOW_MS ? 0.5 : 0), 0);
     s_lat = 15 * sc / lat.length;
-  } else { s_lat = 15; } // 无 latency 数据时不扣（不凭空扣分）
+  }
 
   // 10 资源效率
   const waste = considered.filter((e) => e.resource_waste === true).length;
   const s_res = considered.length ? 10 * (1 - waste / n) : 0;
 
-  const total = Math.round(s_dispatch + s_progress + s_gov + s_lat + s_res);
+  // 2026-10-11 用户裁定修正：**无数据 = 未测，不等于满分**。
+  // 原实现 `else { s_lat = 15 }` 让没测过的维度白送满分，观感上像「测过了」。
+  // 现在未测维度记 null、不参与加权，总分按**已测权重**归一，并显式标注未测项。
+  const lat_untested = lat.length === 0;
+  const testedWeight = 30 + 25 + 20 + 15 + 10 - (lat_untested ? 15 : 0);
+  const earned = s_dispatch + s_progress + s_gov + (lat_untested ? 0 : s_lat) + s_res;
+  const untested = lat_untested ? ["response_speed(响应速度)"] : [];
+
+  const total = testedWeight > 0 ? Math.round(earned / testedWeight * 100) : 0;
   // 状态：硬失败决断 NOT_QUALIFIED；采样不足保持 CANDIDATE（不得凭少量样本判 QUALIFIED）；达标且分够才 QUALIFIED
   let status;
   if (hard > 0 || humanGate > 0) status = "NOT_QUALIFIED";
@@ -106,6 +114,8 @@ function scoreGroup(eps) {
     infra_errors: eps.length - considered.length, projects,
     meets_sample: meetsSample, sample_rule: `>=${MIN_EPISODES} Episode 且 >=${MIN_PROJECTS} 项目`,
     correct, stalls, wakeups, rescues, no_next: nonext, hard_violations: hard,
+    untested,
+    tested_weight: testedWeight,
     subscores: { dispatch: +s_dispatch.toFixed(1), progress: +s_progress.toFixed(1),
       governance: +s_gov.toFixed(1), latency: +s_lat.toFixed(1), resource: +s_res.toFixed(1) },
     score: total,
@@ -135,7 +145,8 @@ if (jsonOut) {
     console.log(`  Episodes=${r.episodes}（计分 ${r.considered}，基础设施错误 ${r.infra_errors}）· 项目=${r.projects} · 采样达标=${r.meets_sample}（${r.sample_rule}）`);
     console.log(`  派工正确=${r.correct} Stall=${r.stalls} 唤醒=${r.wakeups} 人救=${r.rescues} 无下一步=${r.no_next} 硬违规=${r.hard_violations}`);
     console.log(`  分项 dispatch=${r.subscores.dispatch} progress=${r.subscores.progress} governance=${r.subscores.governance} latency=${r.subscores.latency} resource=${r.subscores.resource}`);
-    console.log(`  Score=${r.score}  Status=${r.status}${r.hard_zeroed ? "（硬失败归零）" : ""}`);
+    console.log(`  Score=${r.score}  Status=${r.status}${r.hard_zeroed ? "（硬失败归零）" : ""}` +
+      (r.untested && r.untested.length ? `  ⚠ 未测维度（不计分、不按满分算）：${r.untested.join("、")}` : ""));
   }
 }
 if (issues.length) process.exit(1);

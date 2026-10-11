@@ -69,6 +69,25 @@ writeFileSync(join(tmp, "num.jsonl"),
   '{"episode_id":"z","tm_model":123,"tm_runtime":"opencode","date":"2026-09-26","project":"p","dispatch_correct":true,"progressed":true,"governance_ok":true,"human_gate_violation":false,"unauthorized_switch":false,"infra_error":false}\n');
 ok("Test9c tm_model 非字符串被拦(exit1)", run([SCORE, join(tmp, "num.jsonl")]).code === 1);
 
+// Test 10｜未测维度不得白送满分（2026-10-11 用户裁定）
+// 同输入对照：good.jsonl 与 no-latency.jsonl 仅 decision_latency_ms 不同。
+{
+  const g = scoreOf("good.jsonl"), nl = scoreOf("no-latency.jsonl");
+  const G = g[Object.keys(g)[0]], NL = nl[Object.keys(nl)[0]];
+  ok("Test10a 有 latency 数据时无未测标注", (G.untested || []).length === 0,
+     `untested=${JSON.stringify(G.untested)}`);
+  ok("Test10b 无 latency 时显式标为未测", (NL.untested || []).includes("response_speed(响应速度)"),
+     `untested=${JSON.stringify(NL.untested)}`);
+  // 关键断言：未测时 tested_weight 必须扣掉响应速度那 15 分（85 而非 100）
+  ok("Test10c 未测维度权重已扣除（85 而非 100）", NL.tested_weight === 85,
+     `tested_weight=${NL.tested_weight}`);
+  // 反向对照：若实现退回「未测也按满分」，测试须失败——
+  // 满分公式下 no-latency 会得到 100 分；按已测权重归一后应等于其余四维的实得分
+  ok("Test10d 未测不白送满分（总分=已测维度实得分，而非满分 100）",
+     NL.score !== 100 || NL.subscores.progress < 100 || NL.subscores.governance < 100,
+     `score=${NL.score} subs=${JSON.stringify(NL.subscores)}`);
+}
+
 // Test 8｜评分确定性
 const a = JSON.stringify(scoreOf("stall.jsonl")), b = JSON.stringify(scoreOf("stall.jsonl"));
 ok("Test8 评分可重复", a === b);
