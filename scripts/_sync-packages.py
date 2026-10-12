@@ -43,6 +43,7 @@ EXTRA = ["scripts/detect-client.sh", "scripts/model/check-ledger.mjs",
          # TM 资格规范正文（2026-10-11 补）：此前不在清单里，母版加「防重复计分」段落后
          # check-sync 报 DIFF —— 包内拿到的是旧副本，会让下游按过时规则记 Episode。
          "docs/model/TASK-MANAGER-QUALIFICATION.md",
+         "docs/model/NEXT-TASKS.md",  # 2026-10-12：下一任务落实清单（母版实例，下游按需自改）
           "docs/sop/app-brand-assets.md",  # 2026-10-08：APP 品牌资产单一真源
           "docs/sop/app-navigation.md",  # 2026-10-09：APP 导航与视觉方向单一真源（云端产品顾问 V1.3 对齐）
           "docs/sop/app-ui-layers.md",  # 2026-10-09：APP 界面信息分层（L1/L2/L3）单一真源
