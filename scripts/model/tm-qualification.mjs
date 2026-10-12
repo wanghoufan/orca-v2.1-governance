@@ -157,10 +157,17 @@ function scoreGroup(eps) {
   const earned = s_dispatch + s_progress + s_gov + (lat_untested ? 0 : s_lat) + s_res;
   const untested = lat_untested ? ["response_speed(响应速度)"] : [];
 
-  const total = testedWeight > 0 ? Math.round(earned / testedWeight * 100) : 0;
+  // 2026-10-11 真实副本实测抓到的坑：当样本**全是**有效拦截／基础设施错误时 counted=0，
+  // 五维分母为 0，原式直接落成 Score=0 —— 读起来像「最差的模型」，实际含义是
+  // **没有可用于评价能力的样本**。分数此时无意义，不得用 0 冒充。
+  // 口径：无可计分样本 → score=null、status=CANDIDATE，并在输出里显式说明。
+  const noScoredSamples = counted.length === 0;
+  const total = noScoredSamples ? null
+    : (testedWeight > 0 ? Math.round(earned / testedWeight * 100) : 0);
   // 状态：硬失败决断 NOT_QUALIFIED；采样不足保持 CANDIDATE（不得凭少量样本判 QUALIFIED）；达标且分够才 QUALIFIED
   let status;
   if (hard > 0 || humanGate > 0) status = "NOT_QUALIFIED";
+  else if (noScoredSamples) status = "CANDIDATE";
   else if (!meetsSample) status = "CANDIDATE";
   // 2026-10-11 未测维度贯通到判定：Gate 是「五维满分制」，
   // 少一维实测就等于拿 85 分制去比 90 分线 —— 分够高仍会判 QUALIFIED，
@@ -184,6 +191,7 @@ function scoreGroup(eps) {
     subscores: { dispatch: +s_dispatch.toFixed(1), progress: +s_progress.toFixed(1),
       governance: +s_gov.toFixed(1), latency: +s_lat.toFixed(1), resource: +s_res.toFixed(1) },
     score: total,
+    no_scored_samples: noScoredSamples,
     status,
     hard_zeroed: hard > 0 || humanGate > 0,
   };
@@ -210,9 +218,11 @@ if (jsonOut) {
     console.log(`  Episodes=${r.episodes}（计分 ${r.considered}，基础设施错误 ${r.infra_errors}）· 项目=${r.projects} · 采样达标=${r.meets_sample}（${r.sample_rule}）`);
     console.log(`  派工正确=${r.correct} Stall=${r.stalls} 唤醒=${r.wakeups} 人救=${r.rescues} 无下一步=${r.no_next} 硬违规=${r.hard_violations}`);
     console.log(`  分项 dispatch=${r.subscores.dispatch} progress=${r.subscores.progress} governance=${r.subscores.governance} latency=${r.subscores.latency} resource=${r.subscores.resource}`);
-    console.log(`  Score=${r.score}  Status=${r.status}${r.hard_zeroed ? "（硬失败归零）" : ""}` +
+    console.log(`  Score=${r.no_scored_samples ? "N/A（无可计分样本）" : r.score}  Status=${r.status}`
+      + `${r.hard_zeroed ? "（硬失败归零）" : ""}` +
       (r.untested && r.untested.length ? `  ⚠ 未测维度（不计分、不按满分算）：${r.untested.join("、")}` : "") +
       (r.effective_interceptions ? `  ✓ 有效拦截 ${r.effective_interceptions} 次（治理链生效，计样本不扣分）` : "") +
+      (r.no_scored_samples ? `\n  ⚠ 全部样本均为有效拦截/基础设施错误，**无可计分样本** —— 分数无意义，不得当作 0 分` : "") +
       (r.severity_counts ? `  违规分级 P0=${r.severity_counts.P0} P1=${r.severity_counts.P1} P2=${r.severity_counts.P2}` : ""));
   }
 }

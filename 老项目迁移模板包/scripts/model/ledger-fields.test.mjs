@@ -58,6 +58,8 @@ const CASES = [
   ["case15-escalation-missed", 1, ["被 supervisor 打回 2 次"]],   // 打了2次却没升级
   ["case16-escalation-ok", 0, []],                                // 正确升级，不误报
   ["case17-escalation-noreason", 1, ["escalation_reason 为空"]], // 升级未写原因
+  // 升级判定按 task 而非按行：先记 FAIL 行、后补 senior 交付行时不得误报
+  ["case18-escalation-later-row", 0, []],
 ];
 for (const [fixture, wantExit, mustInclude] of CASES) {
   const r = withFixture(fixture, (d) => runLedger(d));

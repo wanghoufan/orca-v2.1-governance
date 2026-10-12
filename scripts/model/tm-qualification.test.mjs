@@ -143,6 +143,19 @@ ok("Test9c tm_model 非字符串被拦(exit1)", run([SCORE, join(tmp, "num.jsonl
      A.meets_sample === true, `meets_sample=${A.meets_sample}`);
 }
 
+// Test 15｜无可计分样本不得谎报 0 分（2026-10-11 真实副本实测抓到）
+// 样本全是有效拦截／infra_error 时 counted=0，五维分母为 0；
+// 原式直接落成 Score=0，读起来像「最差的模型」，实际是「没有可评价的样本」。
+{
+  const a = scoreOf("all-effective.jsonl"); const A = a[Object.keys(a)[0]];
+  const b = scoreOf("all-infra.jsonl");     const B = b[Object.keys(b)[0]];
+  ok("Test15a 全有效拦截时 score 为 null（不得为 0）", A.score === null, `score=${A.score}`);
+  ok("Test15b 全 infra_error 时 score 为 null（不得为 0）", B.score === null, `score=${B.score}`);
+  ok("Test15c 无可计分样本时仍为 CANDIDATE（不得判 NOT_QUALIFIED）",
+     A.status === "CANDIDATE" && B.status === "CANDIDATE", `A=${A.status} B=${B.status}`);
+  ok("Test15d 显式标记 no_scored_samples", A.no_scored_samples === true && B.no_scored_samples === true);
+}
+
 // Test 8｜评分确定性
 const a = JSON.stringify(scoreOf("stall.jsonl")), b = JSON.stringify(scoreOf("stall.jsonl"));
 ok("Test8 评分可重复", a === b);

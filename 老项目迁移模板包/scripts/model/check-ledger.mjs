@@ -260,12 +260,20 @@ check("DISPATCH-LOG.jsonl",
       supFail.set(d.task, (supFail.get(d.task) || 0) + 1);
     }
   }
-  for (const t of readRows("TASK-MODEL-LOG.jsonl")) {
+  const taskRows = readRows("TASK-MODEL-LOG.jsonl");
+  // 同一 task 可能有多行（先记 FAIL，再补记 senior 交付）——
+  // 升级判定看**该 task 是否已有任一行标了 escalated=YES**，而不是逐行判。
+  // 2026-10-11 实测：升级后另起新行记录，若按行判会对着旧的 FAIL 行继续报「漏记升级」，
+  // 逼人反复补行 —— 误报比漏报更糟（会让人去改已经正确的记录）。
+  const escalatedTasks = new Set(taskRows.filter((t) => t.escalated === "YES")
+    .map((t) => t.task));
+  for (const t of taskRows) {
     if (typeof t.task !== "string") continue;
     const hits = supFail.get(t.task) || 0;
-    if (hits >= 2 && t.escalated !== "YES") {
-      fails.push(`TASK-MODEL-LOG.jsonl: task="${t.task}" 被 supervisor 打回 ${hits} 次（≥2）但 escalated=${t.escalated}；`
-        + `按 AGENTS.md 升级节应自动升 senior-expert，升级是自动动作，不得漏记`);
+    if (hits >= 2 && t.escalated !== "YES" && !escalatedTasks.has(t.task)) {
+      fails.push(`TASK-MODEL-LOG.jsonl: task="${t.task}" 被 supervisor 打回 ${hits} 次（≥2）但全无 escalated=YES 的记录；`
+        + `按 AGENTS.md 升级节应自动升 senior-expert，升级是自动动作，不得漏记`
+        + `（若已另行记录升级行，本条不报）`);
     }
     if (t.escalated === "YES"
         && (t.escalation_reason === null || !String(t.escalation_reason || "").trim())) {
