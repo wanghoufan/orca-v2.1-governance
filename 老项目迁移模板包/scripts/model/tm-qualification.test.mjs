@@ -156,6 +156,22 @@ ok("Test9c tm_model 非字符串被拦(exit1)", run([SCORE, join(tmp, "num.jsonl
   ok("Test15d 显式标记 no_scored_samples", A.no_scored_samples === true && B.no_scored_samples === true);
 }
 
+// Test 16｜响应速度不得手填（2026-10-12 定 B6 口径）
+// 该维度直接进 QUALIFIED 判定，手填数会被随手编造；改为只认 ISO 时间戳的机械差值。
+{
+  const a = scoreOf("latency-timestamps.jsonl");  const A = a[Object.keys(a)[0]];
+  const b = scoreOf("latency-handfilled.jsonl");   const B = b[Object.keys(b)[0]];
+  const c = scoreOf("latency-inverted.jsonl");     const C = c[Object.keys(c)[0]];
+  ok("Test16a 有 ISO 时间戳 → 该维度算已测", (A.untested || []).length === 0,
+     `untested=${JSON.stringify(A.untested)}`);
+  ok("Test16b 只有手填 decision_latency_ms → 不采信，仍判未测",
+     (B.untested || []).includes("response_speed(响应速度)"), `untested=${JSON.stringify(B.untested)}`);
+  ok("Test16c 手填值与派生不一致时报警告（以时间戳为准）",
+     run([SCORE, join(FIX, "latency-handfilled.jsonl")]).out.includes("不采信"));
+  ok("Test16d 结束早于开始（数据错）→ 不采信", (C.untested || []).includes("response_speed(响应速度)"));
+  ok("Test16e 时间戳格式非法 → exit 1", run([SCORE, join(FIX, "latency-badfmt.jsonl")]).code === 1);
+}
+
 // Test 8｜评分确定性
 const a = JSON.stringify(scoreOf("stall.jsonl")), b = JSON.stringify(scoreOf("stall.jsonl"));
 ok("Test8 评分可重复", a === b);

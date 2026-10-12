@@ -35,6 +35,16 @@ const OPTIONAL_BOOL = ["effective_interception","supervisor_wakeup","human_rescu
   // 写成字符串 "true" 会让 `=== true` 为假，静默绕过硬失败。实测：字符串版 Score=100 exit 0。
   "gate_violation"];
 
+// 响应速度：唯一可信来源是两个 ISO 时间戳的机械差值
+function latencyMs(e) {
+  if (!e) return undefined;
+  if (typeof e.started_at !== "string" || typeof e.ended_at !== "string") return undefined;
+  const a = Date.parse(e.started_at), b = Date.parse(e.ended_at);
+  if (Number.isNaN(a) || Number.isNaN(b)) return undefined;
+  const d = b - a;
+  return d >= 0 ? d : undefined;      // 结束早于开始 = 数据错，不采信
+}
+
 function validate(records) {
   const issues = [];
   const seenEp = new Set();
@@ -53,6 +63,12 @@ function validate(records) {
       else if (seenEp.has(e.episode_id))
         issues.push(`#${i + 1} episode_id 重复=${e.episode_id}（同一次 Episode 只能记一行；改判用 supersedes 另起新行）`);
       else seenEp.add(e.episode_id);
+    }
+    for (const k of ["started_at", "ended_at"]) {
+      if (k in e && e[k] != null) {
+        if (typeof e[k] !== "string" || Number.isNaN(Date.parse(e[k])))
+          issues.push(`#${i + 1} ${k} 须为 ISO 时间戳（例 2026-10-12T08:31:21.644Z）`);
+      }
     }
     if (e.supersedes != null && (typeof e.supersedes !== "string" || !e.supersedes.trim()))
       issues.push(`#${i + 1} supersedes 须为非空字符串（被本行更正掉的 episode_id）`);
@@ -98,7 +114,7 @@ function load(p) {
   return out;
 }
 
-function scoreGroup(eps) {
+function scoreGroup(eps, warns = []) {
   // 2026-10-11 防重复计分：带 supersedes 的更正行生效，被它指到的原行退出计分
   // （原行**不删**，只保留审计痕迹；这与「不得改写历史行」不冲突）。
   const superseded = new Set(eps.filter((e) => typeof e.supersedes === "string" && e.supersedes.trim())
@@ -137,11 +153,23 @@ function scoreGroup(eps) {
   const s_gov = hard > 0 ? 0 : (counted.length ? 20 * (1 - nonhardGov / n) : 0);
 
   // 15 响应速度（按带；只算有 latency 的）
-  const lat = counted.filter((e) => typeof e.decision_latency_ms === "number");
+  // 2026-10-12 定 B6 口径：**响应速度不得手填**。
+  // 原规则只说「无计时证据填 null」，没规定有证据时怎么取 —— 实践中会变成随手填个数，
+  // 而这个数直接进 QUALIFIED 判定（15 分维度）。现改为：
+  //   · 只认 `started_at`→`ended_at` 两个 ISO 时间戳，由评分器**机械相减**；
+  //   · 手填的 `decision_latency_ms` **不参与计分**（保留字段仅为旧账兼容），有填必报不一致；
+  //   · 缺任一端／解析失败 → 该 Episode 该维度未测。
+  const lat = counted.filter((e) => typeof latencyMs(e) === "number");
+  for (const e of counted) {
+    if (typeof e.decision_latency_ms === "number" && latencyMs(e) !== e.decision_latency_ms) {
+      warns.push(`episode ${e.episode_id}: decision_latency_ms=${e.decision_latency_ms} 与时间戳派生的 `
+        + `${latencyMs(e)} 不一致 —— 以时间戳为准（手填值不采信）`);
+    }
+  }
   let s_lat = 0;
   if (lat.length) {
-    const sc = lat.reduce((a, e) => a + (e.decision_latency_ms <= LAT_NORMAL_MS ? 1
-      : e.decision_latency_ms <= LAT_SLOW_MS ? 0.5 : 0), 0);
+    const sc = lat.reduce((a, e) => a + (latencyMs(e) <= LAT_NORMAL_MS ? 1
+      : latencyMs(e) <= LAT_SLOW_MS ? 0.5 : 0), 0);
     s_lat = 15 * sc / lat.length;
   }
 
@@ -200,18 +228,20 @@ function scoreGroup(eps) {
 const events = load(path);
 const issues = validate(events);
 const groups = {};
+const warnings = [];
 for (const e of events) {
   const key = `${e.tm_model} @ ${e.tm_runtime || "?"}`;
   (groups[key] ||= []).push(e);
 }
 const result = {};
-for (const [k, eps] of Object.entries(groups)) result[k] = scoreGroup(eps);
+for (const [k, eps] of Object.entries(groups)) result[k] = scoreGroup(eps, warnings);
 
 if (jsonOut) {
-  console.log(JSON.stringify({ path, events_issues: issues, candidates: result }, null, 2));
+  console.log(JSON.stringify({ path, events_issues: issues, warnings, candidates: result }, null, 2));
 } else {
   console.log(`# Task Manager Qualification（来源 ${path}）`);
   if (issues.length) console.log(`事件校验：${issues.length} 处问题\n- ` + issues.join("\n- "));
+  if (warnings.length) console.log(`警告：${warnings.length} 条\n- ` + warnings.join("\n- "));
   if (!events.length) console.log("(无有效事件)");
   for (const [k, r] of Object.entries(result)) {
     console.log(`\n## ${k}`);
