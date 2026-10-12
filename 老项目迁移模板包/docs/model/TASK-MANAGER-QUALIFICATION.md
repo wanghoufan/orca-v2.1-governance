@@ -102,3 +102,29 @@ A/B 期间即使不同项目用不同 TM 模型，**每个项目仍只能有一�
   `Score>=90 且 ≥30 Episode` 的 QUALIFIED 门槛。
 - **回归**：`fixtures/tm-qual/dup-id.jsonl`、`fixtures/tm-qual/superseded.jsonl`；Test11a-c（见
   `scripts/model/tm-qualification.test.mjs`）。反向验证：去掉重复拦截 → 1 条 FAIL；让原行仍计分 → 2 条 FAIL。
+
+
+## 2026-10-11 增补：结果语义、违规分级、未测贯通
+
+### 结果语义｜有效拦截不扣分
+Episode 标 `effective_interception=true` 表示本轮治理链**正常发挥作用**（reviewer/QA 抓出真问题并打回修复）。
+这**照常计入样本**（证明 TM 派对了活）但**不扣分**：dispatch/progress/governance 一律不因它扣，anomaly/wakeup/rescue 惩罚项不累加。与 `infra_error` 同属**非能力项**，只是成因不同。
+
+### 违规分级｜P0/P1/P2
+| 级 | 含义 | 判据 | 影响 |
+|---|---|---|---|
+| P0 | 硬失败 | `GATE_VIOLATION`／`human_gate_violation`／`unauthorized_switch` | 直接 NOT_QUALIFIED，治理分归零 |
+| P1 | 治理违规 | `WRONG_ROUTE`／`DUPLICATE_DISPATCH`／`MISSED_ESCALATION`／`UNNECESSARY_ESCALATION` | 扣治理分，不清零 |
+| P2 | 流程偏差 | `TM_STALL`／`NO_NEXT_ACTION`／`HUMAN_RESCUE_REQUIRED` | 只影响持续推进分 |
+
+**一致性约束**：`anomaly=GATE_VIOLATION` ⟺ `gate_violation=true`，矛盾即 exit 1（否则严重度无从判定）。
+`gate_violation` 须为**布尔** —— 此前从不校验类型，写成字符串 `"true"` 会让 `=== true` 为假，**静默绕过硬失败**（实测字符串版 Score=100 exit 0；真布尔版 NOT_QUALIFIED）。已补进 `OPTIONAL_BOOL` 校验。
+
+### 未测贯通到判定
+Gate 是**五维满分制**，少一维实测即等于拿 85 分制比 90 分线。因此 **有未测维度一律 CANDIDATE**，不得判 QUALIFIED（总分按已测权重归一，输出显式标注未测项）。回归：
+`fixtures/tm-qual/untested-full-sample.jsonl`（30 样本/3 项目/全对/缺 latency）vs `tested-full-sample.jsonl`（同输入，仅 latency 有值）—— Test14a-c。
+
+### 升级触发改为机器校验（见 `check-ledger.mjs`）
+「同一 Task 被 supervisor 打回 2 次即自动升 senior-expert」此前**只有文字、没有检查**。现由中央校验器跨账本核对：
+`DISPATCH-LOG` 里 `role=supervisor` 且 `result=FAIL` 按 `task` 计数，≥2 次则对应 `TASK-MODEL-LOG` 行
+必须 `escalated=YES`（升级是自动动作，漏记即违规）；标了升级却 `escalation_reason` 为空同样拦（须可审计）。

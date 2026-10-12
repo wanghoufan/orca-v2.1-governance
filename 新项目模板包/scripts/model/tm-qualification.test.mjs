@@ -99,6 +99,50 @@ ok("Test9c tm_model 非字符串被拦(exit1)", run([SCORE, join(tmp, "num.jsonl
      `progress=${R.subscores.progress}`);
 }
 
+// Test 12｜有效拦截不得算 TM 失职（2026-10-11 结果语义）
+// 同输入对照：effective.jsonl 与 no-effective-flag.jsonl 仅 effective_interception 不同。
+{
+  const a = scoreOf("effective.jsonl"), b = scoreOf("no-effective-flag.jsonl");
+  const A = a[Object.keys(a)[0]], B = b[Object.keys(b)[0]];
+  ok("Test12a 标记有效拦截后不再被扣分", A.score > B.score, `A=${A.score} B=${B.score}`);
+  ok("Test12b 有效拦截次数被显式报出", A.effective_interceptions === 1, `n=${A.effective_interceptions}`);
+  ok("Test12c 未标记时拦截次数为 0", (B.effective_interceptions || 0) === 0);
+}
+
+// Test 13｜违规分级 + gate_violation 类型漏洞（2026-10-11）
+// 实测漏洞：gate_violation 写成字符串 "true" 时 `=== true` 为假，
+// 静默绕过硬失败（Score=100 exit 0）；类型校验补上后必须 exit 1。
+{
+  ok("Test13a gate_violation 写成字符串被拦(exit1，不能绕过硬失败)",
+     run([SCORE, join(FIX, "gate-violation-string.jsonl")]).code === 1);
+  // 合法文件里的 P0 是**评分结果**（NOT_QUALIFIED），不是文件错误 → exit 0 才对
+  const gb = scoreOf("gate-violation-bool.jsonl"); const GB = gb[Object.keys(gb)[0]];
+  ok("Test13b gate_violation 真布尔 → 判 NOT_QUALIFIED（治理分归零）",
+     GB.status === "NOT_QUALIFIED" && GB.subscores.governance === 0,
+     `status=${GB.status} gov=${GB.subscores.governance}`);
+  ok("Test13b2 字符串版则 exit 1（文件非法），与布尔版行为不同",
+     run([SCORE, join(FIX, "gate-violation-bool.jsonl")]).code === 0);
+  ok("Test13c anomaly 与布尔字段矛盾被拦",
+     run([SCORE, join(FIX, "gate-violation-conflict.jsonl")]).code === 1);
+  const m = scoreOf("severity-mix.jsonl"); const M = m[Object.keys(m)[0]];
+  ok("Test13d P0/P1 分级被统计", M.severity_counts.P0 === 1 && M.severity_counts.P1 === 1,
+     `sev=${JSON.stringify(M.severity_counts)}`);
+}
+
+// Test 14｜未测维度贯通到判定（2026-10-11）
+// 样本 30 / 项目 3 / 全对 —— 只差 latency 一个维度。Gate 是五维满分制，
+// 未测一维却判 QUALIFIED，等于把没测的当成过了。
+{
+  const a = scoreOf("untested-full-sample.jsonl"); const A = a[Object.keys(a)[0]];
+  const b = scoreOf("tested-full-sample.jsonl");   const B = b[Object.keys(b)[0]];
+  ok("Test14a 五维全测且满分 → 判 QUALIFIED", B.status === "QUALIFIED",
+     `status=${B.status} score=${B.score}`);
+  ok("Test14b 少一维实测，即使满分也不得判 QUALIFIED", A.status === "CANDIDATE",
+     `status=${A.status} score=${A.score} untested=${JSON.stringify(A.untested)}`);
+  ok("Test14c 未测时样本量仍按五维样本规则判定（不是靠采样不足蒙对）",
+     A.meets_sample === true, `meets_sample=${A.meets_sample}`);
+}
+
 // Test 8｜评分确定性
 const a = JSON.stringify(scoreOf("stall.jsonl")), b = JSON.stringify(scoreOf("stall.jsonl"));
 ok("Test8 评分可重复", a === b);

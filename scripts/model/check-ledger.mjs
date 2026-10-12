@@ -228,6 +228,43 @@ check("DISPATCH-LOG.jsonl",
   ["date", "task", "role", "model", "used", "runtime", "result"],
   { result: ["PASS", "FAIL"] });
 
+// ── 升级触发校验（2026-10-11 增：把「两次打回自动升 senior」从文字变成机器检查）────
+// 规则（AGENTS.md「升级」节）：计数单元＝同一 task id；只数 supervisor 判 FAIL/打回该 Task 的次数；
+// 累计 2 次即应 escalated=YES。升级是**自动动作**，故漏记即为治理违规（不是提醒）。
+// 同时校验 escalation_reason：标了升级却没写原因 → 无法审计。
+{
+  const readRows = (name) => {
+    const out = [];
+    const fp = join(dir, name);
+    if (!existsSync(fp)) return out;
+    for (const l of readFileSync(fp, "utf8").split("\n")) {
+      const s2 = l.trim();
+      if (!s2) continue;
+      let o; try { o = JSON.parse(s2); } catch { continue; }
+      if (o && typeof o === "object" && !o._example) out.push(o);
+    }
+    return out;
+  };
+  const supFail = new Map();   // task -> supervisor 判 FAIL 次数
+  for (const d of readRows("DISPATCH-LOG.jsonl")) {
+    if (d.role === "supervisor" && d.result === "FAIL" && typeof d.task === "string") {
+      supFail.set(d.task, (supFail.get(d.task) || 0) + 1);
+    }
+  }
+  for (const t of readRows("TASK-MODEL-LOG.jsonl")) {
+    if (typeof t.task !== "string") continue;
+    const hits = supFail.get(t.task) || 0;
+    if (hits >= 2 && t.escalated !== "YES") {
+      fails.push(`TASK-MODEL-LOG.jsonl: task="${t.task}" 被 supervisor 打回 ${hits} 次（≥2）但 escalated=${t.escalated}；`
+        + `按 AGENTS.md 升级节应自动升 senior-expert，升级是自动动作，不得漏记`);
+    }
+    if (t.escalated === "YES"
+        && (t.escalation_reason === null || !String(t.escalation_reason || "").trim())) {
+      fails.push(`TASK-MODEL-LOG.jsonl: task="${t.task}" escalated=YES 但 escalation_reason 为空（升级须可审计）`);
+    }
+  }
+}
+
 // ── APP 基础能力声明检查（2026-10-08）──────────────────────────────
 // 背景：APP 主题/多语言默认要求只写在 PRODUCT_PLAN 模板里，Phase1 收工时无人拦，
 // 要到 Design Pipeline 才 BLOCKED（拦得住但白干一轮文档）。这里把校验前移到收工检查。

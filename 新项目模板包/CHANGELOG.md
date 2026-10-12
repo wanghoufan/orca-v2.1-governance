@@ -23,6 +23,29 @@
 **怎么验**：`SYNC-OK`｜`CHANNEL-OK`｜tm-qualification 17/17｜prototype-gate 9/9｜ui-leak 2/2｜**solo-agent 15/15**（新增 C3–C8 触发口令用例）。**另做真实执行验证**（隔离副本 `solo-demo`，非用户业务项目）：铺新项目模板包 → 小型局部开发（折扣门槛取等＋按分取整）→ 自审七查 → 实际运行测试发现缺陷 → 切回开发修复 → 复验 **5/5 PASS、exit 0**；`DISPATCH-LOG` 留空不造行、账本 `LEDGER-OK`；全程未派任何其他智能体。多智能体路径核对：Human Gate 保留条款在位、三张角色卡「只约束多智能体」在位、四段主链关键串未被覆盖。
 
 
+## 2026-10-11 (PENDING) feat(tm): 结果语义 ＋ 违规分级 ＋ 未测贯通 ＋ 升级触发机器校验
+
+**为什么**：TM 资格链此前四处「写着但没机器约束」——有效拦截被当失职扣分、违规无轻重分级、
+未测维度照样能判 QUALIFIED、升级规则只有文字没有检查。其中 `gate_violation` 类型从不校验，
+写成字符串 `"true"` 即**静默绕过硬失败**（实测 Score=100 exit 0）。
+
+**改了什么**
+- **结果语义**：新增 `effective_interception`（可选布尔）。reviewer/QA 抓出真问题并打回修复＝治理链
+  按设计生效，**照常计入样本但不扣分**，与 `infra_error` 同属非能力项。
+- **违规分级**：P0（`GATE_VIOLATION`／越权 Human Gate／未授权换模型→直接 NOT_QUALIFIED，治理分归零）／
+  P1（`WRONG_ROUTE`／`DUPLICATE_DISPATCH`／`MISSED_ESCALATION`／`UNNECESSARY_ESCALATION`→扣分不清零）／
+  P2（`TM_STALL`／`NO_NEXT_ACTION`／`HUMAN_RESCUE_REQUIRED`→只影响推进分），输出报出计数。
+  **一致性约束**：`anomaly=GATE_VIOLATION` ⟺ `gate_violation=true`，矛盾 exit 1；`gate_violation` 须布尔。
+- **未测贯通到判定**：有未测维度一律 CANDIDATE。Gate 是五维满分制，少测一维却判 QUALIFIED 等于把
+  没测的当成过了（实测：30 样本/3 项目/全对/缺 latency → 原判 QUALIFIED，现 CANDIDATE）。
+- **升级触发改机器校验**：`check-ledger.mjs` 跨账本核对 —— DISPATCH-LOG 中 `role=supervisor` 且
+  `result=FAIL` 按 task 计数，≥2 次则 TASK-MODEL-LOG 对应行必须 `escalated=YES`（升级是自动动作，
+  漏记即违规）；标了升级却 `escalation_reason` 为空同样拦（须可审计）。**这条此前从未真正跑通过**。
+- 同步 AGENTS.md（评分 Gate 节）与 `docs/model/TASK-MANAGER-QUALIFICATION.md`。
+
+**怎么验**：`SYNC-OK`｜ledger-fields **20/20**（新增 case15-17 升级三场景）｜tm **35/35**
+（新增 Test12 有效拦截／Test13 分级与类型漏洞／Test14 未测贯通）｜proto 9/9｜ui-leak 2/2｜solo 15/15。
+**反向验证**：去掉类型校验 → 1 条 FAIL；让有效拦截继续扣分 → 2 条 FAIL；去掉未测判定分支 → 1 条 FAIL。
 ## 2026-10-11 (01e6deb) fix(tm): Episode 防重复计分（`supersedes` 机器强制）
 
 **为什么**：AGENTS.md 要求「不得改写历史行，补记/改判另起新行」，但此前**没有任何机器约束**把两者接起来。

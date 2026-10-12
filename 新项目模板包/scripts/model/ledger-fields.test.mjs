@@ -54,6 +54,10 @@ const CASES = [
   ["case12-rework-string", 1, ["须有限整数"]],
   ["case13-result-null", 1, ["bad result=null"]],
   ["case14-role-unknown", 1, ["bad role="]],
+  // 升级触发校验（2026-10-11）：把「两次打回自动升 senior」从文字变成机器检查
+  ["case15-escalation-missed", 1, ["被 supervisor 打回 2 次"]],   // 打了2次却没升级
+  ["case16-escalation-ok", 0, []],                                // 正确升级，不误报
+  ["case17-escalation-noreason", 1, ["escalation_reason 为空"]], // 升级未写原因
 ];
 for (const [fixture, wantExit, mustInclude] of CASES) {
   const r = withFixture(fixture, (d) => runLedger(d));
