@@ -529,8 +529,19 @@ if (existsSync(dir) && !ALLOW_EXAMPLE) checkAppBaseline(projectRoot);
 if (EVIDENCE_DIR) writeEvidence();
 
 for (const w of warns) console.log(w);
-if (fails.length) { console.log(fails.join("\n")); process.exit(1); }
+if (fails.length) {
+  console.log(fails.join("\n"));
+  if (!EVIDENCE_DIR) console.log("[提示] 本次有失败。如需留存原始输入备查：--evidence docs/model/.evidence");
+  process.exit(1);
+}
 console.log(warns.length ? "LEDGER-OK (含 WARN)" : "LEDGER-OK");
+
+// 证据卡路径归一（导出供单测直接打；锚点盖不住的一律兜底抹除）
+export function _normPath(x, anchors, projRoot) {
+  let v = String(x);
+  for (const a of anchors) v = v.split(a).join(a === projRoot ? "<项目根>" : "<工作目录>");
+  return v.replace(/\/(?:Users|home|var|tmp|private|opt|etc)\/[^"\s')\]]*/g, "<本机路径>");
+}
 
 function writeEvidence() {
   // 失败也写：事后复现「当时为什么报错」正是留存的用途，只在成功时留档等于漏掉最需要的那次。
@@ -547,14 +558,29 @@ function writeEvidence() {
       sha256: createHash("sha256").update(raw).digest("hex"),
       bytes: Buffer.byteLength(raw, "utf8"),
       lines: raw.split("\n").length,
-      copy_path: join(out, `input-${ts}-${f}`),
+      copy_path: `input-${ts}-${f}`,   // 相对证据目录；副本留在本地，禁入仓
     };
   }
+  // 路径归一（2026-10-12 定）：证据卡**可能进 git**，不得含本机绝对路径。
+  // 证据卡留「判定与哈希」，原始副本（input-*）留在本地不外传。
+  const projRoot = resolve(dirname(dir));
+  // 归一锚点：项目根优先（docs/model 的上两级）；找不到 docs/ 时（临时目录等）
+  // 退到「证据目录的父目录」。**必须留一个能盖住全路径的兜底** ——
+  // 否则传入路径在锚点之外时会把本机绝对路径原样写进可进 git 的证据卡。
+  const anchors = [resolve(projRoot)];  // 见 _normPath 导出（单测直接打它）
+  for (let up = resolve(out), n = 0; n < 4 && up !== "/" && up !== dirname(up); n++) {
+    up = dirname(up); anchors.push(up);
+  }
+  anchors.push(resolve(process.cwd()));
+  const norm = (x) => _normPath(x, anchors, resolve(projRoot));
   const meta = {
     tool: "check-ledger.mjs",
-    argv: process.argv.slice(2),
-    cwd: process.cwd(),
-    ledger_dir: resolve(dir),
+    schema: "orca-evidence/v1",
+    argv: process.argv.slice(2).map(norm),
+    cwd: "<工作目录>",
+    ledger_dir: norm(resolve(dir)),
+    keep_in_git: "证据-<时间>.json（可进 git：判定与哈希，无本机路径）",
+    keep_local_only: "input-*.jsonl（逐字节原始副本，含业务内容，禁入仓）",
     at: new Date().toISOString(),
     exit_code: fails.length ? 1 : 0,
     fails, warns,
@@ -564,7 +590,23 @@ function writeEvidence() {
   // 逐字节副本（从源文件重读，不复用内存内容，避免把副本与哈希算自两份不同数据）
   for (const f of ["TASK-MODEL-LOG.jsonl", "DISPATCH-LOG.jsonl"]) {
     const i = inputs[f];
-    if (i && i.present) writeFileSync(i.copy_path, readFileSync(join(dir, f), "utf8"), "utf8");
+    if (!i || !i.present) continue;
+    // copy_path 是**相对证据目录**的（禁把本机绝对路径写进可进 git 的证据卡），
+    // 所以这里必须 join(out) —— 直接用 copy_path 会写到 CWD 找不到的相对路径。
+    writeFileSync(join(out, i.copy_path), readFileSync(join(dir, f), "utf8"), "utf8");
   }
-  console.log(`[evidence] 已留存原始输入 → ${out}（证据-${ts}.json ＋ 两份逐字节副本）`);
+  // 自检：证据卡声明的每个副本必须真实存在且哈希相符 —— 指向不存在的文件等于没留证
+  for (const f of ["TASK-MODEL-LOG.jsonl", "DISPATCH-LOG.jsonl"]) {
+    const i = inputs[f];
+    if (!i || !i.present) continue;
+    const fp = join(out, i.copy_path);
+    const h = existsSync(fp) ? createHash("sha256").update(readFileSync(fp)).digest("hex") : null;
+    if (h !== i.sha256) {
+      console.log(`[evidence] 警告：副本校验失败 ${f}（期望 ${i.sha256}，实得 ${h}）`);
+      meta.copy_verified = false;
+    }
+  }
+  meta.copy_verified = true;
+  writeFileSync(`${out}/证据-${ts}.json`, JSON.stringify(meta, null, 2), "utf8");
+  console.log(`[evidence] 已留存原始输入 → ${out}（证据-${ts}.json ＋ 两份逐字节副本；副本禁入仓）`);
 }

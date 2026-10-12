@@ -5,7 +5,7 @@
 // evidence-only：不取代 HANDOFF / ledger 真相源；本脚本不改任何账本，也不自动改 USER_MODEL_OVERRIDE。
 import { readFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { resolve, basename as _b } from "node:path";
+import { resolve, basename as _b, dirname } from "node:path";
 
 const args = process.argv.slice(2);
 const jsonOut = args.includes("--json");
@@ -240,11 +240,22 @@ if (jsonOut) {
     const raw = present ? readFileSync(path, "utf8") : "";
     const copy = `${out}/input-${ts}-${_b(path) || "events.jsonl"}`;
     if (present) writeFileSync(copy, raw, "utf8");
+    // 路径归一（2026-10-12 定，与 check-ledger.mjs 同口径）：证据卡可能进 git，禁含本机绝对路径。
+    // 归一锚点取「证据目录的父目录」而非 cwd —— 调用方常从别处传绝对路径进来，
+    // 只按 cwd 归一会漏掉这些（实测：argv 与 events_path 仍带本机绝对路径）。
+    let root = resolve(ev);
+    while (root !== "/" && !existsSync(resolve(root, "docs"))) root = dirname(root);
+    const norm = (x) => String(x).split(root).join("<项目根>").split(resolve(process.cwd())).join("<工作目录>")
+      // 兜底：锚点没盖住的本机绝对路径一律抹掉 —— 宁可信息粗一点也不泄漏路径
+      .replace(/(^|["'\s(])\/(?:Users|home|var|tmp|private)\//g, '$1<本机路径>/');
     writeFileSync(`${out}/证据-${ts}.json`, JSON.stringify({
       tool: "tm-qualification.mjs",
-      argv: process.argv.slice(2),
-      cwd: process.cwd(),
-      events_path: resolve(path),
+      schema: "orca-evidence/v1",
+      argv: process.argv.slice(2).map(norm),
+      cwd: "<工作目录>",
+      events_path: norm(resolve(path)),
+      keep_in_git: "证据-<时间>.json（可进 git：判定与哈希，无本机路径）",
+      keep_local_only: "input-*（逐字节原始副本，含业务内容，禁入仓）",
       at: new Date().toISOString(),
       exit_code: issues.length ? 1 : 0,
       issues,
@@ -253,7 +264,7 @@ if (jsonOut) {
         sha256: createHash("sha256").update(raw).digest("hex"),
         bytes: Buffer.byteLength(raw, "utf8"),
         lines: raw.split("\n").length,
-        copy_path: present ? copy : null,
+        copy_path: present ? `input-${ts}-${_b(path) || "events.jsonl"}` : null,   // 相对证据目录
       },
     }, null, 2), "utf8");
     if (!jsonOut) console.log(`[evidence] 已留存原始输入 → ${out}`);

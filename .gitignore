@@ -17,3 +17,7 @@ skills-lock.json
 
 # temp 工作区不入仓（全局规则：temp 及其内容不得上传）
 /temp/
+
+# 账本校验/资格评分的原始输入副本（--evidence 产物）：含业务内容与本机路径，禁入仓。
+# 证据卡（证据-*.json）已做路径归一，需要留档时可单独挑出来提交。
+docs/model/.evidence/

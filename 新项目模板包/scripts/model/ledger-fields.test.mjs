@@ -11,9 +11,9 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { existsSync, mkdtempSync, cpSync, rmSync, writeFileSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, mkdtempSync, cpSync, rmSync, writeFileSync, readFileSync, readdirSync, mkdirSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { tmpdir } from "node:os";
+import { tmpdir, homedir } from "node:os";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const LEDGER = join(HERE, "check-ledger.mjs");
@@ -111,6 +111,72 @@ for (const [fixture, wantExit, mustInclude] of CASES) {
     const r2 = withFixture("case01-valid", (d) => runLedger(d));
     check("不开 --evidence 时不落盘（无副作用）", r2.code === 0);
   } finally { rmSync(ev, { recursive: true, force: true }); }
+}
+
+// ── 证据卡路径归一 ＋ 副本自检（2026-10-12 定）──────────────────────────
+// 口径：证据卡可能进 git，不得含本机绝对路径；原始副本留本地禁入仓；
+// 证据卡声明的副本必须真实存在且哈希相符（指向不存在的文件等于没留证）。
+{
+  const ev = mkdtempSync(join(tmpdir(), "orca-ev2-"));
+  try {
+    withFixture("case01-valid", (d) =>
+      spawnSync("node", [LEDGER, join(d, "docs", "model"), "--evidence", ev], { encoding: "utf8" }));
+    const meta = readdirSync(ev).find((f) => f.startsWith("证据-"));
+    const raw = readFileSync(join(ev, meta), "utf8");
+    const m = JSON.parse(raw);
+    check("证据卡不含本机绝对路径（可安全进 git）",
+      !/\/Users\/|\/var\/folders\//.test(raw), `命中：${raw.match(/\/Users\/|\/var\/folders\//g)?.join()}`);
+    check("证据卡声明哪些可进 git / 哪些只留本地",
+      !!m.keep_in_git && !!m.keep_local_only);
+    check("副本路径为相对（禁写本机绝对路径）",
+      m.inputs["TASK-MODEL-LOG.jsonl"].copy_path.startsWith("input-"));
+    // 副本必须真实存在且哈希相符
+    const cp = join(ev, m.inputs["TASK-MODEL-LOG.jsonl"].copy_path);
+    check("证据卡声明的副本真实存在且哈希相符",
+      existsSync(cp) && m.copy_verified === true);
+  } finally { rmSync(ev, { recursive: true, force: true }); }
+}
+
+// ── 证据卡兜底抹除：锚点盖不住的路径也不得残留（2026-10-12）────────────────
+// 只测「锚点已覆盖」的常规情形是不够的 —— 实测删掉兜底正则后测试仍全过，
+// 说明兜底**当时根本没被测到**。这里直接构造一个锚点外的绝对路径来打它。
+{
+  const ev = mkdtempSync(join(tmpdir(), "orca-ev3-"));
+  try {
+// 用 home 下另一个绝对路径调用：既不在 cwd，也不在项目根锚点内
+    const weird = join(homedir(), `orca-ev-anchor-${Date.now()}`, "ledger");
+    mkdirSync(join(weird, "docs", "model"), { recursive: true });
+    writeFileSync(join(weird, "docs", "model", "TASK-MODEL-LOG.jsonl"),
+      '{"task":"T","project":"p","date":"2026-10-12","role":"builder","model":"codex/gpt-6.1-sol","result":"PASS","rework":0,"escalated":"NO","escalation_reason":null,"tokens":null,"cost_cny":null}\n');
+    writeFileSync(join(weird, "docs", "model", "DISPATCH-LOG.jsonl"), '{"_example":true}\n');
+    spawnSync("node", [LEDGER, join(weird, "docs", "model"), "--evidence", ev], { encoding: "utf8" });
+    const meta = readdirSync(ev).find((f) => f.startsWith("证据-"));
+    const raw = meta ? readFileSync(join(ev, meta), "utf8") : "{}";
+    check("锚点外绝对路径也被兜底抹除（证据卡零本机路径）",
+      !raw.includes(weird), `命中：${weird}`);
+    rmSync(weird, { recursive: true, force: true });
+  } finally { rmSync(ev, { recursive: true, force: true }); }
+}
+
+// ── 路径归一纯函数单测（2026-10-12）────────────────────────────────────
+// 直接打 norm 函数本身：端到端跑不出来的情况（锚点刚好都覆盖了）会让兜底分支
+// 长期不被执行 —— 实测正是如此，删掉兜底正则后端到端测试仍全过。
+{
+  // check-ledger.mjs 是**脚本**（顶层直接执行），静态 import 会连带跑整个校验；
+  // 这里从源码里取出该纯函数单独求值，避免副作用。
+  const src = readFileSync(LEDGER, "utf8");
+  const body = src.slice(src.indexOf("export function _normPath"),
+                         src.indexOf("function writeEvidence"));
+  const _normPath = new Function(`${body.replace("export ", "")}; return _normPath;`)();
+  const anchors = ["/proj", "/work"];
+  const n = (x) => _normPath(x, anchors, "/proj");
+  check("归一：项目根前缀 → <项目根>", n("/proj/docs/model") === "<项目根>/docs/model", n("/proj/docs/model"));
+  check("归一：工作目录前缀 → <工作目录>", n("/work/x") === "<工作目录>/x", n("/work/x"));
+  check("归一：锚点外的本机路径被兜底抹除",
+    !/\/Users\/|\/home\/|\/var\//.test(n("/Users/zzy/proj/docs/model")),
+    n("/Users/zzy/proj/docs/model"));
+  check("归一：任意绝对路径都不残留盘符前缀",
+    !/^\/(Users|home|var|tmp|private|opt|etc)\//.test(n("/etc/hosts")), n("/etc/hosts"));
 }
 
 // ── 升级计数口径不被破坏：role=supervisor,result=FAIL 仍须可用 ────────
