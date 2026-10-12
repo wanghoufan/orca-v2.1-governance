@@ -3,7 +3,9 @@
 // Usage: node tm-qualification.mjs [events.jsonl] [--json]
 // 只读派生：读取资格事件日志（TASK-MANAGER-QUALIFICATION-EVENTS.jsonl），按五维评分输出资格结论。
 // evidence-only：不取代 HANDOFF / ledger 真相源；本脚本不改任何账本，也不自动改 USER_MODEL_OVERRIDE。
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { resolve, basename as _b } from "node:path";
 
 const args = process.argv.slice(2);
 const jsonOut = args.includes("--json");
@@ -214,5 +216,39 @@ if (jsonOut) {
       (r.severity_counts ? `  违规分级 P0=${r.severity_counts.P0} P1=${r.severity_counts.P1} P2=${r.severity_counts.P2}` : ""));
   }
 }
+// ── 原始输入留存（2026-10-11，仅在显式 --evidence <dir> 时写）────────────────
+// 与 check-ledger.mjs 同口径：留存 argv/cwd/时间/退出码/issues/输入 sha256 ＋ 逐字节副本。
+// 失败也留 —— 事后复现「当时为什么判不合格」正是用途，只在成功时留档等于漏掉最需要的那次。
+{
+  const i = args.indexOf("--evidence");
+  const ev = i >= 0 && args[i + 1] && !args[i + 1].startsWith("-") ? args[i + 1] : null;
+  if (ev) {
+    const out = resolve(ev);
+    mkdirSync(out, { recursive: true });
+    const ts = new Date().toISOString().replace(/[:.]/g, "-");
+    const present = existsSync(path);
+    const raw = present ? readFileSync(path, "utf8") : "";
+    const copy = `${out}/input-${ts}-${_b(path) || "events.jsonl"}`;
+    if (present) writeFileSync(copy, raw, "utf8");
+    writeFileSync(`${out}/证据-${ts}.json`, JSON.stringify({
+      tool: "tm-qualification.mjs",
+      argv: process.argv.slice(2),
+      cwd: process.cwd(),
+      events_path: resolve(path),
+      at: new Date().toISOString(),
+      exit_code: issues.length ? 1 : 0,
+      issues,
+      input: {
+        present,
+        sha256: createHash("sha256").update(raw).digest("hex"),
+        bytes: Buffer.byteLength(raw, "utf8"),
+        lines: raw.split("\n").length,
+        copy_path: present ? copy : null,
+      },
+    }, null, 2), "utf8");
+    if (!jsonOut) console.log(`[evidence] 已留存原始输入 → ${out}`);
+  }
+}
+
 if (issues.length) process.exit(1);
 

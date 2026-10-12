@@ -2,9 +2,9 @@
 // check-ledger.mjs — 账本合法性校验（TASK-MODEL-LOG / DISPATCH-LOG）。
 // Usage: node check-ledger.mjs [dir] -> exit 0 合法 / exit 1 列出问题
 // 分级：结构/枚举错误 = FAIL（exit 1）；写法不规范 = WARN（不影响 exit，供 supervisor 抽查）。
-import { readFileSync, existsSync, readdirSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync, mkdirSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { join, basename, dirname } from "node:path";
+import { join, basename, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // 参数解析（2026-10-09 修 P1-1）：旧写法取 argv[2]，导致只传开关
@@ -15,6 +15,15 @@ const dir = argv.find((a) => !a.startsWith("-")) || "docs/model";
 // --allow-example（2026-10-08）：仅供**母版/分发包自检**——模板包带 `_example` 空壳，
 // 直接跑必然 exit 1。真实项目禁用此开关，否则「示例行未删」失去强制力。
 const ALLOW_EXAMPLE = process.argv.includes("--allow-example");
+// --evidence <dir>（2026-10-11）：留存**本次校验的原始输入副本**。
+// 为什么需要：账本校验是唯一的事后裁决点，但此前不留存输入 —— 日后想复现「当时为什么报错」
+// 已经不可能（账本被改过、或文件已删）。留存内容：argv、cwd、时间、退出码、fails/warns 全量、
+// 以及两个账本的**逐字节副本 + sha256**。
+// 口径：**显式开关，不自动写**（避免每次校验在项目里堆文件）；落盘目录由调用方指定。
+const EVIDENCE_DIR = (() => {
+  const i = argv.indexOf("--evidence");
+  return i >= 0 && argv[i + 1] && !argv[i + 1].startsWith("-") ? argv[i + 1] : null;
+})();
 const fails = [];
 const warns = [];
 
@@ -508,6 +517,46 @@ const projectRoot = basename(dir) === "model" ? join(dir, "..", "..") : dir;
 // 跑 APP 门必然报 TRUEUT-UNRESOLVED 等，属噪声。真项目的 APP 门照常生效。
 if (existsSync(dir) && !ALLOW_EXAMPLE) checkAppBaseline(projectRoot);
 
+// ── 原始输入留存（2026-10-11，仅在显式 --evidence <dir> 时写）────────────────
+if (EVIDENCE_DIR) writeEvidence();
+
 for (const w of warns) console.log(w);
 if (fails.length) { console.log(fails.join("\n")); process.exit(1); }
 console.log(warns.length ? "LEDGER-OK (含 WARN)" : "LEDGER-OK");
+
+function writeEvidence() {
+  // 失败也写：事后复现「当时为什么报错」正是留存的用途，只在成功时留档等于漏掉最需要的那次。
+  const out = resolve(EVIDENCE_DIR);
+  mkdirSync(out, { recursive: true });
+  const ts = new Date().toISOString().replace(/[:.]/g, "-");
+  const inputs = {};
+  for (const f of ["TASK-MODEL-LOG.jsonl", "DISPATCH-LOG.jsonl"]) {
+    const fp = join(dir, f);
+    if (!existsSync(fp)) { inputs[f] = { present: false }; continue; }
+    const raw = readFileSync(fp, "utf8");
+    inputs[f] = {
+      present: true,
+      sha256: createHash("sha256").update(raw).digest("hex"),
+      bytes: Buffer.byteLength(raw, "utf8"),
+      lines: raw.split("\n").length,
+      copy_path: join(out, `input-${ts}-${f}`),
+    };
+  }
+  const meta = {
+    tool: "check-ledger.mjs",
+    argv: process.argv.slice(2),
+    cwd: process.cwd(),
+    ledger_dir: resolve(dir),
+    at: new Date().toISOString(),
+    exit_code: fails.length ? 1 : 0,
+    fails, warns,
+    inputs,          // 原始输入的 sha256/行数/字节数/副本路径（副本逐字节另存，不塞进 JSON）
+  };
+  writeFileSync(join(out, `证据-${ts}.json`), JSON.stringify(meta, null, 2), "utf8");
+  // 逐字节副本（从源文件重读，不复用内存内容，避免把副本与哈希算自两份不同数据）
+  for (const f of ["TASK-MODEL-LOG.jsonl", "DISPATCH-LOG.jsonl"]) {
+    const i = inputs[f];
+    if (i && i.present) writeFileSync(i.copy_path, readFileSync(join(dir, f), "utf8"), "utf8");
+  }
+  console.log(`[evidence] 已留存原始输入 → ${out}（证据-${ts}.json ＋ 两份逐字节副本）`);
+}

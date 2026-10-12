@@ -11,7 +11,7 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { existsSync, mkdtempSync, cpSync, rmSync, writeFileSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, cpSync, rmSync, writeFileSync, readFileSync, readdirSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 
@@ -87,6 +87,28 @@ for (const [fixture, wantExit, mustInclude] of CASES) {
   });
   check("单智能体空派工账 exit 0（不判漏记）", r2.code === 0, `exit=${r2.code}`);
   void r;
+}
+
+// ── 原始输入留存（--evidence，2026-10-11）─────────────────────────────
+{
+  const ev = mkdtempSync(join(tmpdir(), "orca-ev-"));
+  try {
+    const r = withFixture("case01-valid", (d) =>
+      spawnSync("node", [LEDGER, join(d, "docs", "model"), "--evidence", ev],
+        { encoding: "utf8" }).status ?? 1);
+    const files = readdirSync(ev);
+    const meta = files.find((f) => f.startsWith("证据-") && f.endsWith(".json"));
+    const copies = files.filter((f) => f.startsWith("input-"));
+    check("--evidence 落盘证据 JSON", !!meta, `files=${files.join(",")}`);
+    check("--evidence 落盘两份逐字节输入副本", copies.length === 2, `copies=${copies.length}`);
+    const m = meta ? JSON.parse(readFileSync(join(ev, meta), "utf8")) : {};
+    check("证据含 argv/cwd/时间/退出码", !!(m.argv && m.cwd && m.at && m.exit_code !== undefined));
+    check("证据含输入 sha256（可核对副本真伪）",
+      !!(m.inputs && m.inputs["TASK-MODEL-LOG.jsonl"] && m.inputs["TASK-MODEL-LOG.jsonl"].sha256));
+    // 默认不落盘：不开开关时不得产生任何证据文件
+    const r2 = withFixture("case01-valid", (d) => runLedger(d));
+    check("不开 --evidence 时不落盘（无副作用）", r2.code === 0);
+  } finally { rmSync(ev, { recursive: true, force: true }); }
 }
 
 // ── 升级计数口径不被破坏：role=supervisor,result=FAIL 仍须可用 ────────
