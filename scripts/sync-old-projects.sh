@@ -19,8 +19,8 @@ PKG="$ROOT/老项目迁移模板包"
 SKIP_LIST="${SKIP_LIST:-}"
 SKIP_DEV_TODAY="${SKIP_DEV_TODAY:-0}"
 TODAY="$(date +%F)"
-STAMP="${STAMP:-2026-10-08}"
-RULES_VERSION="2026-10-08-APP基础能力"
+STAMP="${STAMP:-2026-10-12}"
+RULES_VERSION="${RULES_VERSION:-2026-10-12-单智能体+账本机器校验+证据留存}"
 DRY_RUN="${1:-}"
 BLOCK_BEGIN="<!-- ORCA-RULES-BLOCK:BEGIN -->"
 export BLOCK_BEGIN
@@ -28,6 +28,7 @@ export BLOCK_BEGIN
 # 要铺的文件（相对路径）——全部来自老项目迁移模板包，保证两包一致性由 check-sync 兜底
 FILES="
 AGENTS.md
+README.md
 经验一句话.md
 docs/roles/builder.md
 docs/roles/code-reviewer.md
@@ -138,14 +139,14 @@ for dir in "$PROJECTS_ROOT"/*/; do
     if [ "$f" = "AGENTS.md" ]; then
       if [ "$agents_injected" = "1" ]; then
         if [ -z "$DRY_RUN" ]; then
-          python3 "$ROOT/scripts/_inject-agents-block.py" "$dst" "$STAMP" "$RULES_VERSION"
+          python3 "$ROOT/scripts/_inject-agents-block.py" "$dst" "$STAMP" "$RULES_VERSION" "$PKG/AGENTS.md"
         fi
         skipped=$((skipped+1)); continue
       fi
       # 未注入：先备份整份，再注入区块（只增不删）
       if [ -z "$DRY_RUN" ]; then
         [ -f "$dst.旧版-$STAMP" ] || cp "$dst" "$dst.旧版-$STAMP"
-        python3 "$ROOT/scripts/_inject-agents-block.py" "$dst" "$STAMP" "$RULES_VERSION"
+        python3 "$ROOT/scripts/_inject-agents-block.py" "$dst" "$STAMP" "$RULES_VERSION" "$PKG/AGENTS.md"
       fi
       backed=$((backed+1)); copied=$((copied+1)); agentinj=$((agentinj+1)); needmerge=$((needmerge+1))
       continue
