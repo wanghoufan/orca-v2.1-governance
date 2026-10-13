@@ -114,6 +114,22 @@ for dir in "$PROJECTS_ROOT"/*/; do
   fi
 
   # 用 while read 而非 for（条目含空格，如 "Orca 编排治理监督者提示词.md"）
+  # 清单 $FILES 是**手写枚举**，新增文件极易漏铺（2026-10-12 实测：老包 scripts/model
+  # 有 11 个文件，枚举里只有 3 个 ⇒ ui-leak/solo-agent/ledger-fields/prototype-gate
+  # 与两份 docs/model 文档全部没铺，老项目拿不到新机制）。
+  # 现在**从老包实际内容自动枚举**，并把包内存在的 scripts/model 测试一并纳入
+  # （测试是机制的回归保护：只铺实现不铺测试，等于老项目出问题无人发现）。
+  FILES="$(
+    {
+      printf '%s\n' "$FILES"
+      # 包内 scripts/model 全部纳入（含 .mjs 与夹具树），排除母版本机专属产物
+      cd "$PKG" 2>/dev/null && find scripts/model -type f ! -path '*/evidence/*' | sort
+      cd "$ROOT" 2>/dev/null || true
+      # 包内 docs/model 的规范正文（非 .jsonl）
+      cd "$PKG" 2>/dev/null && find docs/model -type f ! -name '*.jsonl' | sort
+      cd "$ROOT" 2>/dev/null || true
+    } | awk 'NF && !seen[$0]++'
+  )"
   while IFS= read -r f; do
     [ -n "$f" ] || continue
     src="$PKG/$f"
@@ -142,6 +158,16 @@ for dir in "$PROJECTS_ROOT"/*/; do
     if [ -f "$dst" ] && diff -q "$src" "$dst" >/dev/null 2>&1; then
       skipped=$((skipped+1)); continue
     fi
+    # 夹具/测试数据：直接覆盖，不留「旧版-」备份。
+    # 理由：夹具是**母版本机专属的测试输入**，不是项目资产 —— 留一堆
+    # fixtures/tm-qual/good.jsonl.旧版-2026-10-08 只会在项目里堆垃圾，
+    # 且下一个 STAMP 又会再堆一份。旧夹具的唯一价值是「本轮修了什么」，
+    # 那是 Git 的事（且这些文件本就在母版仓的版本控制里）。
+    case "$f" in
+      scripts/model/fixtures/*)
+        if [ -z "$DRY_RUN" ]; then mkdir -p "$(dirname "$dst")"; cp "$src" "$dst"; fi
+        copied=$((copied+1)); continue ;;
+    esac
     if [ -f "$dst" ]; then
       if [ ! -f "$dst.旧版-$STAMP" ]; then
         if [ -z "$DRY_RUN" ]; then cp "$dst" "$dst.旧版-$STAMP"; fi
