@@ -23,6 +23,24 @@
 **怎么验**：`SYNC-OK`｜`CHANNEL-OK`｜tm-qualification 17/17｜prototype-gate 9/9｜ui-leak 2/2｜**solo-agent 15/15**（新增 C3–C8 触发口令用例）。**另做真实执行验证**（隔离副本 `solo-demo`，非用户业务项目）：铺新项目模板包 → 小型局部开发（折扣门槛取等＋按分取整）→ 自审七查 → 实际运行测试发现缺陷 → 切回开发修复 → 复验 **5/5 PASS、exit 0**；`DISPATCH-LOG` 留空不造行、账本 `LEDGER-OK`；全程未派任何其他智能体。多智能体路径核对：Human Gate 保留条款在位、三张角色卡「只约束多智能体」在位、四段主链关键串未被覆盖。
 
 
+## 2026-10-12 (5d16011) fix(sync): 老项目同步清单改为自动枚举（修复新机制铺不过去）
+
+**根因**：`sync-old-projects.sh` 的 FILES 是手写枚举。老包 `scripts/model` 实际 11 个文件，
+枚举里只有 3 个 ⇒ ui-leak / solo-agent / ledger-fields / prototype-gate 四套测试与
+`NEXT-TASKS.md`、`TASK-MANAGER-QUALIFICATION.md` 两份文档**全部没铺**。
+
+**实测证据（040）**：它自带的 `check-ledger.mjs` 与母版哈希不同（旧版）；用**自己的旧校验器**
+跑得到 `LEDGER-OK`，用母版最新校验器跑会多报一条 —— **老项目用旧校验器自测，必然漏**。
+
+**改了什么**：FILES 改为**从老包实际内容自动枚举**（scripts/model 全树 ＋ docs/model 非 jsonl），
+去重后铺；夹具直接覆盖不留备份（母版本机专属测试输入，非项目资产；旧值审计交给 Git）。
+
+**怎么验**：040 预演 新铺 152／备份 10（原先 17）／跳过 28；备份项全为「项目可能自己改过」的
+实现与文档（含 040 改过的 supervisor.md、builder.md），账本内容零改动。
+全套 `SYNC-OK`｜35/35｜44/44｜9/9｜2/2｜15/15。
+
+---
+
 ## 2026-10-12 (7cce720) fix(tm): 响应速度不得手填，改由 ISO 时间戳机械派生
 
 **为什么**：该维度占 15 分且直接进 QUALIFIED 判定，但原规则只说「无计时证据填 null」，
