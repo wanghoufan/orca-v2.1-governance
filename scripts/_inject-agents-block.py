@@ -41,11 +41,15 @@ def _load_body(pkg_agents):
 with io.open(path, "r", encoding="utf-8") as f:
     text = f.read()
 
+# 区块正文一次算好，两个分支共用。
+# 2026-10-12 实测：原先只在「已存在区块」分支里算 blk，「首次插入」分支直接引用
+# 未定义的 blk ⇒ NameError。表现为部分项目报 BLOCK-UPDATED、部分静默失败。
+body = _load_body(PKG_AGENTS) if PKG_AGENTS else ""
+if not body:
+    sys.exit("BLOCK-EMPTY: 未能从老项目包 AGENTS.md 提取区块正文，拒绝写入空区块（宁可不注入也不覆盖成空）")
+blk = BLOCK.replace("{BODY}", body)
+
 if BEGIN in text and END in text:
-    body = _load_body(PKG_AGENTS) if PKG_AGENTS else ""
-    if not body:
-        sys.exit("BLOCK-EMPTY: 未能从老项目包 AGENTS.md 提取区块正文，拒绝写入空区块（宁可不注入也不覆盖成空）")
-    blk = BLOCK.replace("{BODY}", body)
     new = re.sub(re.escape(BEGIN) + r".*?" + re.escape(END), blk.replace("\\", "\\\\"), text, flags=re.S)
     if new == text:
         print("BLOCK-UNCHANGED")

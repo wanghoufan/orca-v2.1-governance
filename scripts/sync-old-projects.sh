@@ -17,7 +17,11 @@ PKG="$ROOT/老项目迁移模板包"
 #   SKIP_LIST="a,b"    —— 显式跳过指定项目
 #   SKIP_DEV_TODAY=1   —— 自动跳过「今天(当天)有 commit」的项目（用户口径：今天有 commit 就算在开发，不动）
 SKIP_LIST="${SKIP_LIST:-}"
-SKIP_DEV_TODAY="${SKIP_DEV_TODAY:-0}"
+# **默认 1（开）** —— 2026-10-12 用户口径：「有项目今天可能正在跑，先别动今天在跑的项目」。
+# 原默认 0（关）属「忘了开就出事」的不安全默认值。要铺今天在跑的项目需显式 SKIP_DEV_TODAY=0。
+SKIP_DEV_TODAY="${SKIP_DEV_TODAY:-1}"
+# 业务文件有未提交改动时是否跳过（默认 1）
+SKIP_DIRTY="${SKIP_DIRTY:-1}"
 TODAY="$(date +%F)"
 STAMP="${STAMP:-2026-10-12}"
 RULES_VERSION="${RULES_VERSION:-2026-10-12-单智能体+账本机器校验+证据留存}"
@@ -87,6 +91,17 @@ for dir in "$PROJECTS_ROOT"/*/; do
   if [ "$SKIP_DEV_TODAY" = "1" ] && [ -d "$d/.git" ]; then
     lastc="$(git -C "$d" log -1 --format=%cd --date=short 2>/dev/null)"
     if [ "$lastc" = "$TODAY" ]; then echo "SKIP(今天有commit=$lastc): $name"; nskip=$((nskip+1)); continue; fi
+    # 业务文件有未提交改动 ⇒ 可能正在写代码，铺规则会与之打架 ⇒ 跳过。
+    # 纯治理文件未提交**不跳** —— 那通常就是上次铺规则留下的，正好该被这次覆盖。
+    # 判据必须用「源码扩展名白名单」而非「排除治理路径」的反向写法：
+    # 反向写法实测把「经验一句话.md」「agents.md」误判成业务文件 ⇒ 36 个里 33 个被跳过。
+    if [ "$SKIP_DIRTY" = "1" ]; then
+      dirtybiz="$(git -C "$d" status --porcelain 2>/dev/null | grep -E '\.(ts|tsx|js|jsx|mjs|py|java|kt|swift|go|rs|rb|php|css|scss|html|json|yaml|yml|sql|sh|gradle|xml)$' | grep -vE 'AGENTS|agents|README|经验一句话|编排者|外部开发者|归位表|Orca|GOVERNANCE|CHANGELOG|scripts/model/|[Ss]cripts/model/|\.project\.yaml|\.arts/' | head -1)"
+      if [ -n "$dirtybiz" ]; then
+        echo "SKIP(业务文件有未提交改动，可能正在写代码): $name → ${dirtybiz:0:44}"
+        nskip=$((nskip+1)); continue
+      fi
+    fi
   fi
   # 治理根：根 AGENTS.md；否则向下一层找唯一含 ORCA-RULES-BLOCK 的子目录（2026-10-05，救 043 这类 software/ 内治理）
   govroot="$d"
