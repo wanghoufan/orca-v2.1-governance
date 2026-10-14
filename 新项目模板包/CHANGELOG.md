@@ -1,4 +1,4 @@
-## 2026-10-14 (PENDING) change(override): builder 主用切 opencode-go/deepseek-v4.1-flash，备用 codebuddy/deepseek-v4.1-flash
+## 2026-10-14 (93f9a6b) change(override): builder 主用切 opencode-go/deepseek-v4.1-flash，备用 codebuddy/deepseek-v4.1-flash
 
 **为什么**：用户 2026-10-14 直接指定 builder 换主用通道。
 
