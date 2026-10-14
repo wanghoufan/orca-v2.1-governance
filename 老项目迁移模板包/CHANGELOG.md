@@ -1,3 +1,38 @@
+## 2026-10-14 (PENDING) change(override): builder 主用切 opencode-go/deepseek-v4.1-flash，备用 codebuddy/deepseek-v4.1-flash
+
+**为什么**：用户 2026-10-14 直接指定 builder 换主用通道。
+
+**改了什么**：`USER_MODEL_OVERRIDE.md` builder 行 —— 主 `codebuddy/deepseek-v4.1-flash`（codebuddy 通道）
+→ `opencode-go/deepseek-v4.1-flash`（opencode 通道）；备用改为 `codebuddy/deepseek-v4.1-flash`。
+通道目录表同步增 2b 行。命令写法 `opencode run -m opencode-go/deepseek-v4.1-flash "任务"`。
+
+**模型 ID 映射说明**：用户口语「opencode go 的 deepseek-flash」在 `opencode-go` 通道目录里
+**没有字面 `deepseek-flash`**；近似的有 `deepseek-v4-flash` 与 `deepseek-v4.1-flash`。
+按表内既有别名口径（`deepseek-flash` 别名 = `deepseek-v4.1-flash`），取与原主用
+`codebuddy/deepseek-v4.1-flash` 同一模型的对称项 `opencode-go/deepseek-v4.1-flash`。
+
+**已验（2026-10-14 用户批准后真调，三项全过）**
+
+| 验证项 | 结果 |
+|---|---|
+| 只读验名 `check-channel-preflight.sh` | **CHANNEL-OK**，两个 ID 均在通道目录内 |
+| 主用真调 `opencode run -m opencode-go/deepseek-v4.1-flash` | ✅ 正常应答（横幅 `build · deepseek-v4.1-flash`） |
+| **写入能力**（builder 主工作） | ✅ 真实创建文件并写对内容 |
+| 跨目录（读本仓以外项目） | ⚠️ **被拒**：`permission requested: external_directory … auto-rejecting` → `✗ Read … failed` |
+
+**跨目录实测结论（比预想更明确）**：在同一项目目录内读写**完全正常**；一旦要求读
+`1.Active/` 下**另一个**项目，立刻被 `external_directory` 自动拒绝并报 `✗ failed`。
+⇒ **builder 的常态场景（在自己项目里写代码）没问题**；只有跨项目的活会被挡，
+届时须先取得用户授权或切 `codebuddy` 备用通道。备用通道 `codebuddy/deepseek-v4.1-flash`
+是本表改动前的 builder 主用，通道目录在列（预检 OK），未重复真调以省额度。
+
+**据此本条生效**：builder 主用 = `opencode-go/deepseek-v4.1-flash`（Runtime=opencode）。
+
+**⚠️ 已在表内标注的风险**：opencode 通道有**跨目录禁令**（AGENTS.md 已记）—— 任务里读写
+本仓以外目录（如 `1.Active/` 下的业务仓库）会被 `external_directory` 自动拒、步骤静默失败。
+**builder 恰恰要写业务仓库**，且业务仓库常不在治理母版仓内。故派 builder 时：
+①任务路径须落在当前工作区内；②跨目录活先取用户授权，或切 codebuddy 备用通道。
+
 ## 2026-10-10 (cedfa79) feat(governance): 正式支持单智能体执行方式（含复审修正：QA 按类型适用 + Human Gate 明示保留）
 
 **为什么**：让更聪明的模型承担更多自主工作，让 ORCA 用更少的管理成本保障交付质量。此前体系只按多智能体写，单人连续执行的项目要么被强制拉起整套派工，要么绕开体系，均不划算。首轮实现经独立审查「有条件通过」，本条含复审要求的全部修正。
