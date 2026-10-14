@@ -1,4 +1,4 @@
-## 2026-10-14 (PENDING) fix(sync): 夹具空目录不同步，导致下游包测试语义被静默改变
+## 2026-10-14 (6e35804) fix(sync): 夹具空目录不同步，导致下游包测试语义被静默改变
 
 **怎么发现的**：提交前跑 `check-sync` 报 `DIFFDIR: scripts/model/fixtures vs 两包`，
 细看是 `case21-ac-missing-accepted/docs/qa/` —— **该目录必须为空**（空＝「验收矩阵不存在」
