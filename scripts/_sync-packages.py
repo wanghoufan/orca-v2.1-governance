@@ -89,6 +89,13 @@ def collect():
             rel_dir = os.path.relpath(dirpath, ROOT)
             if any(x in ("/" + rel_dir.replace(os.sep, "/") + "/") for x in TREE_EXCLUDE):
                 continue
+            # 目录本身也要带过去：夹具里存在**空目录即语义**的情况 ——
+            # 如 ledger-fields/case21-ac-missing-accepted 的 docs/qa/ 必须是空目录
+            # （表示「验收矩阵不存在」这个测试前提）。只同步文件会丢掉空目录，
+            # 下游包里的夹具语义被静默改变 → check-sync 报 DIFFDIR。
+            rel_dirposix = rel_dir.replace(os.sep, "/")
+            if not any(x in ("/" + rel_dirposix + "/") for x in TREE_EXCLUDE):
+                out.append((rel_dir + "/", rel_dir + "/"))
             for fn in sorted(filenames):
                 full = os.path.join(dirpath, fn)
                 rel = os.path.relpath(full, ROOT)
@@ -116,6 +123,10 @@ def main():
             if pkg == "新项目模板包" and os.path.basename(src) == "迁移整理提示词.md":
                 continue  # 迁移提示词仅老包有
             out = os.path.join(ROOT, pkg, dst)
+            if src.endswith("/"):            # 目录项（夹具里的空目录即语义）
+                os.makedirs(out, exist_ok=True)
+                n += 1
+                continue
             os.makedirs(os.path.dirname(out), exist_ok=True)
             if os.path.splitext(src)[1].lower() in (".png", ".jpg", ".jpeg", ".gif", ".webp"):
                 with open(s, "rb") as fi, open(out, "wb") as fo:
