@@ -242,18 +242,6 @@ check("DISPATCH-LOG.jsonl",
 // 累计 2 次即应 escalated=YES。升级是**自动动作**，故漏记即为治理违规（不是提醒）。
 // 同时校验 escalation_reason：标了升级却没写原因 → 无法审计。
 {
-  const readRows = (name) => {
-    const out = [];
-    const fp = join(dir, name);
-    if (!existsSync(fp)) return out;
-    for (const l of readFileSync(fp, "utf8").split("\n")) {
-      const s2 = l.trim();
-      if (!s2) continue;
-      let o; try { o = JSON.parse(s2); } catch { continue; }
-      if (o && typeof o === "object" && !o._example) out.push(o);
-    }
-    return out;
-  };
   const supFail = new Map();   // task -> supervisor 判 FAIL 次数
   for (const d of readRows("DISPATCH-LOG.jsonl")) {
     if (d.role === "supervisor" && d.result === "FAIL" && typeof d.task === "string") {
@@ -261,6 +249,39 @@ check("DISPATCH-LOG.jsonl",
     }
   }
   const taskRows = readRows("TASK-MODEL-LOG.jsonl");
+
+  // 派工漏记检查（2026-10-14 体系自查 P0 加固）：AGENTS.md 要求「逐派记录，每次派工收工
+  // 编排者往 DISPATCH-LOG 记一行」，但此前**无任何交叉检查** ⇒ 漏记完全不可见。
+  // 实测：015-ing-photo-library TASK 13 行 / DISPATCH 0 行，只报 WARN「空账本」即放行；
+  //       038 项目 task-manager 自身派工记录仅 6/38 —— **记账纪律在记账人身上最先崩**。
+  // 口径（刻意保守，避免误伤）：
+  //   ① 有真实任务记录但 DISPATCH **完全为空** ⇒ FAIL（无任何派工痕迹，不可能合规）；
+  //   ② 派工行数显著少于任务行数（< 1/3 且任务 ≥3 行）⇒ WARN，提示逐派记录未落实；
+  //   ③ 单智能体项目不造派工行属预期，故只在「有任务且零派工」时才硬拦。
+  {
+    const taskReal = taskRows.length;
+    const dispatchReal = readRows("DISPATCH-LOG.jsonl").length;
+    // 豁免通道：单智能体项目按 AGENTS.md「不造派工行」。但**必须有机读声明**，
+    // 否则「忘了记」和「本就不记」无法区分 ⇒ 豁免会变成新的后门。
+    // 声明落 `docs/model/GOVERNANCE-STATE.json` 的 `execution_mode`（`solo` / `multi`）。
+    const soloDeclared = (() => {
+      const sp = join(dir, "GOVERNANCE-STATE.json");
+      if (!existsSync(sp)) return false;
+      try {
+        const g = JSON.parse(readFileSync(sp, "utf8"));
+        return g.execution_mode === "solo";
+      } catch { return false; }
+    })();
+    if (taskReal > 0 && dispatchReal === 0 && !soloDeclared) {
+      fails.push(`DISPATCH-LOG.jsonl: 空账本，但 TASK-MODEL-LOG.jsonl 已有 ${taskReal} 条真实任务记录 `
+        + `⇒ 派工逐派漏记。按 AGENTS.md「每次派工收工记一行」，零派工记录不可能合规。`
+        + `（若是单智能体项目，在 docs/model/GOVERNANCE-STATE.json 写 "execution_mode": "solo" 即可豁免 —— `
+        + `须显式声明，不靠猜，避免「忘了记」与「本就不记」混同）`);
+    } else if (taskReal >= 3 && dispatchReal > 0 && dispatchReal * 3 < taskReal && !soloDeclared) {
+      warns.push(`DISPATCH-LOG.jsonl: 派工 ${dispatchReal} 行 vs 任务 ${taskReal} 行 `
+        + `（<1/3）⇒ 逐派记录可能未落实，请核对（返工子任务不另计派工行，故非硬错）`);
+    }
+  }
   // 同一 task 可能有多行（先记 FAIL，再补记 senior 交付）——
   // 升级判定看**该 task 是否已有任一行标了 escalated=YES**，而不是逐行判。
   // 2026-10-11 实测：升级后另起新行记录，若按行判会对着旧的 FAIL 行继续报「漏记升级」，
@@ -280,6 +301,56 @@ check("DISPATCH-LOG.jsonl",
       fails.push(`TASK-MODEL-LOG.jsonl: task="${t.task}" escalated=YES 但 escalation_reason 为空（升级须可审计）`);
     }
   }
+}
+
+// ── 产品验收红线（2026-10-14 体系自查 P1 加固）──────────────────────────
+// AGENTS.md 红线：「产品验收未落盘或关键 AC 未测，不得报完工/收工」。
+// 此前**只有文字、无任何机器卡点** ⇒ 实测：AC 矩阵里写「未测」+ 账本
+// chain_status=ACCEPTED，校验器照样 `LEDGER-OK` exit 0 放行。
+// ⇒ 红线形同虚设，是典型的「有体系但没法落实」。现补：
+//   ① 账本出现 chain_status=ACCEPTED（= 已验收放行）时，验收矩阵**必须存在**；
+//   ② 矩阵内不得残留 `未测`／`OPEN`（OPEN/FAIL/BLOCKED 均视为未闭环）；
+//   ③ 首次发布类型的交付另由签收规则把关（此处只查 AC 是否闭环）。
+// 口径说明：`BLOCKED` 是「被外部条件挡住」，仍属未闭环，故一并拦住——
+// 报完工的前提是「已验收」，被挡住就不能算已验收。
+{
+  const acceptedRows = [];
+  for (const d of readRows("TASK-MODEL-LOG.jsonl")) {
+    if (d.chain_status === "ACCEPTED") acceptedRows.push(d);
+  }
+  if (acceptedRows.length) {
+    const mp = join(dirname(dir), "qa", "产品验收追踪矩阵.md");
+    if (!existsSync(mp)) {
+      fails.push(`ACCEPTED-BLOCK: 账本有 ${acceptedRows.length} 行 chain_status=ACCEPTED（判已验收），`
+        + `但 docs/qa/产品验收追踪矩阵.md 不存在 —— 按 AGENTS.md 红线「产品验收未落盘不得报完工」不得放行`);
+    } else {
+      const lines = readFileSync(mp, "utf8").split("\n");
+      const bad = [];
+      lines.forEach((ln, i) => {
+        if (!/AC-\d+/.test(ln)) return;
+        if (/未测|(^|[^A-Z])OPEN([^A-Z]|$)|FAIL|BLOCKED/.test(ln)) bad.push(`#${i + 1}`);
+      });
+      if (bad.length) {
+        fails.push(`ACCEPTED-BLOCK: 账本判已验收（chain_status=ACCEPTED），但验收矩阵仍有关键条目未闭环：`
+          + `${bad.slice(0, 5).join("、")}${bad.length > 5 ? ` 等 ${bad.length} 处` : ""}。`
+          + `未测/OPEN/FAIL/BLOCKED 均属未闭环，报完工前提不成立`);
+      }
+    }
+  }
+}
+
+// 读取账本真实行（跳过 _example 与坏行）—— 供升级触发、派工漏记、产品验收红线三处共用。
+function readRows(name) {
+  const out = [];
+  const fp = join(dir, name);
+  if (!existsSync(fp)) return out;
+  for (const l of readFileSync(fp, "utf8").split("\n")) {
+    const s2 = l.trim();
+    if (!s2) continue;
+    let o; try { o = JSON.parse(s2); } catch { continue; }
+    if (o && typeof o === "object" && !o._example) out.push(o);
+  }
+  return out;
 }
 
 // ── APP 基础能力声明检查（2026-10-08）──────────────────────────────

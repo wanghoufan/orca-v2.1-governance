@@ -60,6 +60,13 @@ const CASES = [
   ["case17-escalation-noreason", 1, ["escalation_reason 为空"]], // 升级未写原因
   // 升级判定按 task 而非按行：先记 FAIL 行、后补 senior 交付行时不得误报
   ["case18-escalation-later-row", 0, []],
+  // 派工漏记（2026-10-14 体系自查 P0）：TASK 3 行真实任务 / DISPATCH 仅 _example
+  ["case19-dispatch-omitted", 1, ["派工逐派漏记"]],
+  // 产品验收红线（2026-10-14 自查 P1）：AC 未闭环却判 ACCEPTED ⇒ 不得放行
+  ["case20-ac-untested-accepted", 1, ["ACCEPTED-BLOCK"]],
+  ["case21-ac-missing-accepted", 1, ["ACCEPTED-BLOCK"]],
+  ["case22-ac-all-pass", 0, []],           // AC 全 PASS 才可放行
+  ["case23-ac-untested-open", 0, []],      // 未判验收（OPEN）不拦，避免误伤
 ];
 for (const [fixture, wantExit, mustInclude] of CASES) {
   const r = withFixture(fixture, (d) => runLedger(d));
@@ -83,11 +90,20 @@ for (const [fixture, wantExit, mustInclude] of CASES) {
     writeFileSync(join(d, "docs/model/DISPATCH-LOG.jsonl"), "");
     return null;
   });
+  // 豁免必须**显式声明** execution_mode=solo；不声明就是漏记（否则豁免本身成后门）
   const r2 = withFixture("case01-valid", (d) => {
+    writeFileSync(join(d, "docs/model/DISPATCH-LOG.jsonl"), "");
+    writeFileSync(join(d, "docs/model/GOVERNANCE-STATE.json"),
+      JSON.stringify({ execution_mode: "solo" }));
+    return runLedger(d);
+  });
+  check("单智能体显式声明 execution_mode=solo → 空派工账 exit 0", r2.code === 0, `exit=${r2.code}`);
+
+  const r3 = withFixture("case01-valid", (d) => {
     writeFileSync(join(d, "docs/model/DISPATCH-LOG.jsonl"), "");
     return runLedger(d);
   });
-  check("单智能体空派工账 exit 0（不判漏记）", r2.code === 0, `exit=${r2.code}`);
+  check("未声明 solo 却空派工账 → 判漏记 exit 1（豁免不得成为后门）", r3.code === 1, `exit=${r3.code}`);
   void r;
 }
 

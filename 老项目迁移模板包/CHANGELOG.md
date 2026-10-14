@@ -1,3 +1,34 @@
+## 2026-10-14 (PENDING) fix(gate): 体系自查补三处机器卡点（派工漏记 / 验收红线 / 概览新鲜度）
+
+**来源**：六维体系自查（矛盾一致性 / 门槛可执行性 / 派工账本覆盖 / 漏洞 / 概览 / 实测验证）。
+
+### P0｜派工逐派漏记完全不可见
+AGENTS.md 要求「每次派工收工记一行」，但**无任何交叉检查**。实测 015-ing-photo-library
+`TASK 13 行 / DISPATCH 0 行` 只报 WARN「空账本」即放行；38 个项目里 task-manager 自身
+派工记录仅 **6/38**、senior-expert **3/38** —— **记账纪律在记账人身上最先崩**。
+现补：有真实任务却零派工 ⇒ FAIL；派工数 < 任务数 1/3 且任务 ≥3 行 ⇒ WARN。
+**豁免须显式声明**：单智能体项目在 `docs/model/GOVERNANCE-STATE.json` 写
+`execution_mode: "solo"` 才豁免 —— 不靠猜，避免「忘了记」与「本就不记」混同、豁免本身成后门。
+
+### P1｜产品验收红线形同虚设
+AGENTS.md 红线写「产品验收未落盘或关键 AC 未测，不得报完工/收工」，但**只有文字、零机器卡点**。
+实测：AC 矩阵写「未测」+ 账本 `chain_status=ACCEPTED`，校验器照样 `LEDGER-OK` exit 0 放行。
+现补 `ACCEPTED-BLOCK`：账本判 ACCEPTED 时，①验收矩阵必须存在；②矩阵内不得残留
+未测/OPEN/FAIL/BLOCKED（BLOCKED 属被外部条件挡住，仍未闭环）。
+口径边界：`chain_status=OPEN`（尚未判验收）**不拦**，避免误伤进行中的任务。
+
+### P1｜概览滞后且新鲜度清单漏项
+本轮新增的 9 项机制（派工漏记/`supersedes`/有效拦截/违规分级/未测不按满分算/
+响应速度只认时间戳/原始输入留存/`--auto`/取消历史豁免/升级触发）**概览里一个都没有**，
+而 check-sync 的关键词清单也没纳入 ⇒ **概览漏更新照样 OVERVIEW-OK 通过**。
+已补概览「七之二」节（10 条现役机制表）＋ 清单新增 10 个关键词。
+反向验证：从概览删掉 `supersedes` → 立刻 `OVERVIEW-STALE` + `SYNC-FAIL`。
+
+**回归**：ledger-fields 35→**41/41**（case19 派工漏记、case20-23 验收红线四场景）。
+反向验证：分别去掉两处检查 → 各 2 条 FAIL。为保持旧夹具语义，给
+`tm-qual/ledger-good` 补验收矩阵、给 `solo-agent` 两个单智能体夹具补 `execution_mode=solo`。
+全套 `CHANNEL-OK`｜`SYNC-OK`｜41/41｜44/44｜9/9｜2/2｜15/15。
+
 ## 2026-10-14 (b8206e0) docs(P1): 审查报告 P1 清单 —— 测试数写死 / check-sync 漏管 / 概览编号乱序 / 资格文档漂移
 
 **来源**：同份 `ark-code-latest` 审查报告的 P1 及以下项，逐条核实后全部属实。

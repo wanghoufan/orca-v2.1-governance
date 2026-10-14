@@ -118,6 +118,12 @@ done
 for kw in "产品验收" "关键 AC" "首次发布" "签收" "不问不报" "detect-client" "window_subagent" "channel_cli" "半套最差" "四类红线" "≤10 行" "Task Manager Qualification" "何时起" "CHANNEL-OK" "产品验收追踪矩阵" "产品审查" "APP 基础能力" "app-theme-i18n" "APP-BASELINE" "background-services" "品牌资产" "app-brand-assets" "app-navigation" "底部导航" "NavigationBar" "同一核心页面" "CHANGELOG" "app-ui-layers" "信息分层" "app-simplicity" "产品简化门槛" "DEPENDENCY-MISSING" "DEPENDENCY-STALE" "单智能体" "你是唯一开发者"; do
   grep -q "$kw" ORCA治理体系说明.md || { echo "OVERVIEW-STALE: 概览缺 $kw"; fail=1; }
 done
+# 2026-10-14 体系自查补：上列关键词只覆盖旧机制，本轮新增的账本/证据/跨目录机制
+# **一个都不在清单里** ⇒ 概览漏更新也照样 OVERVIEW-OK 通过（这是个漏卡点）。
+# 措辞用「概览里的原文写法」做锚，避免同义词对不上造成永久误报。
+for kw in "派工逐派不漏记" "supersedes" "有效拦截" "违规分级" "未测不按满分算" "响应速度只认时间戳" "原始输入留存" "--auto" "取消历史豁免" "升级触发机器校验"; do
+  grep -q -- "$kw" ORCA治理体系说明.md || { echo "OVERVIEW-STALE: 概览缺 $kw"; fail=1; }
+done
 # 项目治理完整度：产品验收落盘（2026-10-07 增；**只报不阻塞**，与上方 SYNC 主结论解耦）
 # AGENTS.md 红线要求「产品验收未落盘或关键 AC 未测不得报完工」，但此前无任何机器校验点，
 # 实测 31 个项目仅 1 个建了矩阵 ⇒ 覆盖率 3%。此处补一个只读巡检口径。

@@ -111,6 +111,23 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 - **Episode 记账（2026-10-07 定）**：编排者**每轮收工必自记一行**，一 Episode 一行；非 Episode 的轮次不记也不硬凑。写后必跑 `scripts/model/tm-qualification.mjs` 校验；无计时证据的 `decision_latency_ms` 填 `null` 不许编；历史行不得改写。**母版与两包的 `docs/model/*.jsonl` 永远只留 `_example` 空壳**（母版是分发源，写真实行会致 check-sync `SYNC-FAIL`），真实 Episode 记到各项目自己的账本。**supervisor 抽查对账**（拿 DISPATCH-LOG 真实派工逐条核是否漏记，漏记/对不上打回，补记由编排者执行）。Episode 层证据不替代 DISPATCH-LOG/TASK-MODEL-LOG 派工账。
 - 候选（真调已过）：`opencode-go/deepseek-v4.1-flash`、`opencode-go/mimo-v2.6-flash`（Runtime=opencode）；真实多项目 A/B 数据由用户后续在真实项目跑。
 
+## 七之二、账本与证据的现役机制（2026-10-14 体系自查后补齐）
+
+概览此前滞后于本轮改造，以下为**现役口径**（细节见 `docs/model/TASK-MANAGER-QUALIFICATION.md` 与 `AGENTS.md`）：
+
+| 机制 | 一句话 |
+|---|---|
+| **取消历史豁免** | 「以前的不管，以后的为准」——所有字段错误一律 FAIL，旧写法也判错，需当场改对 |
+| **升级触发机器校验** | 同一 Task 被 supervisor 打回 ≥2 次，中央校验器**当场拦下**漏记升级（原为纸面规则，从未真跑通过） |
+| **派工逐派不漏记** | 有真实任务记录却零派工记录 ⇒ FAIL；单智能体项目须在 `docs/model/GOVERNANCE-STATE.json` 显式写 `execution_mode: "solo"` 才豁免（不靠猜） |
+| **Episode 防重复计分** | `episode_id` 全文件唯一（重复即 exit 1）；更正另起新行并带 `supersedes` 指向被更正行，被指到的原行**保留但不参与计分** |
+| **有效拦截不扣分** | reviewer/QA 抓出真问题并打回修复＝治理链生效，**计样本但不扣分**，与基础设施错误同属非能力项 |
+| **违规分级 P0/P1/P2** | P0 直接 NOT_QUALIFIED；P1 扣分不清零；P2 只影响推进分。`gate_violation` 须为布尔（此前字符串 `"true"` 可静默绕过硬失败） |
+| **未测不按满分算** | 无数据即未测，总分按已测权重归一；**有未测维度一律 CANDIDATE**，不得判 QUALIFIED |
+| **响应速度只认时间戳** | 由 `started_at`→`ended_at` 机械相减；手填的 `decision_latency_ms` **不采信** |
+| **原始输入留存** | `--evidence <dir>` 显式开关（失败也留），证据卡可进 git（路径已归一、零本机路径），原始副本**禁入仓**；另有 pre-commit 卡点拦截误提交 |
+| **opencode 通道跨目录** | 派 opencode 通道角色**必须带 `--auto`**，否则 `external_directory` 被拒且**静默失败** |
+
 ## 八、规范在哪
 
 | 变更说明 | `CHANGELOG.md` | **变更说明正典**——每次改动并 push 必在顶部追加一条（改了什么／为什么改／影响谁／怎么验）；只写 commit message 或 HANDOFF 章节不算交差；随 `PAIRS` 分发到两包，`check-sync.sh` 纳管漂移 |
