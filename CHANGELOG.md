@@ -1,3 +1,16 @@
+## 2026-10-14 (PENDING) docs(P1): 审查报告 P1 清单 —— 测试数写死 / check-sync 漏管 / 概览编号乱序 / 资格文档漂移
+
+**来源**：同份 `ark-code-latest` 审查报告的 P1 及以下项，逐条核实后全部属实。
+
+| P1 | 问题 | 处置 |
+|---|---|---|
+| 测试数写死 | `AGENTS.md` 写「tm 须 17/17」，实际已 44/44，且用例仍在增 | 改为「须 `ALL PASS fail=0`；**pass 数随用例增补变化，禁止在本文写死数字**」 |
+| check-sync 漏管 | 只逐个列了 `check-ledger.mjs`，**测试脚本与两份 docs/model 文档不在比对范围** ⇒ 包内漂移无卡点 | 新增 `scripts/model` 整树比对（`DIFFDIR`）＋ 反向幽灵检测（`GHOST`）；反向验证：故意弄脏 `solo-agent.test.mjs` → 立刻被抓 |
+| 概览编号乱序 | 存在「一之二、两种执行方式」，后续编号整体错位 | 重排为 一~九 连续；标题日期 2026-10-08 → 2026-10-14 |
+| 资格文档漂移 | `TASK-MANAGER-QUALIFICATION.md` §4 字段表缺 `supersedes`／`effective_interception`／`gate_violation`／`started_at`／`ended_at`；§6 仍写 `decision_latency_ms` 参与计分 | §4 拆「必填（缺任一 exit 1）／可选」并对齐评分器 `REQUIRED`；§6 同步三处口径（响应速度只认时间戳、有效拦截计样本不扣分、未测不按满分算） |
+
+**验证**：`SYNC-OK`｜`CHANNEL-OK`｜35/35｜44/44｜9/9｜2/2｜15/15。
+
 ## 2026-10-14 (5fe5975) fix(P0): 审查报告 3 项 P0 —— 门禁自崩 / 唯一口径自相矛盾 / 公开仓隐私泄露
 
 **来源**：`volcengine-plan/ark-code-latest` 只读独立审查（CONDITIONAL PASS，3 项 P0 未清零不得收工）。逐条复核**全部属实**。

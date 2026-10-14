@@ -64,6 +64,15 @@ for pkg in "新项目模板包" "老项目迁移模板包"; do
   if ! diff -rq scripts/model/fixtures "$pkg/scripts/model/fixtures" >/dev/null 2>&1; then
     echo "DIFFDIR: scripts/model/fixtures vs $pkg"; fail=1
   fi
+  # scripts/model 其余文件整树比对（2026-10-14 洁癖补）：原先只逐个列了 check-ledger.mjs，
+  # 其余**测试脚本**（solo-agent.test.mjs / ledger-fields.test.mjs / ui-leak.* 等）
+  # 与 NEXT-TASKS.md / TASK-MANAGER-QUALIFICATION.md 都没进比对范围 ⇒ 包内漂移无卡点。
+  # 这里按整树卡；幽灵（包有母版无）由下方 GHOST 检查兜住。
+  if ! diff -rq --exclude=fixtures scripts/model "$pkg/scripts/model" >/dev/null 2>&1; then
+    echo "DIFFDIR: scripts/model vs $pkg"
+    diff -rq --exclude=fixtures scripts/model "$pkg/scripts/model" | head -5
+    fail=1
+  fi
   if [ "$pkg" = "老项目迁移模板包" ]; then check_norm "docs/prompts/迁移整理提示词.md" "$pkg/迁移整理提示词.md"; fi # 迁移提示词仅老包有（根平铺）
   for f in scripts/decision/orca-decide.mjs scripts/decision/run-shadow.mjs scripts/decision/test-filter.mjs scripts/decision/test-mock.mjs scripts/decision/test-slow.mjs scripts/decision/test-partition.mjs scripts/decision/partition-validate.mjs scripts/decision/test-secrets.mjs scripts/decision/build-index.mjs scripts/decision/partition-validate.mjs scripts/decision/test-slow.mjs scripts/decision/test-partition.mjs scripts/decision/partition-validate.mjs scripts/decision/test-secrets.mjs scripts/decision/build-index.mjs scripts/decision/test-slow.mjs scripts/decision/test-partition.mjs scripts/decision/partition-validate.mjs scripts/decision/policy.json scripts/decision/package.json scripts/decision/package-lock.json scripts/decision/README.md scripts/decision/evals/skill-manifest.json scripts/decision/evals/glm-exact-smoke.log scripts/decision/evals/slow-test.log scripts/model/check-ledger.mjs scripts/decision/fixtures/T01.json scripts/decision/fixtures/T02.json scripts/decision/fixtures/T03.json scripts/decision/fixtures/T04.json scripts/decision/fixtures/T05.json scripts/decision/fixtures/T06.json scripts/decision/fixtures/T07.json scripts/decision/fixtures/T08.json scripts/decision/fixtures/T09.json scripts/decision/fixtures/T10.json scripts/decision/fixtures/S01.json scripts/decision/fixtures/S02.json scripts/decision/fixtures/S03.json scripts/decision/fixtures/S04.json scripts/decision/fixtures/S05.json scripts/decision/fixtures/S06.json scripts/decision/fixtures/S07.json scripts/decision/fixtures/S08.json scripts/decision/fixtures/X01.json scripts/decision/fixtures/X02.json scripts/decision/fixtures/F01.json scripts/decision/fixtures/F02.json scripts/decision/fixtures/F03.json scripts/decision/fixtures/F04.json scripts/decision/fixtures/P01.json scripts/decision/fixtures/P02.json scripts/decision/fixtures/P03.json scripts/decision/fixtures/P04.json scripts/decision/fixtures/PX1.json scripts/decision/fixtures/PV_GOOD.json scripts/decision/fixtures/PV_BAD.json; do check "$f" "$pkg/$f"; done
   if ! diff -rq --exclude=node_modules scripts/decision "$pkg/scripts/decision" >/dev/null 2>&1; then echo "DIFFDIR: scripts/decision vs $pkg"; diff -rq --exclude=node_modules scripts/decision "$pkg/scripts/decision" | head -5; fail=1; fi

@@ -1,4 +1,4 @@
-# ORCA V2.1 治理体系说明（对外版，2026-10-08）
+# ORCA V2.1 治理体系说明（对外版，2026-10-14）
 
 > 一页纸讲清：这套体系是什么、怎么运转、模型怎么分工、规范都在哪。
 > 本文件是概览，不能替代真相源做合规审计（完整 Gate、精确派工、验证证据以 AGENTS.md、分工表、HANDOFF 为准）。版本真相以 Git 历史为准。
@@ -11,7 +11,7 @@ ORCA V2.1 是一套多智能体编程治理体系：固定 **9 常驻＋1 升级
 Human Gate 必须用户亲口放行；模型怎么切，用户说了算，任何智能体不得自作主张。
 完成的判断来自用户看得见的部分有没有被逐条验过，不靠测试数量多、构建过、代码审查过。
 
-## 一之二、两种执行方式（2026-10-10 用户定）
+## 二、两种执行方式（2026-10-10 用户定）
 
 **怎么切换：一句话**——用户只需说 **`你是唯一开发者`**，不必复制任何长提示词；智能体自行读取规则并按项目当前阶段自行选用适用规范，用户不逐项指定。这一句**只决定执行方式**，不代表可以跳过产品方案确认、必要的 Human Gate 或授权要求。
 
@@ -23,7 +23,7 @@ Human Gate 必须用户亲口放行；模型怎么切，用户说了算，任何
 
 按阶段该读哪些规范见根 `README.md`「单智能体开发使用说明」。**触发口令「你是唯一开发者」写在 `AGENTS.md` 两种执行方式节首条**，规则与角色卡一致，用户不需另找入口。**两种方式共用同一套规范与模板包，体系内不存在单智能体专属 SOP／角色／Gate／模板包。**
 
-## 二、运转流程
+## 三、运转流程
 
 ```text
 用户说「第一阶段，计划」
@@ -51,7 +51,7 @@ Phase2 完工口径（不改主链、不新增 Gate）：完成＝角色交付�
 
 编排者怎么汇报（2026-10-03 定，写在 AGENTS.md「汇报与自决」节）：只报三件事——目标完成没、用户安排的工作完成没、大影响（上线/回滚、线上故障、数据或备份丢失、生产或他项目改动、要用户本人操作的授权、不可逆删除）。其余小事**自决自做、不问不报**：残留清理、备份与旧文件（不影响继续开发就删，影响的留到大阶段开发完再删）、调试密钥文件（不入库、自动 gitignore）、既有 lint/测试 warning。只有 secrets、删用户数据、生产·数据库·他项目、commit/push 授权四类红线才找用户，且一次问全；单次汇报 ≤10 行，禁把 pending/遗留全量倾倒。啰嗦按违规打回。
 
-## 三、Jev 决策侧车怎么接入
+## 四、Jev 决策侧车怎么接入
 
 Jev 不是第 12 个角色，不进主链，是编排者旁边的机器判定器：
 
@@ -75,7 +75,7 @@ Jev 不是第 12 个角色，不进主链，是编排者旁边的机器判定器
 - 不每个 Task 都调；supervisor 打回计数、watchdog 等确定性逻辑不经 Jev。
 - 决策流水（2026-09-26）：每次调用 best-effort 落项目内 `docs/model/JEV-DECISION-LOG.jsonl`（只非敏感元数据 mode/decision/confidence/model/policy_version/input_digest/latency；**不记 state 原文/Key；不改 Jev 权限与 Contract**）。
 
-## 四、Web QA 通道怎么运转
+## 五、Web QA 通道怎么运转
 
 ```text
 QA Agent ──调用──→ MCP ──驱动──→ BrowserOS neo（独立后台浏览器）──→ Web/localhost
@@ -93,11 +93,11 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 
 - 派工通道纪律：派工前必跑 `bash scripts/check-channel-preflight.sh`，须 `CHANNEL-OK`（报 `CHANNEL-STALE` 该角色禁派）；表定通道角色走通道直调，禁套娃；禁自动升级客户端。
 
-## 五、模型与分工（11 行，以根 `USER_MODEL_OVERRIDE.md` 表为准）
+## 六、模型与分工（11 行，以根 `USER_MODEL_OVERRIDE.md` 表为准）
 
 模型／通道／调用方式**一律以根 `USER_MODEL_OVERRIDE.md` 表为准**（该表即唯一口径，改表必真调）；本说明**不复述模型 ID**，避免与表漂移。角色清单见 `docs/roles/` 11 张卡；task-manager 行模型开窗口时定。
 
-## 六、Task Manager Qualification｜Task Manager 资格测试（增量，2026-09-26）
+## 七、Task Manager Qualification｜Task Manager 资格测试（增量，2026-09-26）
 
 把 TM（编排者）正式纳入模型资格测试；**不新增第 12 角色**，不重做两阶段治理。
 - **Phase1 拟稿分工（2026-10-08 用户定）**：**plan 正文由 builder（`codebuddy/deepseek-v4.1-flash`）拟制与修改，planner（`codex/gpt-6.1-sol`）改为把关者/审查者**——对照 Readiness 清单逐项核、给分、一次列全缺项，**不合格打回 builder 改稿，planner 不亲手写**。目的是把反复重写 plan 的 Sol 调用降下来（省额度）。builder 在 Phase1 **仅开 plan 正文一个口子**，禁碰业务代码；禁自行提分或改 `PLAN_GATE`。
@@ -111,7 +111,7 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 - **Episode 记账（2026-10-07 定）**：编排者**每轮收工必自记一行**，一 Episode 一行；非 Episode 的轮次不记也不硬凑。写后必跑 `scripts/model/tm-qualification.mjs` 校验；无计时证据的 `decision_latency_ms` 填 `null` 不许编；历史行不得改写。**母版与两包的 `docs/model/*.jsonl` 永远只留 `_example` 空壳**（母版是分发源，写真实行会致 check-sync `SYNC-FAIL`），真实 Episode 记到各项目自己的账本。**supervisor 抽查对账**（拿 DISPATCH-LOG 真实派工逐条核是否漏记，漏记/对不上打回，补记由编排者执行）。Episode 层证据不替代 DISPATCH-LOG/TASK-MODEL-LOG 派工账。
 - 候选（真调已过）：`opencode-go/deepseek-v4.1-flash`、`opencode-go/mimo-v2.6-flash`（Runtime=opencode）；真实多项目 A/B 数据由用户后续在真实项目跑。
 
-## 七、规范在哪
+## 八、规范在哪
 
 | 变更说明 | `CHANGELOG.md` | **变更说明正典**——每次改动并 push 必在顶部追加一条（改了什么／为什么改／影响谁／怎么验）；只写 commit message 或 HANDOFF 章节不算交差；随 `PAIRS` 分发到两包，`check-sync.sh` 纳管漂移 |
 
@@ -137,7 +137,7 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 | APP 导航与视觉方向 | `docs/sop/app-navigation.md` | 三方向须在**同一核心页面**并置对比且逐轴不同（**只换配色不算方向**）；`LIGHT`/`DARK` 是主题适配非独立方向；批准后直接进 Freeze 不重复询问；**底部导航由产品决策**（不是所有 APP 都要 Tab），入口/图标/四态/排版/Token/显隐/适配由产品侧在 UX Contract 确定并在 COMPONENT Freeze 绑定；Android 优先 M3 `NavigationBar`/`Scaffold(bottomBar)`，**底栏固定不随内容滚动**；正式 Android QA 禁仅凭网页原型判定 |
 | 公开仓不带 ORCA | `scripts/orca-gitignore.sh`＋`scripts/orca-public-ignore.txt`（忽略清单单一真源）＋`scripts/restore-framework.sh` | 仅作品对外公开时启用一次：注入托管忽略块＋摘除已提交 ORCA 脚手架，**此后推送零操作**；只隐藏通用脚手架，本项目计划/评审/交接/账本保留作云备份，应用 README 不受影响；clone 回来用 restore 补框架（不覆盖任何自有文件）。私有仓跳过 |
 
-## 八、给审查者的检查点
+## 九、给审查者的检查点
 
 1. 进 WAITING 条件全满足：Readiness≥90、P0=0、blocking P1=0、关键事实已验证、核心假设已合理验证；Human Gate 是否被绕过。
 2. 派工实绩是否与分工表一致（supervisor 抽查三处对账）。
