@@ -67,6 +67,26 @@ for pkg in "新项目模板包" "老项目迁移模板包"; do
   if [ "$pkg" = "老项目迁移模板包" ]; then check_norm "docs/prompts/迁移整理提示词.md" "$pkg/迁移整理提示词.md"; fi # 迁移提示词仅老包有（根平铺）
   for f in scripts/decision/orca-decide.mjs scripts/decision/run-shadow.mjs scripts/decision/test-filter.mjs scripts/decision/test-mock.mjs scripts/decision/test-slow.mjs scripts/decision/test-partition.mjs scripts/decision/partition-validate.mjs scripts/decision/test-secrets.mjs scripts/decision/build-index.mjs scripts/decision/partition-validate.mjs scripts/decision/test-slow.mjs scripts/decision/test-partition.mjs scripts/decision/partition-validate.mjs scripts/decision/test-secrets.mjs scripts/decision/build-index.mjs scripts/decision/test-slow.mjs scripts/decision/test-partition.mjs scripts/decision/partition-validate.mjs scripts/decision/policy.json scripts/decision/package.json scripts/decision/package-lock.json scripts/decision/README.md scripts/decision/evals/skill-manifest.json scripts/decision/evals/glm-exact-smoke.log scripts/decision/evals/slow-test.log scripts/model/check-ledger.mjs scripts/decision/fixtures/T01.json scripts/decision/fixtures/T02.json scripts/decision/fixtures/T03.json scripts/decision/fixtures/T04.json scripts/decision/fixtures/T05.json scripts/decision/fixtures/T06.json scripts/decision/fixtures/T07.json scripts/decision/fixtures/T08.json scripts/decision/fixtures/T09.json scripts/decision/fixtures/T10.json scripts/decision/fixtures/S01.json scripts/decision/fixtures/S02.json scripts/decision/fixtures/S03.json scripts/decision/fixtures/S04.json scripts/decision/fixtures/S05.json scripts/decision/fixtures/S06.json scripts/decision/fixtures/S07.json scripts/decision/fixtures/S08.json scripts/decision/fixtures/X01.json scripts/decision/fixtures/X02.json scripts/decision/fixtures/F01.json scripts/decision/fixtures/F02.json scripts/decision/fixtures/F03.json scripts/decision/fixtures/F04.json scripts/decision/fixtures/P01.json scripts/decision/fixtures/P02.json scripts/decision/fixtures/P03.json scripts/decision/fixtures/P04.json scripts/decision/fixtures/PX1.json scripts/decision/fixtures/PV_GOOD.json scripts/decision/fixtures/PV_BAD.json; do check "$f" "$pkg/$f"; done
   if ! diff -rq --exclude=node_modules scripts/decision "$pkg/scripts/decision" >/dev/null 2>&1; then echo "DIFFDIR: scripts/decision vs $pkg"; diff -rq --exclude=node_modules scripts/decision "$pkg/scripts/decision" | head -5; fail=1; fi
+  # 幽灵文件检测（2026-10-14 洁癖新增）：包里有、**母版没有**的文件 = 退役残留。
+  # 背景：_sync-packages.py 长期「只增不减」，母版删掉的 ledger-evidence.mjs /
+  # ledger-stock-scan.mjs 在包里活了下来；老项目同步脚本按包枚举 ⇒ 死文件被铺进
+  # 全部 36 个项目。check-sync 原来只查「母版有而包没有/不一致」，**查不出反向的
+  # 多余文件**，所以这个污染一路绿灯通过。必须补反向检查，否则删除永远传不下去。
+  # 注意：不要用 cd 子 shell（会带偏后续相对路径）；用绝对路径判断。
+  ghosts=""
+  for d in docs/roles docs/sop scripts/model docs/model; do
+    [ -d "$pkg/$d" ] || continue
+    for f in "$pkg/$d"/*; do
+      [ -f "$f" ] || continue
+      rel="${f#$pkg/}"
+      [ -e "$rel" ] || ghosts="$ghosts$rel
+"
+    done
+  done
+  if [ -n "$ghosts" ]; then
+    echo "GHOST(母版已删、包内残留，会被铺进项目): $pkg"; echo "$ghosts" | sed 's/^/  /'
+    fail=1
+  fi
 done
 # 预期差确认：归一化后两包与母版应零差异；非零即 fail（不再只 echo）
 echo "--- 归一化后预期差（应为 0） ---"
@@ -105,7 +125,7 @@ for d in "$ACROOT"/*/; do
     echo "AC-MATRIX-MISSING: $d"
     ac_missing=$((ac_missing+1))
   elif ! grep -qE '^\| *AC-[0-9]+' "$m"; then
-    echo "AC-MATRIX-EMPTY: $m（文件在但无 AC 条目）"
+    echo "AC-MATRIX-EMPTY: ${m}（文件在但无 AC 条目）"
     ac_missing=$((ac_missing+1))
   fi
 done

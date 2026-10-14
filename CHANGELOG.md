@@ -1,3 +1,27 @@
+## 2026-10-14 (PENDING) fix(P0): 审查报告 3 项 P0 —— 门禁自崩 / 唯一口径自相矛盾 / 公开仓隐私泄露
+
+**来源**：`volcengine-plan/ark-code-latest` 只读独立审查（CONDITIONAL PASS，3 项 P0 未清零不得收工）。逐条复核**全部属实**。
+
+### P0-1 门禁自崩：`scripts/check-sync.sh` 在 `set -u` 下必崩
+`echo "AC-MATRIX-EMPTY: $m（文件在但无 AC 条目）"` —— `$m` 后紧跟全角括号，shell 把 `（` 归入变量名
+⇒ `unbound variable`，脚本在打印结论前退出，**四件套第 3 步恒 FAIL**（且报错掩盖真实结论）。
+修为 `${m}（`。现 `check-sync.sh` exit 0 / `SYNC-OK` 可复现。
+
+### P0-2 唯一口径表自相矛盾
+`USER_MODEL_OVERRIDE.md` builder 行同时留着两套互斥说法：10-14 新结论「带 `--auto` 即可、不必先取授权」
+与 10-12 旧口径「先取授权或改派 codebuddy」。执行者读到哪句就可能走反路。
+已删旧口径，只留一条并标注「本行为唯一权威口径，10-12 旧口径已作废」。
+`CHANGELOG.md` 顶条 `93f9a6b` 内同一矛盾也一并更正，并显式指向 `6b72bfc` 为准。
+
+### P0-3 公开仓隐私泄露
+根目录两个 `input-*.jsonl`（028 真实业务账本逐字节副本，503 行）被 `fc9e6d0` 提交进公开云仓，
+**绕过「只留空壳／证据禁入仓」纪律**，且含真实 task/role/model/session 等业务信息。
+成因：`--evidence` 用相对路径时副本落到**调用方工作目录**，我又用了 `git add -A` 把它们扫了进去。
+已 `git rm --cached` ＋ 删除磁盘副本；索引与磁盘残留均为 **0**。
+（历史提交里仍在，本次不再 force-push 改写历史 —— 属不可逆操作，需用户单独授权。）
+
+**验证**：门禁 `CHANNEL-OK`／`SYNC-OK`／35/35／44/44／9/9／2/2／15/15 全绿。
+
 ## 2026-10-14 (93f9a6b) change(override): builder 主用切 opencode-go/deepseek-v4.1-flash，备用 codebuddy/deepseek-v4.1-flash
 
 **为什么**：用户 2026-10-14 直接指定 builder 换主用通道。
@@ -28,12 +52,14 @@
 派工口径已写入 `USER_MODEL_OVERRIDE.md` builder 行与 `AGENTS.md` 跨目录条（后者同日修订，
 取代 2026-09-29 的旧禁令 —— 旧条写的是「先取授权或改派」，现更正为「带 `--auto` 即可」）。
 
+> ⚠️ 本条内的跨目录结论已被同日 `6b72bfc` 实测**推翻并更正**：不是「须先取授权或切备用通道」，
+> 而是**命令带 `--auto` 即可跨项目**。以 `6b72bfc` 为准。
+
 **据此本条生效**：builder 主用 = `opencode-go/deepseek-v4.1-flash`（Runtime=opencode）。
 
 **⚠️ 已在表内标注的风险**：opencode 通道有**跨目录禁令**（AGENTS.md 已记）—— 任务里读写
 本仓以外目录（如 `1.Active/` 下的业务仓库）会被 `external_directory` 自动拒、步骤静默失败。
-**builder 恰恰要写业务仓库**，且业务仓库常不在治理母版仓内。故派 builder 时：
-①任务路径须落在当前工作区内；②跨目录活先取用户授权，或切 codebuddy 备用通道。
+**builder 恰恰要写业务仓库**，且业务仓库常不在治理母版仓内。故派 builder 时**必须带 `--auto`**（详见同日 `fix(override): opencode 通道跨目录用 --auto 解除`）。
 
 ## 2026-10-10 (cedfa79) feat(governance): 正式支持单智能体执行方式（含复审修正：QA 按类型适用 + Human Gate 明示保留）
 

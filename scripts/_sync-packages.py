@@ -131,8 +131,30 @@ def main():
 
 
 def prune():
-    """清掉两个包里多出来的母版实例记录（历史同步误带进来的）。"""
+    """清掉两个包里多出来的母版实例记录（历史同步误带进来的）＋ **退役文件幽灵副本**。
+
+    2026-10-14 洁癖扩展：原 prune 只清 docs/ 下的 .md 实例记录，
+    **不碰 scripts/model**，于是母版删除的文件（ledger-evidence.mjs /
+    ledger-stock-scan.mjs，含已废止的 LEDGER_BASELINE 注入通道教法）在包里长期残留；
+    老项目同步脚本又按包枚举 ⇒ 这批死文件被铺进全部 36 个项目（72 个）。
+    根因：同步「只增不减」——删除操作永远传不下去，等于把退役代码钉死在下游。
+    现在 prune 按母版现况反向删除包内多余文件（母版没有的，包内不该有）。
+    """
     removed = 0
+    # ① 退役文件幽灵：母版没有的，包内必须删（只限同步管辖目录）
+    sync_dirs = DIRS + ["docs/model"]
+    for pkg in ("新项目模板包", "老项目迁移模板包"):
+        for d in sync_dirs:
+            dd = os.path.join(ROOT, pkg, d)
+            src_dd = os.path.join(ROOT, d)
+            if not os.path.isdir(dd) or not os.path.isdir(src_dd):
+                continue
+            for name in os.listdir(dd):
+                fp = os.path.join(dd, name)
+                if os.path.isfile(fp) and not os.path.exists(os.path.join(src_dd, name)):
+                    os.remove(fp)
+                    removed += 1
+    # ② 母版实例记录（历史同步误带进来的）
     for pkg in ("新项目模板包", "老项目迁移模板包"):
         for d in TEMPLATE_DIRS + ["docs"]:
             dd = os.path.join(ROOT, pkg, d)
