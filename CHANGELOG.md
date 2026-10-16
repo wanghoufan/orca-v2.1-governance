@@ -1,3 +1,44 @@
+## 2026-10-16 (PENDING) change(override): supervisor 改用 codebuddy/glm-5.3-flash（已真调验证生效）
+
+**为什么**：用户 2026-10-16 直接指定 supervisor 换模型。
+
+**改了什么**：`USER_MODEL_OVERRIDE.md` supervisor 行 —— 主 `opencode-go/muse-spark-1.3-contributor`（opencode 通道）
+→ `codebuddy/glm-5.3-flash`（codebuddy 通道）。调用写法改为
+`codebuddy --model glm-5.3-flash --effort high -y -p "任务"`。通道目录表：第 1 行标 📦 历史，新增 1b。
+
+**与 code-reviewer 同模型的说明**（已在表内注明，避免日后被当成配置错误）：两者都用
+`codebuddy/glm-5.3-flash`，但职责面不同 —— code-reviewer 只做代码审查；supervisor 兼
+Phase Integrity 六查、账本校验、通道预检合规抽查，只对编排者说话。**同模型不违反
+「独立审查」的独立性要求**：独立性约束的是「审查者不得由被审查者本人担任」，
+supervisor 与 builder 本就是不同派工实体、且 supervisor 不参与被审查任务的实现。
+
+**已验**：只读验名 `check-channel-preflight.sh` → **CHANNEL-OK**（ID 在列）；
+真调验证（用户此前已批同类额度）→ `codebuddy --model glm-5.3-flash` 正常应答「验证成功」。
+**据此本条生效。**
+
+**下游同步**：`supervisor.md` 角色卡的模型行本就写「见表，冲突以模型表为准」，无需改。
+## 2026-10-16 (未提交) chore(model): builder 主用切回 codebuddy/deepseek-v4.1-flash、备用改 glm-5.3-flash
+
+**why**：2026-10-14 按用户令把 builder 主用切到 opencode-go 通道；2026-10-16 用户令切回
+codebuddy 通道的 `deepseek-v4.1-flash`，并把备用从 `codebuddy/deepseek-v4.1-flash`
+（与主重复）改成 `codebuddy/glm-5.3-flash`（同通道不同模型，切备才真正有兜底）。
+
+**what**：
+- `USER_MODEL_OVERRIDE.md` builder 行：主 `codebuddy/deepseek-v4.1-flash`/通道 codebuddy，
+  备用 `codebuddy/glm-5.3-flash`；调用方式改为
+  `codebuddy --model deepseek-v4.1-flash --effort high -y -p "任务"`。
+  原行内 opencode 通道专属的「跨项目必带 `--auto`」实测口径收敛为历史说明（该规则
+  仍适用于其他 opencode 通道角色，见 `AGENTS.md`），避免两个口径平行冲突。
+- 版本注释 T26 → T27。
+
+**影响谁**：所有项目的 builder 派工（改母版即软链全项目同步）；DISPATCH 账本
+`model` 字段记 `codebuddy/deepseek-v4.1-flash`，`used` 恒填主、切备时 note 记原因。
+
+**怎么验**：`python3 scripts/_sync-packages.py` → 两包同步 380/381 files；
+`bash scripts/check-sync.sh` → `SYNC-OK`（exit 0）；`bash scripts/check-channel-preflight.sh`
+→ `CHANNEL-OK`（exit 0），两个模型均在 codebuddy 通道目录内、无 `CHANNEL-STALE`。
+未做真调（烧额度）；只读验名已过。
+
 ## 2026-10-14 (6e35804) fix(sync): 夹具空目录不同步，导致下游包测试语义被静默改变
 
 **怎么发现的**：提交前跑 `check-sync` 报 `DIFFDIR: scripts/model/fixtures vs 两包`，
