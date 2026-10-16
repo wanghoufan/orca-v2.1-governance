@@ -3,7 +3,7 @@
 | 角色 | 模型（精确ID，照抄执行） | 执行通道 | 备用模型 | 备用执行通道 | 调用方式 |
 |---|---|---|---|---|---|
 | task-manager | 开窗口时定 | 当前客户端窗口（自动探测） | — | — | 按 `bash scripts/detect-client.sh` 探测结果派工：`mode=window_subagent` 即当前客户端窗口内 subagent 直派（按开窗口时模型执行），`mode=channel_cli` 即无原生子代理、走通道 CLI |
-| supervisor | codebuddy/glm-5.3-flash | codebuddy | — | — | 派工基础设施走 codebuddy 直调：`codebuddy --model glm-5.3-flash --effort high -y -p "任务"`（2026-10-16 用户令由 `opencode-go/muse-spark-1.3-contributor`（opencode 通道）切来）。**与 code-reviewer 同模型不同角色**：两者都做独立审查/复检，但 supervisor 只对编排者说话、兼 Phase Integrity 六查与账本校验，职责面更宽。表内记全ID，禁本窗口代做 |
+| supervisor | codebuddy/deepseek-v4.1-flash | codebuddy | — | — | 派工基础设施走 codebuddy 直调：`codebuddy --model deepseek-v4.1-flash --effort high -y -p "任务"`（2026-10-16 用户令：先由 `opencode-go/muse-spark-1.3-contributor` 切 `codebuddy/glm-5.3-flash`，同日再切本行）。**与 builder 同模型、不同角色**：builder 写代码，supervisor 只对编排者说话、只读复检、兼 Phase Integrity 六查与账本校验，不改业务代码。表内记全ID，禁本窗口代做 |
 | builder | codebuddy/deepseek-v4.1-flash | codebuddy | codebuddy/glm-5.3-flash | codebuddy | 派工基础设施走 codebuddy 直调：`codebuddy --model deepseek-v4.1-flash --effort high -y -p "任务"`（非交互必带 `-y`，验成功只看正文；codebuddy 无跨目录沙箱限制，跨项目读写无需额外标志）。**2026-10-16 用户定：主用切回 codebuddy 通道的 `deepseek-v4.1-flash`、备用改 `glm-5.3-flash`**（2026-10-14 曾切 opencode-go 通道，现按用户令切回；opencode 通道跨项目必带 `--auto` 的口径是 opencode 通道专属规则、仍适用，但不作用于本行）。用户口语「deepseek-flash」按别名口径落在 `deepseek-v4.1-flash`——codebuddy 通道目录里无字面 `deepseek-flash`，有 `deepseek-v4.1-flash`。**切备**：主通道超时/限额 → `codebuddy --model glm-5.3-flash --effort high -y -p "任务"`（同形），DISPATCH 的 `used` **仍填主**、note 记切备原因；再限额 → 停派喊人。表内记全ID，禁本窗口代做 |
 | planner | codex/gpt-6.1-sol | codex | — | — | **Phase1 只做把关者/审查者，不亲手写 plan 正文**（2026-10-08 用户定：拟稿与改稿归 builder，planner 只审查打分与列缺项，省 Sol 额度；不合格打回 builder，planner 不自己写，违反按 `WRONG_ROUTE` 打回）。派工基础设施走codex直调；CLI用短名`gpt-6.1-sol`：`codex exec -m "gpt-6.1-sol" -s danger-full-access --skip-git-repo-check "任务" </dev/null`；**需 Codex CLI ≥0.159.2**；**2026-10-07 用户令解禁沙箱**（默认沙箱写不了文件，产品审查汇总无法落盘）；**解禁只解决沙箱，不解除 Phase1「禁改业务代码」约束**；须在账本 note 记带了该标志；表内记全ID，禁本窗口代做 |
 | code-reviewer | codebuddy/glm-5.3-flash | codebuddy | — | — | `codebuddy --model glm-5.3-flash --effort high -y -p "任务"`（非交互必带`-y`，验成功只看正文）；表内记全ID，禁本窗口代做 |
@@ -14,7 +14,7 @@
 | senior-expert | codex/gpt-6.1-sol | codex | — | — | 派工基础设施走codex直调；CLI用短名`gpt-6.1-sol`：`codex exec -m "gpt-6.1-sol" -s danger-full-access --skip-git-repo-check "任务" </dev/null`；**需 Codex CLI ≥0.159.2**（0.155.1 拿不到该模型目录，会报 `not supported when using Codex with a ChatGPT account`）；**2026-10-07 用户令解禁沙箱**（升级任务需写业务仓库，默认沙箱写不了）；表内记全ID，只接升级任务，禁本窗口代做 |
 | db-admin | volcengine-plan/ark-code-latest | opencode | radeon-mimo/MiMo-V2.6-Flash | Claude Code | 派工基础设施走opencode直调：`opencode run -m volcengine-plan/ark-code-latest "任务"`（ark-code-latest模式，实际模型由控制台管理）；表内记全ID；工作区固定本机 000-alw-数据库管理专家仓，禁本窗口代做 |
 
-<!-- 分工表版本：T28（2026-10-16 用户令：supervisor 由 `opencode-go/muse-spark-1.3-contributor` 切 `codebuddy/glm-5.3-flash`——opencode 通道报 An active OpenCode Go subscription is required 连续 3 次不可用；含 T27：builder 主用切回 `codebuddy/deepseek-v4.1-flash`、备用改 `codebuddy/glm-5.3-flash`；含 T26：qa 行去「仅限QA」旧字面、解禁口径以 AGENTS 为准、产品审查 A=glm-5.3-flash/B=deepseek-v4-pro 串行双审；含 10-07 T25：codex/gpt-6-sol→gpt-6.1-sol、planner/senior 用 gpt-6.1-sol、需 Codex CLI ≥0.159.2；10-08 product-reviewer 换模型；历史调用档案行不改写） -->
+<!-- 分工表版本：T29（2026-10-16 用户令：supervisor 由 `codebuddy/glm-5.3-flash` 切 `codebuddy/deepseek-v4.1-flash`；含 T28：supervisor 由 `opencode-go/muse-spark-1.3-contributor` 切 `codebuddy/glm-5.3-flash`——opencode 通道报 An active OpenCode Go subscription is required 连续 3 次不可用；含 T27：builder 主用切回 `codebuddy/deepseek-v4.1-flash`、备用改 `codebuddy/glm-5.3-flash`；含 T26：qa 行去「仅限QA」旧字面、解禁口径以 AGENTS 为准、产品审查 A=glm-5.3-flash/B=deepseek-v4-pro 串行双审；含 10-07 T25：codex/gpt-6-sol→gpt-6.1-sol、planner/senior 用 gpt-6.1-sol、需 Codex CLI ≥0.159.2；10-08 product-reviewer 换模型；历史调用档案行不改写） -->
 <!-- TM 资格测试候选（A/B，2026-09-26；真调已过）：opencode-go/deepseek-v4.1-flash 与 opencode-go/mimo-v2.6-flash，Runtime=opencode；TM 行仍"开窗口时定"，主备由用户批准后按"改表→真调→记账"处理（见 docs/model/TASK-MANAGER-QUALIFICATION.md）。 -->
 
 ## 产品审查双审派工约定（2026-10-07 用户定；**不新增角色**，复用 planner + product-reviewer）
@@ -45,7 +45,8 @@
 | # | 状态 | 模型精确 ID（provider/model） | 调用方式 | 用途/角色 | 真调证据 |
 |---|---|---|---|---|---|
 | 1 | 📦 | `opencode-go/muse-spark-1.3-contributor` | `opencode run -m opencode-go/muse-spark-1.3-contributor "任务"` | 历史 supervisor 主用（2026-10-16 切 codebuddy/glm-5.3-flash） | — |
-| 1b | ✅ | `codebuddy/glm-5.3-flash` | `codebuddy --model glm-5.3-flash --effort high -y -p "任务"` | supervisor 主用（2026-10-16 用户令）＋ code-reviewer 主用 | 通道目录已验在列 |
+| 1b | 📦 | `codebuddy/glm-5.3-flash` | `codebuddy --model glm-5.3-flash --effort high -y -p "任务"` | 历史 supervisor 主用（2026-10-16 同日两次切换的中间态）＋ **code-reviewer 现役主用** | 通道目录已验在列 |
+| 1c | ✅ | `codebuddy/deepseek-v4.1-flash` | `codebuddy --model deepseek-v4.1-flash --effort high -y -p "任务"` | supervisor 主用（2026-10-16 用户令）＋ builder 主用 | 通道目录已验在列 |
 | 2 | ✅ | `codebuddy/deepseek-v4.1-flash` | `codebuddy --model deepseek-v4.1-flash --effort high -y -p "任务"` | builder 主用（2026-10-16 用户令切回 codebuddy 通道） | codebuddy 2.168.0 目录只读验名在列；真调证据见下条 |
 | 2b | ✅ | `codebuddy/glm-5.3-flash` | `codebuddy --model glm-5.3-flash --effort high -y -p "任务"` | builder 备用（2026-10-16 用户令） | codebuddy 2.168.0 目录只读验名在列；与 code-reviewer 同 ID 属允许 |
 | 2c | 📦 | `opencode-go/deepseek-v4.1-flash` | `opencode run --auto -m opencode-go/deepseek-v4.1-flash "任务"` | 历史 builder 主用（2026-10-14 切通道，2026-10-16 切回 codebuddy） | 通道目录已验在列（`opencode models` 含该 ID） |

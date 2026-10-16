@@ -1,3 +1,20 @@
+## 2026-10-16 (PENDING) change(override): supervisor 再切 codebuddy/deepseek-v4.1-flash（已真调验证）
+
+**改了什么**：`USER_MODEL_OVERRIDE.md` supervisor 行 —— `codebuddy/glm-5.3-flash` →
+**`codebuddy/deepseek-v4.1-flash`**（均 codebuddy 通道）。调用写法
+`codebuddy --model deepseek-v4.1-flash --effort high -y -p "任务"`。
+通道目录表：1b（glm-5.3-flash）降为 📦 历史中间态并保留 code-reviewer 现役标注，新增 1c。
+
+**同日变更链（原表保留，不抹除）**：`opencode-go/muse-spark-1.3-contributor`（opencode 通道）
+→ `codebuddy/glm-5.3-flash` → `codebuddy/deepseek-v4.1-flash`。中间态在通道目录表留档，
+便于日后回溯「为何换」时能看到完整过程，而不是只看到最终值。
+
+**与 builder 同模型**：supervisor 兼 Phase Integrity 六查、账本校验、通道预检合规抽查，
+只对编排者说话、**不参与被审查任务的实现**，故独立性不受影响（同模型 ≠ 同一人）。
+
+**已验**：只读验名 → **CHANNEL-OK**；真调 `codebuddy --model deepseek-v4.1-flash`
+正常应答「验证成功」。**据此生效。**
+
 ## 2026-10-16 (ead6e33) change(override): supervisor 改用 codebuddy/glm-5.3-flash（已真调验证生效）
 
 **为什么**：用户 2026-10-16 直接指定 supervisor 换模型。
