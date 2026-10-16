@@ -1,4 +1,4 @@
-## 2026-10-16 (PENDING) change(override): supervisor 再切 codebuddy/deepseek-v4.1-flash（已真调验证）
+## 2026-10-16 (6a2608d) change(override): supervisor 再切 codebuddy/deepseek-v4.1-flash（已真调验证）
 
 **改了什么**：`USER_MODEL_OVERRIDE.md` supervisor 行 —— `codebuddy/glm-5.3-flash` →
 **`codebuddy/deepseek-v4.1-flash`**（均 codebuddy 通道）。调用写法
