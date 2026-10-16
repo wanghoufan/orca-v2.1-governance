@@ -1,4 +1,4 @@
-## 2026-10-16 (PENDING) change(override): supervisor 改用 codebuddy/glm-5.3-flash（已真调验证生效）
+## 2026-10-16 (ead6e33) change(override): supervisor 改用 codebuddy/glm-5.3-flash（已真调验证生效）
 
 **为什么**：用户 2026-10-16 直接指定 supervisor 换模型。
 
