@@ -63,6 +63,10 @@ docs/review/RESEARCH_REVIEW.template.md
 docs/handoff/HANDOFF.template.md
 docs/handoff/EXT-WORKLOG.template.md
 scripts/model/check-ledger.mjs
+scripts/codebuddy-auto.sh
+scripts/_cb-rotate.py
+scripts/_cb-active.py
+scripts/_cb-count.py
 scripts/model/tm-qualification.mjs
 scripts/model/tm-qualification.test.mjs
 scripts/detect-client.sh

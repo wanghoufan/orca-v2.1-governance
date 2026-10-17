@@ -33,6 +33,7 @@ TREE_EXCLUDE = ["/evidence/"]
 #   GOVERNANCE_REVIEW-*.md / RESEARCH_REVIEW-*.md / PLAN-*.md / HANDOFF.md 等，**模板包不该带实例记录**）
 TEMPLATE_DIRS = ["docs/pm", "docs/plan", "docs/qa", "docs/review", "docs/handoff"]
 EXTRA = ["scripts/detect-client.sh", "scripts/model/check-ledger.mjs",
+         "scripts/codebuddy-auto.sh", "scripts/_cb-rotate.py", "scripts/_cb-active.py", "scripts/_cb-count.py",
          "scripts/model/model-perf.mjs",   # 2026-10-16：角色×模型耗时对比（换模型提速的可测量依据）
          "scripts/check-channel-preflight.sh",  # weekly-channel-check.sh 是母版 launchd 专用，不随包分发
          # 账本空壳（2026-10-07 补）：此前不在同步清单里，母版改动后 check-sync 报 SYNC-FAIL。
