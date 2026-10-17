@@ -25,6 +25,7 @@ const EVIDENCE_DIR = (() => {
   return i >= 0 && argv[i + 1] && !argv[i + 1].startsWith("-") ? argv[i + 1] : null;
 })();
 const fails = [];
+const NUMERIC_OPTIONAL = ["cost_cny", "elapsed_sec"];   // 见下方校验
 const warns = [];
 
 // model 精确写法白名单
@@ -106,6 +107,13 @@ const fieldRules = {
   runtime: { kind: "string", nullable: false, enum: RUNTIMES, enumLabel: "runtime" },
   // rework：返工**计数**，不允许 null/负数/非整数（审查 2026-10-11 指出不得照 tokens/cost 一并放 null）
   rework: { kind: "int", nullable: false, min: 0 },
+  // elapsed_sec：**单次派工的实际耗时秒数**（2026-10-16 增，用于模型提速的可测量对比）。
+  // 动机：账本原本只记「谁做了什么、结果如何」，**一个字不记花了多久** ⇒ 换模型后
+  // 无法回答「到底快了多少」。实测 1692 行历史账里耗时字段 0、tokens 仅 35 行有值、
+  // cost_cny 0 行 —— 不是统计方法问题，是从未采集。
+  // 口径：可选字段，**拿不到就填 null，不许编**；填了必须是有限正数。
+  // 采集方式：派工前后各记一次时间戳，差值写入本字段（由派工方在收工时计算）。
+  elapsed_sec: { kind: "num", nullable: true, min: 0 },
   // tokens/cost：允许 null（拿不到填 null），有值时校验类型与范围
   tokens: { kind: "int", nullable: true, min: 0 },
   cost_cny: { kind: "number", nullable: true, min: 0 },
@@ -202,6 +210,19 @@ function check(file, need, enums, evidence) {
     n++;
     for (const k of need) if (!(k in d)) fails.push(`${file}#${ln}: missing ${k}`);
     // 结构/结果类硬错误：既有枚举检查，**永不可历史豁免**
+    // 可选数值字段的真实性校验（2026-10-16 补）。
+    // 背景：SPEC 里给 cost_cny / elapsed_sec 写了 min:0，但 SPEC 的 min 只在少数路径生效，
+    // 实测 `elapsed_sec: -5` 与 `cost_cny: "abc"` **都能放行** —— 数值字段实际无校验，
+    // 与 rework 那种「类型+值都硬拦」不一致。此处显式补齐，缺失/非数值即报错。
+    for (const k of NUMERIC_OPTIONAL) {
+      if (!(k in d) || d[k] === null) continue;      // 可选；缺失或 null 合法
+      const v = d[k];
+      if (typeof v !== "number" || !Number.isFinite(v)) {
+        fails.push(`${file}#${ln}: bad ${k}=${JSON.stringify(v)}（须为有限数值或 null；拿不到就填 null，不许编）`);
+      } else if (v < 0) {
+        fails.push(`${file}#${ln}: bad ${k}=${v}（须 ≥ 0）`);
+      }
+    }
     for (const [k, vs] of Object.entries(enums)) {
       if (k in d && d[k] !== null && !vs.includes(d[k])) fails.push(`${file}#${ln}: bad ${k}=${d[k]}`);
     }
