@@ -1,4 +1,4 @@
-## 2026-10-17 (PENDING) fix(governance): 整改独立审查报告 PASS_WITH_FIXES（4×P1 + 8×P2，逐条核实后全修）
+## 2026-10-17 (571be18) fix(governance): 整改独立审查报告 PASS_WITH_FIXES（4×P1 + 8×P2，逐条核实后全修）
 
 **为什么**：独立审查（ark-code-latest，269 行）给出 `PASS_WITH_FIXES`，列 4 项 P1＋8 项 P2。
 本轮**逐条实测核实后全部成立**（不是照单全收），全部整改完毕。
@@ -32,7 +32,7 @@ G11 新增**角色覆盖巡检**（`ROLE-COVERAGE`，只报不阻塞）：实测
 **gates 11/11**（新增 2 条：缺 only-A/only-B 被拦、`--allow-example` 不得硬编码）｜codebuddy-rotate 12/12｜continuous-push 9/9｜7-Skill `VALID`；
 另做**现场复现**：按 README 整包新建项目实测首门 exit 0；`sync-old-projects.sh --dry-run` 实跑并逐项验枚举含 4 份 SOP 与 6 个脚本。
 
-## 2026-10-17 (PENDING) fix(governance): 体系全面自查 → 3 处真矛盾、3 道真门、2 组新回归
+## 2026-10-17 (571be18) fix(governance): 体系全面自查 → 3 处真矛盾、3 道真门、2 组新回归
 
 **为什么**：用户令「对所有治理体系文件做全面审查」，四路只读审查（一致性／可落实性／账本／概览与测试真实性）交叉出同一结论——
 **账本侧已机器化，流程侧几乎全是「自评自写」**，且**最硬的那道门没有执行保证**。本次把「文档说了算」的漏洞尽量变成脚本说了算。
