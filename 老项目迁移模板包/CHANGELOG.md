@@ -1,4 +1,4 @@
-## 2026-10-16 (PENDING) feat(rotate): codebuddy 撞 429 自动切账号 —— builder 355 次派工的稳定性补丁
+## 2026-10-16 (9709200) feat(rotate): codebuddy 撞 429 自动切账号 —— builder 355 次派工的稳定性补丁
 
 **起因**：用户「先从派工次数最多的提高速度」→ 实测 builder 主模型 `codebuddy/deepseek-v4.1-flash`
 **正在限流**（429，重置 10-17 13:53）。深挖发现用户有 **3 个 codebuddy 账号**（wb-switch 轮换机制，
