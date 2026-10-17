@@ -1,3 +1,24 @@
+## 2026-10-16 (PENDING) refactor(roles): neat-freak 改为编排者自做，不再派工
+
+**为什么**：用户 2026-10-16 直接指定。洁癖＝收尾时对账「文档／规则／运行态」三者一致，
+本就是编排者自身职责的一部分；另派一个角色既多一道派工成本，又让
+「谁保证账本没写错」变成两个实体互相甩。
+
+**改了什么**（四处保持一致，避免文档打架）
+- `USER_MODEL_OVERRIDE.md` neat-freak 行：模型/通道/备用全清为 `—`，注明**不占模型行、
+  不进通道目录、不造 DISPATCH 派工行**；通道目录表里 `db-admin/neat-freak` 的合并标注拆回 db-admin。
+- `AGENTS.md`：①角色列表标注「编排者自做，不派工」；②「谁写哪」表补执行者＝编排者本人；
+  ③Phase2 派工链「经验/neat-freak 只在收尾派一次」改为「experience-recorder 只在收尾派一次
+  （neat-freak 已改为编排者自做）」。
+- `docs/roles/neat-freak.md`：**保留卡**（口径仍有效：何时触发、写哪、什么标准），
+  顶部加执行者说明，「模型」行改为「执行者＝编排者本人」。删卡会丢掉口径，
+  将来若恢复派工也无据可依 —— 故改为「不再是执行者定义」而非删除。
+
+**不变的部分**：触发时机（收尾）、写入位置（改对应 docs 原文＋交接记一笔）、
+标准（唯一现役答案）全部保留，只是执行者换成编排者本人。
+
+**验证**：`SYNC-OK`｜41/41｜44/44｜9/9｜2/2｜15/15。
+
 ## 2026-10-16 (6a2608d) change(override): supervisor 再切 codebuddy/deepseek-v4.1-flash（已真调验证）
 
 **改了什么**：`USER_MODEL_OVERRIDE.md` supervisor 行 —— `codebuddy/glm-5.3-flash` →

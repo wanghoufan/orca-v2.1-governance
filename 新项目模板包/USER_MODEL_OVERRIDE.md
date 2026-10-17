@@ -10,8 +10,7 @@
 | qa | codex/gpt-6-luna | codex | — | — | 派工基础设施走codex直调；CLI用短名`gpt-6-luna`，**按 `AGENTS.md` 解禁口径带 `-s`（2026-10-09 已放宽到 QA＋planner＋senior-expert，本行不再写"仅限QA"以免执行者误拒）**：`codex exec -m "gpt-6-luna" -s danger-full-access --skip-git-repo-check "任务" </dev/null`（`-s danger-full-access`＝关闭沙箱、给完整访问权，用于解端口绑定/网络限制，实测可绑 127.0.0.1 端口；**其他角色是否可带，以 `AGENTS.md` 的解禁口径为准**（2026-10-07 用户令已放宽到 QA＋planner＋senior-expert；2026-10-09 已同步清理行标题的旧表述）；禁超出口径乱带，且每次带该标志须在账本 note 记账；表内记全ID，禁本窗口代做）。普通QA（回归/校验/DoD）走 codex Luna；真机QA（adb/Expo）走本窗口 bash 直驱（开窗口模型）。**口径以 `AGENTS.md`「TM 代做边界」为准**：真机直驱与 TM 兜底**一律记 `executed_by`＋note**（真机直驱记 `executed_by=task-manager` 并注明 qa 卡允许），不得以「supervisor 不记偏离」为由免记。 |
 | product-reviewer | codebuddy/glm-5.3-flash | codebuddy | — | — | 派工基础设施走 codebuddy 通道直调：`codebuddy --model glm-5.3-flash --effort high -y -p "任务"`（**2026-10-08 用户令由 `opencode/muse-spark-1.3-contributor-free` 改来**；真调已过 exit 0 回 ok）。只读研究、禁写业务代码与改 Plan。**产品审查双审链的审查 A 位即本模型**，与审查 B（`codebuddy/deepseek-v4-pro`）**必须串行，禁并发** |
 | experience-recorder | opencode/muse-spark-1.3-contributor-free | opencode | — | — | 派工基础设施走opencode直调：`opencode run -m opencode/muse-spark-1.3-contributor-free "任务"`（限时免费档；2026-10-07 由 opencode-go/space-bunny-free 切，该 ID 已不在 opencode 通道目录会致 CHANNEL-STALE 禁派）；表内记全ID，禁本窗口代做 |
-| neat-freak | volcengine-plan/ark-code-latest | opencode | radeon-mimo/MiMo-V2.6-Flash | Claude Code | 派工基础设施走opencode直调：`opencode run -m volcengine-plan/ark-code-latest "任务"`（ark-code-latest模式，实际模型由控制台管理）；表内记全ID，禁本窗口代做 |
-| senior-expert | codex/gpt-6.1-sol | codex | — | — | 派工基础设施走codex直调；CLI用短名`gpt-6.1-sol`：`codex exec -m "gpt-6.1-sol" -s danger-full-access --skip-git-repo-check "任务" </dev/null`；**需 Codex CLI ≥0.159.2**（0.155.1 拿不到该模型目录，会报 `not supported when using Codex with a ChatGPT account`）；**2026-10-07 用户令解禁沙箱**（升级任务需写业务仓库，默认沙箱写不了）；表内记全ID，只接升级任务，禁本窗口代做 |
+| neat-freak | — | — | — | — | **2026-10-16 用户令：neat-freak 由编排者（task-manager）自己做，不再派工。** 洁癖＝收尾时对账文档/规则/运行态三者一致，属编排者自身职责的一部分，另派一个角色既多一道派工成本，又让「谁保证账本没写错」变成两个实体互相甩。**不占模型行、不进通道目录、不造 DISPATCH 派工行。** 口径保留：触发时机（收尾）、写入位置（改对应 docs 原文＋交接记一笔）、标准（唯一现役答案）均不变，只是执行者＝编排者本人 || senior-expert | codex/gpt-6.1-sol | codex | — | — | 派工基础设施走codex直调；CLI用短名`gpt-6.1-sol`：`codex exec -m "gpt-6.1-sol" -s danger-full-access --skip-git-repo-check "任务" </dev/null`；**需 Codex CLI ≥0.159.2**（0.155.1 拿不到该模型目录，会报 `not supported when using Codex with a ChatGPT account`）；**2026-10-07 用户令解禁沙箱**（升级任务需写业务仓库，默认沙箱写不了）；表内记全ID，只接升级任务，禁本窗口代做 |
 | db-admin | volcengine-plan/ark-code-latest | opencode | radeon-mimo/MiMo-V2.6-Flash | Claude Code | 派工基础设施走opencode直调：`opencode run -m volcengine-plan/ark-code-latest "任务"`（ark-code-latest模式，实际模型由控制台管理）；表内记全ID；工作区固定本机 000-alw-数据库管理专家仓，禁本窗口代做 |
 
 <!-- 分工表版本：T29（2026-10-16 用户令：supervisor 由 `codebuddy/glm-5.3-flash` 切 `codebuddy/deepseek-v4.1-flash`；含 T28：supervisor 由 `opencode-go/muse-spark-1.3-contributor` 切 `codebuddy/glm-5.3-flash`——opencode 通道报 An active OpenCode Go subscription is required 连续 3 次不可用；含 T27：builder 主用切回 `codebuddy/deepseek-v4.1-flash`、备用改 `codebuddy/glm-5.3-flash`；含 T26：qa 行去「仅限QA」旧字面、解禁口径以 AGENTS 为准、产品审查 A=glm-5.3-flash/B=deepseek-v4-pro 串行双审；含 10-07 T25：codex/gpt-6-sol→gpt-6.1-sol、planner/senior 用 gpt-6.1-sol、需 Codex CLI ≥0.159.2；10-08 product-reviewer 换模型；历史调用档案行不改写） -->
@@ -54,9 +53,9 @@
 | 4 | ✅ | `codebuddy/glm-5.3-flash` | `codebuddy --model glm-5.3-flash --effort high -y -p "任务"` | code-reviewer | — |
 | 5 | ✅ | `codex/gpt-6-luna` | `codex exec -m "gpt-6-luna" -s danger-full-access --skip-git-repo-check "任务" </dev/null` | qa 普通 QA（解禁沙箱） | — |
 | 6 | 📦 | `opencode/muse-spark-1.3-contributor-free` | 本窗口 subagent 直派 | 历史 product-reviewer（2026-10-08 改 codebuddy/glm-5.3-flash） | — |
-| 7 | ✅ | `volcengine-plan/ark-code-latest` | `opencode run -m volcengine-plan/ark-code-latest "任务"` | db-admin/neat-freak 主用（ark-code-latest 模式，实际模型由控制台管理） | §56 pong exit 0 |
-| 8 | ✅ | `radeon-mimo/MiMo-V2.6-Flash` | `opencode run -m radeon-mimo/MiMo-V2.6-Flash "任务"`（via Claude Code） | db-admin/neat-freak 备用 | §58 pong exit 0 |
-| 9 | 📦 | `opencode-go/space-bunny-free` | `opencode run -m opencode-go/space-bunny-free "任务"` | experience-recorder/neat-freak（旧，已切 ark-code-latest） | — |
+| 7 | ✅ | `volcengine-plan/ark-code-latest` | `opencode run -m volcengine-plan/ark-code-latest "任务"` | db-admin 主用（ark-code-latest 模式，实际模型由控制台管理）；neat-freak 已于 2026-10-16 改为编排者自做、不再派工 | §56 pong exit 0 |
+| 8 | ✅ | `radeon-mimo/MiMo-V2.6-Flash` | `opencode run -m radeon-mimo/MiMo-V2.6-Flash "任务"`（via Claude Code） | db-admin 备用 | §58 pong exit 0 |
+| 9 | 📦 | `opencode-go/space-bunny-free` | `opencode run -m opencode-go/space-bunny-free "任务"` | experience-recorder（旧；neat-freak 已于 2026-10-16 改为编排者自做） | — |
 | 10 | 📦 | `opencode-go/deepseek-v4.1-flash` | `opencode run -m opencode-go/deepseek-v4.1-flash "任务"` | TM 资格候选 A | §53 回「ds ok」 |
 | 11 | 📦 | `opencode-go/mimo-v2.6-flash` | `opencode run -m opencode-go/mimo-v2.6-flash "任务"` | TM 资格候选 B | §53 回「mimo ok」 |
 | 12 | 📦 | `volcengine-plan/glm-5.3-flash` | `opencode run -m volcengine-plan/glm-5.3-flash "任务"` | 历史（builder 备链等） | §42 回「glm exact ok」 |
@@ -73,7 +72,7 @@
 
 ### 调用通道说明
 - **当前客户端窗口（自动探测）**：每轮开工先跑 `bash scripts/detect-client.sh`（输出 `client=/subagent=/mode=`，认客户端顺序＝bundle id → TERM_PROGRAM → 环境变量 → 父进程链 → 仓库痕迹目录仅作提示）。`mode=window_subagent`＝当前客户端有原生子代理，在窗口内直派（TM），可享真 resume／并行／worktree 隔离；`mode=channel_cli`＝没有原生子代理或客户端未识别（保守默认），改走通道 CLI，**只在汇报里带一句"当前客户端未识别，按 CLI 通道派"，不找用户**。已校准客户端＝Orca／Trae／Qoder／Codex／Claude Code／opencode；新客户端跑一次 `bash scripts/detect-client.sh` 校准后加进脚本映射即可
-- **opencode**：`opencode run -m <精确ID> "任务"`（supervisor/builder(旧)/db-admin/neat-freak(新)/experience-recorder(旧)）
+- **opencode**：`opencode run -m <精确ID> "任务"`（supervisor/db-admin）
 - **codebuddy**：`codebuddy --model <精确ID> --effort high -y -p "任务"`（builder 主/code-reviewer）
 - **codex**：`codex exec -m "<短名>" --skip-git-repo-check "任务" </dev/null>`（planner/senior-expert/qa）
 - **Claude Code**：`radeon-mimo/MiMo-V2.6-Flash` 备用经 Claude Code 调用（policy.json `runner_bin: "claude"`）
