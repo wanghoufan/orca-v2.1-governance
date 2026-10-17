@@ -38,13 +38,37 @@ for lg in TASK-MODEL-LOG DISPATCH-LOG TASK-MANAGER-QUALIFICATION-EVENTS JEV-DECI
   fi
 done
 
+# ③ 账本机器校验（2026-10-17 自查 P0-8 补）：最硬的那道门此前**没有任何执行保证**——
+#    「收工前必跑 check-ledger」是句文字，全仓无 CI、无 wrapper，pre-commit 也不触发它。
+#    纪律写得到、跑不跑全凭习惯 ⇒ 与本脚本存在的理由完全相同，故一并挂进 hook。
+#    只在「本次确实改了账本」时跑，避免无关提交被牵连。
+for lg in TASK-MODEL-LOG DISPATCH-LOG; do
+  f="docs/model/$lg.jsonl"
+  if git diff --cached --name-only --diff-filter=ACMR -- "$f" 2>/dev/null | grep -q .; then
+    if [ -f scripts/model/check-ledger.mjs ]; then
+      # 2026-10-17 G3 修：原先硬编码 --allow-example，等于把「母版只留 _example 空壳」这条
+      # 规则在**项目仓也一并放过** —— 而本脚本会随包分发到每个项目。母版才允许降级。
+      exflag=""
+      case "$(git rev-parse --show-toplevel 2>/dev/null)" in
+        *"/4.Templates（PC）"*) exflag="--allow-example" ;;
+      esac
+      if ! node scripts/model/check-ledger.mjs docs/model $exflag; then
+        echo "PRE-COMMIT-GUARD 拦截：账本机器校验未过（check-ledger exit≠0），见上方 LEDGER-FAIL" >&2
+        echo "  · 本仓是母版：账本只允许 _example 空壳；若你在项目仓，请改用对应项目路径" >&2
+        rc=1
+      fi
+    fi
+    break
+  fi
+done
+
 if [ "${#bad[@]}" -gt 0 ]; then
   echo "PRE-COMMIT-GUARD 拦截：以下内容不得进入本仓（${#bad[@]} 项）" >&2
   for b in "${bad[@]}"; do echo "  ✗ $b" >&2; done
   echo "" >&2
   echo "  · input-*.jsonl / 证据-*.json / .evidence/ 是**原始输入副本**，含业务内容，本机留存不入仓" >&2
   echo "  · 母版 docs/model/*.jsonl 永远只留 _example 空壳；真实行落各项目自己的账本" >&2
-  echo "  · 确需提交请显式 `git rm --cached` 后再提交，或改写到项目仓内" >&2
+  printf '%s\n' '  · 确需提交请显式 git rm --cached 后再提交，或改写到项目仓内' >&2
   rc=1
 fi
 exit "$rc"

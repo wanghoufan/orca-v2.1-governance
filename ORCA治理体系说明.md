@@ -1,4 +1,4 @@
-# ORCA V2.1 治理体系说明（对外版，2026-10-14）
+# ORCA V2.1 治理体系说明（对外版，2026-10-17）
 
 > 一页纸讲清：这套体系是什么、怎么运转、模型怎么分工、规范都在哪。
 > 本文件是概览，不能替代真相源做合规审计（完整 Gate、精确派工、验证证据以 AGENTS.md、分工表、HANDOFF 为准）。版本真相以 Git 历史为准。
@@ -93,7 +93,7 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 
 - 派工通道纪律：派工前必跑 `bash scripts/check-channel-preflight.sh`，须 `CHANNEL-OK`（报 `CHANNEL-STALE` 该角色禁派）；表定通道角色走通道直调，禁套娃；禁自动升级客户端。
 
-## 六、模型与分工（11 行，以根 `USER_MODEL_OVERRIDE.md` 表为准）
+## 六、模型与分工（11 个角色行，以根 `USER_MODEL_OVERRIDE.md` 表为准；表内禁止把两行粘成一行）
 
 模型／通道／调用方式**一律以根 `USER_MODEL_OVERRIDE.md` 表为准**（该表即唯一口径，改表必真调）；本说明**不复述模型 ID**，避免与表漂移。角色清单见 `docs/roles/` 11 张卡；task-manager 行模型开窗口时定。
 
@@ -111,13 +111,38 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 - **Episode 记账（2026-10-07 定）**：编排者**每轮收工必自记一行**，一 Episode 一行；非 Episode 的轮次不记也不硬凑。写后必跑 `scripts/model/tm-qualification.mjs` 校验；无计时证据的 `decision_latency_ms` 填 `null` 不许编；历史行不得改写。**母版与两包的 `docs/model/*.jsonl` 永远只留 `_example` 空壳**（母版是分发源，写真实行会致 check-sync `SYNC-FAIL`），真实 Episode 记到各项目自己的账本。**supervisor 抽查对账**（拿 DISPATCH-LOG 真实派工逐条核是否漏记，漏记/对不上打回，补记由编排者执行）。Episode 层证据不替代 DISPATCH-LOG/TASK-MODEL-LOG 派工账。
 - 候选（真调已过）：`opencode-go/deepseek-v4.1-flash`、`opencode-go/mimo-v2.6-flash`（Runtime=opencode）；真实多项目 A/B 数据由用户后续在真实项目跑。
 
+## 七之三、2026-10-16／17 新增机制（三件，都是「把文字变成机器」）
+
+- **连续推进模式（一路推到底）**：用户说`一路推到底`／「不要中途找我」＝对**当次目标**的连续推进授权，
+  PLAN 完成后自动进 DEVELOP、产品审查后自动继续、复核环间不问、收工只报一次。
+  **默认仍停**——只有拿到该令才自动；**四类红线＋首次发布签收＋超出 Plan 范围的变更仍然必须停**。
+- **codebuddy 429 自动切账号**：`codebuddy` 命令层有影子包装（命令层强制，任何项目敲都走），
+  撞频率限制自动换下一个账号重试、成功后粘住，全账号限流则如实返回 429（不伪装成功）；
+  **只切账号、不动模型**。给派工最频繁的角色（builder）解掉「重派白等一轮」的往返。
+- **账本三道真门（2026-10-17 自查补）**：①**角色交付 ≠ 已验收**——有 QA 交付却无 `ACCEPTED`/`OPEN` 收尾行即 `ACCEPTED-MISSING`；
+  ②**首次发布必须显式签收**——矩阵声明「首次发布」而无「用户签收」记录即 `SIGNOFF-MISSING`；
+  ③**提交前自动跑账本校验**——最硬的那道门不再只靠「收工前必跑」这句文字。
+  另有产品审查产出校验脚本：零产出或汇总缺段即 exit 1，**「禁信 exit 0」从此由脚本执行**。
+
+- **耗时与效能可测**：账本新增可选字段 `elapsed_sec`（单次派工耗时秒数，拿不到填 `null`、不许编），
+  配 `model-perf.mjs` 做「角色 × 模型」耗时对比 —— 这样「换模型到底快多少」有数据可答，
+  而不是靠感觉。历史账本该字段普遍为空，**新派工起必须真记**。
+- **两个收尾角色已改为编排者自做**：`neat-freak`（文档对齐）与 `experience-recorder`（经验一句话）
+  都不再作为独立派工角色——前者本就是编排者职责的一部分，后者表内模型已不在通道目录、
+  留着只会让通道预检长期红灯。两者卡片保留作**口径说明**（何时触发、写哪、达到什么标准），
+  **不占模型行、不记派工行**。
+
+**已知边界（写明以免被误当成漏洞）**：以 `chain_status=OPEN` 收尾**不是**绕过签收的手段——
+`OPEN` 的语义是「未完」，因此**报完工必须落 `ACCEPTED`**；`OPEN` 收尾的项目不得计入「已完成」，
+由 supervisor 抽查是否把 `OPEN` 项目误报为完工（2026-10-17 审查 G10 记录，机器只拦 `ACCEPTED` 侧的签收）。
+
 ## 七之二、账本与证据的现役机制（2026-10-14 体系自查后补齐）
 
 概览此前滞后于本轮改造，以下为**现役口径**（细节见 `docs/model/TASK-MANAGER-QUALIFICATION.md` 与 `AGENTS.md`）：
 
 | 机制 | 一句话 |
 |---|---|
-| **取消历史豁免** | 「以前的不管，以后的为准」——所有字段错误一律 FAIL，旧写法也判错，需当场改对 |
+| **取消历史豁免** | 「以前的不管，以后的为准」——结构／枚举／日期等字段错误一律 FAIL；写法不规范（如 model 非白名单写法）为 WARN，旧写法也判错，需当场改对 |
 | **升级触发机器校验** | 同一 Task 被 supervisor 打回 ≥2 次，中央校验器**当场拦下**漏记升级（原为纸面规则，从未真跑通过） |
 | **派工逐派不漏记** | 有真实任务记录却零派工记录 ⇒ FAIL；单智能体项目须在 `docs/model/GOVERNANCE-STATE.json` 显式写 `execution_mode: "solo"` 才豁免（不靠猜） |
 | **Episode 防重复计分** | `episode_id` 全文件唯一（重复即 exit 1）；更正另起新行并带 `supersedes` 指向被更正行，被指到的原行**保留但不参与计分** |
@@ -130,9 +155,8 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 
 ## 八、规范在哪
 
-| 变更说明 | `CHANGELOG.md` | **变更说明正典**——每次改动并 push 必在顶部追加一条（改了什么／为什么改／影响谁／怎么验）；只写 commit message 或 HANDOFF 章节不算交差；随 `PAIRS` 分发到两包，`check-sync.sh` 纳管漂移 |
-
 | 规范 | 位置 | 说明 |
+| 变更说明 | `CHANGELOG.md` | **变更说明正典**——每次改动并 push 必在顶部追加一条（改了什么／为什么改／影响谁／怎么验）；只写 commit message 或 HANDOFF 章节不算交差；随 `PAIRS` 分发到两包，`check-sync.sh` 纳管漂移 |
 |---|---|---|
 | 总纲 | `AGENTS.md` | 两阶段、派工顺序、升级、账本、红线（全员遵守一页） |
 | 产品验收 | `docs/qa/BUGS.template.md`（产品验收追踪矩阵节）＋`docs/roles/qa.md`（第八查/不可放行情形/视觉验收最小覆盖）＋`docs/pm/PRODUCT_PLAN.template.md`（验收标准与关键 AC 集合） | 用户可见要求的验收标准写在计划，证据落矩阵，QA 与 Supervisor 同源判放行 |
@@ -144,7 +168,7 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 | 账本 | `docs/model/TASK-MODEL-LOG.jsonl`、`DISPATCH-LOG.jsonl` | 换模型决策的重要依据（先读账本，最终用户定）；`model` 精确写法，含可选 `executed_by`/`chain_status`；校验 `scripts/model/check-ledger.mjs`（FAIL 拦、WARN 供抽查） |
 | TM 资格 | `docs/model/TASK-MANAGER-QUALIFICATION.md`＋`TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`；评分 `scripts/model/tm-qualification.mjs` | Episode/五维评分/Gate＋采样门槛；证据不改账本；主备由用户批准 |
 | Jev 决策流水 | `docs/model/JEV-DECISION-LOG.jsonl` | 每次 orca-decide 调用一行（非敏感元数据；不记原文/Key） |
-| 交接 | `docs/handoff/HANDOFF.md` | 状态源（新节顺延，现至 §71；旧号冻结不重排；新节自 §72 起顺延，勿撞旧号） |
+| 交接 | `docs/handoff/HANDOFF.md` | 状态源（新节顺延；**编号不写死在本文件**，以文件内实际最新一节为准；旧号冻结不重排，新节顺延勿撞旧号） |
 | 迁移入口 | `docs/prompts/迁移整理提示词.md`（老包根同名） | 自举取包＋冲突处理＋5.7 登记检查（迁移即登记，`LEDGER-OK` 才算完成） |
 | 新项目脚手架 | `新项目模板包/`（目录**空**→整包拷 `cp -R "<母版>/新项目模板包/." <项目根>/`，快且不漏文件；目录**非空**→只覆盖规则层＋补新增，实例层不碰，因整包拷会把计划/BUGS/HANDOFF/账本真实行静默顶成空模板且不报错；规则文件不挑行合并） | 老项目用 `老项目迁移模板包/`＋【迁移整理】提示词（同规则＋冲突改名铁律），不要用新项目这套 |
 | Phase1 可运行原型 | AGENTS.md「Phase1 必须交付可运行交互原型」＋`PRODUCT_PLAN.template.md` Gate 的「原型交付完整性检查条件」 | 有用户界面的 APP，Phase1 默认须交付 `docs/design/prototype/` 下本地可运行原型（核心页面完整／关键交互可操作／品牌与真实素材落实／浅深色与语言及异常状态可演示／给出路径与打开命令）；PDF、截图、纯文档、在线概念图、单张示例预览 HTML 都不算。**文件存在与真实运行分开判定**，五项须全过才进 WAITING，缺则判现有 Gate 不满足；`check-ledger` 报 `PROTO-MISSING`／`PROTO-NO-RUNTIME-EVIDENCE` |
@@ -169,6 +193,12 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 11. 公开作品仓：ORCA 通用脚手架是否已从公开仓摘除（`orca-gitignore.sh --untrack`，推送零操作）；应用 `README.md`/首页是否完好；本项目计划/评审/交接/账本是否仍留作云备份。
 12. APP 导航与视觉方向：三方向是否在**同一核心页面**并置且**非只换配色**；`LIGHT`/`DARK` 是否被误当独立方向；批准后是否重复询问风格；**底部导航是否由 Product Plan 决策（而非方向集自造）**；底栏是否固定不随内容滚动；Android 验收是否用了真机证据而非网页原型。
 13. Phase1 可运行原型：有用户界面的 APP 是否带**可运行**原型进 Human Gate（而非 PDF/截图/纯文档）；**文件存在与真实运行是否分开判定**；用户能否自行打开而不靠编排者讲解。
+14. 汇报纪律：编排者是否只报目标完成/工作完成/大影响三类，是否 ≤10 行，残留清理/备份旧文件/既有 warning 有没有被拿来反复问用户（发现即打回）。
+
 15. 界面信息分层：L3 内部信息（Phase/Gate/AC-FR/证据等级/内部 ID/动作代码/开发版本与 hash）是否漏上屏；来源是否用可读名称；必要安全/法律/停止条件是否被精简掉。
 16. 产品简化门槛：同一状态下是否有无意义重复入口；高频操作是否被低频功能挤占；是否为覆盖率堆页面控件；按钮文案与实际跳转是否一致；**必要的安全停止／空状态／删除确认有无被误删**；Reviewer 是否给了有依据的「无须删减」而非凑数删减；QA 是否用真实截图录屏取证而非用通过率替代。
-14. 汇报纪律：编排者是否只报目标完成/工作完成/大影响三类，是否 ≤10 行，残留清理/备份旧文件/既有 warning 有没有被拿来反复问用户（发现即打回）。
+
+17. 连续推进：用户说`一路推到底`后是否真的环间不问（而不是又回头问），同时首次发布签收是否仍然停下。
+18. 429 自动切账号：派工是否走命令层包装（不是靠编排者记得改调用）；影子包装是否仍在位。
+19. 账本三门：ACCEPTED-MISSING／SIGNOFF-MISSING 是否拦得住「未签收就报完工」；pre-commit 是否真串了账本校验。
+20. 产品审查产出：`check-product-review.sh` 是否收工真跑（exit 0 才算产出，非 exit 0）。

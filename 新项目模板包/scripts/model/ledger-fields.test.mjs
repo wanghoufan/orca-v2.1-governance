@@ -67,6 +67,12 @@ const CASES = [
   ["case21-ac-missing-accepted", 1, ["ACCEPTED-BLOCK"]],
   ["case22-ac-all-pass", 0, []],           // AC 全 PASS 才可放行
   ["case23-ac-untested-open", 0, []],      // 未判验收（OPEN）不拦，避免误伤
+  // 收工口径反转（2026-10-17 自查 P0-6/P0-7）：有 QA 交付却无收尾行 ⇒ 不得报完工；
+  // 首次发布 ACCEPTED 但无显式用户签收 ⇒ 不得放行；单智能体可豁免第一条。
+  ["case24-accepted-missing", 1, ["ACCEPTED-MISSING"]],
+  ["case25-firstrelease-nosignoff", 1, ["SIGNOFF-MISSING"]],
+  ["case26-firstrelease-signed", 0, []],
+  ["case27-solo-exempt", 0, []],
 ];
 for (const [fixture, wantExit, mustInclude] of CASES) {
   const r = withFixture(fixture, (d) => runLedger(d));

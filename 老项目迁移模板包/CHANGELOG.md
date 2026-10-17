@@ -1,3 +1,83 @@
+## 2026-10-17 (PENDING) fix(governance): 整改独立审查报告 PASS_WITH_FIXES（4×P1 + 8×P2，逐条核实后全修）
+
+**为什么**：独立审查（ark-code-latest，269 行）给出 `PASS_WITH_FIXES`，列 4 项 P1＋8 项 P2。
+本轮**逐条实测核实后全部成立**（不是照单全收），全部整改完毕。
+
+### P1（4 项，全部成立并已修）
+1. **G1 老项目同步清单漏铺** —— `sync-old-projects.sh` 的手写 `FILES` 缺 `app-brand-assets / app-navigation / app-ui-layers / app-simplicity`
+   四份 SOP，也缺 `check-product-review / pre-commit-guard / check-sync / orca-* / restore-framework` 等脚本；
+   「自动枚举」只覆盖 `scripts/model` 与 `docs/model`。⇒ **已铺老项目（028/040 等）实测拿不到新规则，照 AGENTS 执行必然 `no such file`**
+   —— 正是「有体系、铺不下去」。修法：补枚举 **＋ 从老包自动枚举 `docs/sop/*.md` 与治理 `scripts/*.sh`**（27 项），杜绝下轮再漏。
+2. **G2 新项目第一道机器门恒红** —— 按 README 新建空项目后 `check-ledger` 必 exit 1（`APP-TRUEOUT-SOURCE-UNRESOLVED`），
+   与 README「期望 LEDGER-OK」矛盾，且报错文案「docs/pm 下有 Product Plan」**与事实不符**（只有 `*.template.md`，已被过滤）。
+   修法：只在**确有候选计划**时判 FAIL，否则降为 WARN 并说明「项目开工产出 Plan 后自动转强制」。
+   实测新项目首门 `LEDGER-OK (含 WARN)` exit 0。
+3. **G3 pre-commit 自伤强制力** —— 脚本硬编码 `--allow-example`，而它会随包分发到每个项目，
+   等于把「示例行未删」在**项目仓也一并放过**。修法：按仓库路径判定，仅母版加该标志（回归用例已锁）。
+4. **G4 产品审查门只校验 3/5 段** —— 缺「仅A/仅B」仍能 exit 0，「汇总不得抄边」等于没有机器约束。修法：五锚点全查。
+
+### P2（8 项，全部已修）
+G5 概览不再写死 HANDOFF 章节号（原写 §71，实为 §89，且**上一轮 CHANGELOG 谎称已修**——本轮真改）｜
+G6 README 规则层清单补齐 AGENTS/概览硬引用脚本，并声明权威真源是 `_sync-packages.py` 的 `PAIRS/DIRS/EXTRA`｜
+G7 HANDOFF 模板「neat 派完后 TM 补记」→「编排者自做，不派工」｜
+G8 AGENTS 红线的 `docs/sop/` 枚举改为「以目录实际内容为准」并补全当前清单｜
+G9 概览 §八 游离表格行并入表体｜
+G10 概览写明已知边界：**`OPEN` 收尾不是绕过签收的手段**（`OPEN`＝未完，报完工必须 `ACCEPTED`），机器只拦 ACCEPTED 侧｜
+G11 新增**角色覆盖巡检**（`ROLE-COVERAGE`，只报不阻塞）：实测点名 6 个项目缺 code-reviewer/qa/supervisor 行，
+  回答了「谁在记账、能不能据此换模型」｜G12 通道预检纳入**产品审查双审表 A/B**，审查 B 的 `codebuddy/deepseek-v4-pro`
+  由「archive 信息级」升为**硬校验**（原先行首不是角色名，两处正则都不命中，模型消失也不会拦）。
+另修 P3 的 G14 措辞过强（「所有字段错误一律 FAIL」→「结构错 FAIL、写法不规范 WARN」，与 `checkModel` 设计一致）。
+
+**怎么验（全部实跑）**：`SYNC-OK`｜`CHANNEL-OK`｜tm 44/44｜proto 9/9｜ui-leak 2/2｜ledger-fields 45/45｜solo 15/15｜
+**gates 11/11**（新增 2 条：缺 only-A/only-B 被拦、`--allow-example` 不得硬编码）｜codebuddy-rotate 12/12｜continuous-push 9/9｜7-Skill `VALID`；
+另做**现场复现**：按 README 整包新建项目实测首门 exit 0；`sync-old-projects.sh --dry-run` 实跑并逐项验枚举含 4 份 SOP 与 6 个脚本。
+
+## 2026-10-17 (PENDING) fix(governance): 体系全面自查 → 3 处真矛盾、3 道真门、2 组新回归
+
+**为什么**：用户令「对所有治理体系文件做全面审查」，四路只读审查（一致性／可落实性／账本／概览与测试真实性）交叉出同一结论——
+**账本侧已机器化，流程侧几乎全是「自评自写」**，且**最硬的那道门没有执行保证**。本次把「文档说了算」的漏洞尽量变成脚本说了算。
+
+### 一、修掉会让执行者做错的矛盾（P0）
+1. **Human Gate 与「一路推到底」互斥**：`AGENTS.md:37` 原写「不可自动跨越」，同文件连续推进条却写「自动进 DEVELOP」；
+   `编排者提示词.md` 同一文件里 :22 自动进 / :34 停下 / :39 拒绝派工，三处自相矛盾 ⇒ 执行者只能猜，猜错就是无授权开写或已授权却停。
+   现统一为：**默认停、授权才自动**；拿到 `一路推到底` 才覆盖当次 Gate，**授权范围＝当次目标**，**首次发布签收仍必须停**。
+2. **experience-recorder 派工状态四方冲突**：override 表已改「编排者自做不派工」，但 `AGENTS.md` 两处、编排者提示词两处、角色卡仍写「收尾派一次」，
+   而它表内模型已不在通道目录（是预检长期红灯的唯一来源）。现已全部改为编排者自做，卡片只留口径说明（对照 neat-freak 已改完的样子）。
+3. **两包缺 AGENTS.md 与概览硬引用的脚本**：`orca-gitignore.sh`／`orca-public-guard.sh`／`restore-framework.sh`／`pre-commit-guard.sh` 等 12 项只在母版
+   ⇒ **新项目照规则执行必然 no such file**。已纳入 `_sync-packages.py` 与 check-sync 纳管，两包实测齐备。
+4. 另修：`USER_MODEL_OVERRIDE.md` 表格行断裂（neat-freak 与 senior-expert 粘成一行）、档案表 code-reviewer 现役模型与主表冲突、
+   编排者提示词的 opencode 命令示例**漏带 `--auto`**（会被照抄，等于照着踩跨目录静默失败的坑）、
+   `AGENTS.md` 把概览新鲜度检查错指到 preflight 脚本（实际在 check-sync）、已作废的 opencode 跨目录旧禁令整条删除。
+
+### 二、把三道红线变成真门（本次最实质的改动）
+| 原状 | 现状 |
+|---|---|
+| 「角色交付 ≠ 已验收」**无人校验** —— 账本只有写了 `ACCEPTED` 才查矩阵，不写就一次都不查 | `ACCEPTED-MISSING`：有 QA/senior 交付却无 `ACCEPTED`/`OPEN` 收尾行即 FAIL；单智能体（`execution_mode=solo`）豁免 |
+| 「首次发布未签收不得报完工」**零机器卡点** —— 写一行 `ACCEPTED` 即可放行 | `SIGNOFF-MISSING`：矩阵声明「首次发布」而无「用户签收」记录即 FAIL |
+| `check-ledger` 是最硬的门，却**只靠「收工前必跑」这句文字** | pre-commit hook 自动跑账本校验（仅当本次真的改了账本）；母版 hook 已重装 |
+| 「双审产出非空、禁信 exit 0」**只有提示词里一句话** | 新增 `scripts/check-product-review.sh`：零产出/缺汇总段即 exit 1，并要求五段机器锚点 `PRODUCT_REVIEW_*`；AGENTS 与提示词同步改为引用该命令 |
+
+### 三、测试真实性（防「口头报告」）
+- 新增 `scripts/model/gates.test.mjs`（9 用例）覆盖产品审查门与 pre-commit 串账本校验，含**反向验证**（把 check-ledger 调用短路后有用例 FAIL、还原后全绿）。
+- 新增 `scripts/model/codebuddy-rotate.test.mjs`（12 用例）覆盖 429 自动切号：注入假 codebuddy 驱动每个分支——
+  **递归自检**（历史上 `fork: Resource temporarily unavailable` 的坑）、非 429 原样透传且不误切、429→切号→成功**并粘住**、全账号限流如实返回 429 且退出非 0、指针复原。
+  该机制此前**只有一张手写验证表、仓内零测试零夹具**。
+- 新增 `scripts/model/continuous-push.test.mjs`（9 用例）把上面第 1 条矛盾锁死为文本门（口径漂移即 FAIL）。
+- 顺手修一个真 bug：`pre-commit-guard.sh` 提示行里的反引号被 bash 当命令执行（输出缺字并报 `fatal: No pathspec`）。
+- `_sync-packages.py` 排除 `.git/`：夹具树里一旦出现真实 git 仓会被同步进包并抛 `UnicodeDecodeError`。
+
+### 四、概览与账本
+- `ORCA治理体系说明.md` 补四个已上线但漏记的机制（连续推进、429 自动切账号、账本三门、耗时/效能可测、两个自做角色），
+  修检查点编号乱序（13,15,16…,14 → 顺序化）、角色行数表述与 HANDOFF 章节号过期。
+- `check-sync.sh` 的「对外必现机制」关键词清单补 13 个词 —— **补完立刻抓出概览真缺 3 项**（`elapsed_sec`／`model-perf`／编排者自做），证明这道卡点有效。
+- 账本数据问题（136 行 model 非法、12 行 used 违规、18 个 episode_id 跨项目重复、elapsed_sec 全库为空、
+  db-admin 零记录、028/039 账本逐字相同）**按铁律不重写他人实绩**，逐条记入 `docs/model/NEXT-TASKS.md` §四。
+
+**怎么验（全部实跑，非口头）**
+`SYNC-OK`｜`CHANNEL-OK`｜tm-qualification **44/44**｜prototype-gate **9/9**｜ui-leak **2/2**｜ledger-fields **45/45**（新增 4 例）
+｜solo-agent **15/15**｜gates **9/9**（新增）｜codebuddy-rotate **12/12**（新增）｜continuous-push **9/9**（新增）｜7-Skill `VALID`；
+另实测包内 `continuous-push` 独立可跑、包内脚本齐备、`pre-commit` 负例 exit 1。
+
 ## 2026-10-16 (9709200) feat(rotate): codebuddy 撞 429 自动切账号 —— builder 355 次派工的稳定性补丁
 
 **起因**：用户「先从派工次数最多的提高速度」→ 实测 builder 主模型 `codebuddy/deepseek-v4.1-flash`

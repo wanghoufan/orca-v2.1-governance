@@ -24,7 +24,16 @@ except Exception: sys.exit(0)
 items = d if isinstance(d,list) else (d.get('models') or d.get('data') or [])
 for m in items: print(m.get('id') or m.get('slug') or m.get('name') or '')
 " 2>/dev/null)"
-CODEBUDDY_LIST="$(codebuddy --help 2>&1 | grep -oE '\(hy4-preview[^)]*\)' | head -1 | tr -d '()' | tr ',' '\n' | tr -d ' ')"
+# codebuddy --model catalog. Format drifted across CLI versions:
+#   old: "(hy4-preview...)" on its own line
+#   new (2.168+): "--model <model> ... Currently supported: (hy4-preview, hy3, ...)"
+# Anchor on the "--model" option line, then take the LAST paren group on it, so both
+# formats parse and a format change cannot silently yield 0 models (which made every
+# codebuddy role look STALE and blocked dispatch on a false alarm).
+CODEBUDDY_LIST="$(codebuddy --help 2>&1 \
+  | grep -- '--model <model>' \
+  | grep -oE '\([^()]*\)' | tail -1 \
+  | tr -d '()' | tr ',' '\n' | tr -d ' ')"
 OPENCODE_LIST="$(opencode models 2>/dev/null)"
 
 echo "  codex:     $(printf '%s\n' "$CODEX_LIST"     | grep -c .) models"
@@ -36,6 +45,12 @@ echo "  opencode:  $(printf '%s\n' "$OPENCODE_LIST"  | grep -c .) models"
 
 role_models=$(awk -F'|' '/^\| *(task-manager|supervisor|planner|builder|code-reviewer|qa|product-reviewer|experience-recorder|neat-freak|senior-expert|db-admin) *\|/ {print $3}' "$TBL" \
   | grep -oE '(codex|codebuddy|opencode|opencode-go|volcengine-plan|radeon-mimo)/[A-Za-z0-9._-]+' | sort -u)
+# 2026-10-17 G12 修：双审表的行首是「组织者/汇总」「独立审查A/B」，既不是角色名也不是编号，
+# 原先两处正则都不命中 ⇒ 审查 B 的 codebuddy/deepseek-v4-pro 只以archive 条目出现，
+# 客户端升级后若从目录消失预检**不拦**，双审会在运行时静默失败（正是该链历史事故模式）。
+dual_review=$(awk -F'|' '/^\| *(组织者 *\/ *汇总|独立审查 *[AB]) *\|/ {print $4}' "$TBL" \
+  | grep -oE '(codex|codebuddy|opencode|opencode-go|volcengine-plan|radeon-mimo)/[A-Za-z0-9._-]+' | sort -u)
+role_models=$(printf '%s\n%s\n' "$role_models" "$dual_review" | grep . | sort -u)
 arch_models=$(awk -F'|' '/^\| *[0-9]+ *\|/ {print $4}' "$TBL" \
   | grep -oE '(codex|codebuddy|opencode|opencode-go|volcengine-plan|radeon-mimo)/[A-Za-z0-9._-]+' | sort -u)
 

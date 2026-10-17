@@ -47,13 +47,18 @@ for pkg in "新项目模板包" "老项目迁移模板包"; do
   check_norm "README.md" "$pkg/README.md"
   check "scripts/detect-client.sh" "$pkg/scripts/detect-client.sh"
   check "scripts/check-channel-preflight.sh" "$pkg/scripts/check-channel-preflight.sh"  # 2026-10-08 补纳管
+  for f in scripts/check-product-review.sh scripts/pre-commit-guard.sh scripts/orca-gitignore.sh \
+           scripts/orca-public-guard.sh scripts/orca-public-ignore.txt scripts/restore-framework.sh \
+           scripts/migration-status.sh scripts/_inject-agents-block.py; do
+    check "$f" "$pkg/$f"   # 2026-10-17：AGENTS/概览硬引用却只在母版 ⇒ 新项目必然 no such file
+  done
   # 包根平铺的四份提示词（母版在 docs/prompts/，包内平铺到根）
   check_norm "docs/prompts/编排者提示词.md" "$pkg/编排者提示词.md"
   check_norm "docs/prompts/外部开发者提示词.md" "$pkg/外部开发者提示词.md"
   check_norm "docs/prompts/Orca 编排治理监督者提示词.md" "$pkg/Orca 编排治理监督者提示词.md"
   check_norm "docs/prompts/Orca 通用编排者持续推进协议.md" "$pkg/Orca 通用编排者持续推进协议.md"
   check GOVERNANCE_VERSION "$pkg/GOVERNANCE_VERSION"
-  check "CHANGELOG.md" "$pkg/CHANGELOG.md"  # 2026-10-09：变更说明必须随包同步
+  check_norm "CHANGELOG.md" "$pkg/CHANGELOG.md"  # 2026-10-09：变更说明必须随包同步；2026-10-17 改 check_norm（CHANGELOG 正文引用提示词用 docs/prompts/ 路径、包内是裸名，属**布局裸名差**，此前用逐字节 check 恒报 SYNC-FAIL）
   # scripts/orchestration/README.md 同样是布局裸名差，归一化后比对
   norm_o=$(mktemp); norm_md scripts/orchestration/README.md > "$norm_o"
   if ! cmp -s "$norm_o" "$pkg/scripts/orchestration/README.md"; then echo "DIFF: scripts/orchestration/README.md vs $pkg"; diff "$norm_o" "$pkg/scripts/orchestration/README.md" | grep "^[<>]" | head -3; fail=1; fi
@@ -121,6 +126,9 @@ done
 # 2026-10-14 体系自查补：上列关键词只覆盖旧机制，本轮新增的账本/证据/跨目录机制
 # **一个都不在清单里** ⇒ 概览漏更新也照样 OVERVIEW-OK 通过（这是个漏卡点）。
 # 措辞用「概览里的原文写法」做锚，避免同义词对不上造成永久误报。
+for kw in "一路推到底" "连续推进" "codebuddy" "429" "自动切账号" "elapsed_sec" "model-perf" "ACCEPTED-MISSING" "SIGNOFF-MISSING" "pre-commit" "check-product-review" "编排者自做" "neat-freak"; do
+  grep -q -- "$kw" ORCA治理体系说明.md || { echo "OVERVIEW-STALE: 概览缺 $kw"; fail=1; }
+done
 for kw in "派工逐派不漏记" "supersedes" "有效拦截" "违规分级" "未测不按满分算" "响应速度只认时间戳" "原始输入留存" "--auto" "取消历史豁免" "升级触发机器校验"; do
   grep -q -- "$kw" ORCA治理体系说明.md || { echo "OVERVIEW-STALE: 概览缺 $kw"; fail=1; }
 done
@@ -145,5 +153,28 @@ for d in "$ACROOT"/*/; do
   fi
 done
 echo "AC-MATRIX: $((ac_total-ac_missing))/$ac_total 有落盘；缺失 $ac_missing"
+
+# 角色覆盖巡检（2026-10-17 G11 补；**只报不阻塞**）：
+# 背景：schema 对 11 个角色全开放，但**没有任何门保证都真被记** —— db-admin 至今零记录，
+# supervisor(54样本/仅1种模型) 与 product-reviewer(86%单一模型) 无对照数据，
+# 「按能力换模型」因此缺依据。此处只提示覆盖缺口，不新增 Gate、不改判定。
+echo "--- 角色账本覆盖巡检（只报，不影响 SYNC 主结论） ---"
+for d in "$ACROOT"/*/; do
+  [ -d "$d" ] || continue
+  lg=""
+  for cand in "$d/docs/model/TASK-MODEL-LOG.jsonl" "$d"/software/docs/model/TASK-MODEL-LOG.jsonl; do
+    [ -f "$cand" ] && { lg="$cand"; break; }
+  done
+  [ -n "$lg" ] || continue
+  roles="$(grep -o '"role"[[:space:]]*:[[:space:]]*"[^"]*"' "$lg" 2>/dev/null | sed 's/.*: *"//; s/"//' | sort -u | tr '\n' ' ')"
+  [ -n "$roles" ] || continue
+  miss=""
+  for need in builder code-reviewer qa supervisor; do
+    case " $roles " in *" $need "*) ;; *) miss="$miss $need";; esac
+  done
+  if [ -n "$miss" ]; then
+    echo "ROLE-COVERAGE: $(basename "$d") missing:${miss} (has:${roles})"
+  fi
+done
 [ "$fail" -eq 0 ] && echo "SYNC-OK" || echo "SYNC-FAIL"
 exit "$fail"

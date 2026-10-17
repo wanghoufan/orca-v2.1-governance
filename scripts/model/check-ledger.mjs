@@ -334,6 +334,43 @@ check("DISPATCH-LOG.jsonl",
 //   ③ 首次发布类型的交付另由签收规则把关（此处只查 AC 是否闭环）。
 // 口径说明：`BLOCKED` 是「被外部条件挡住」，仍属未闭环，故一并拦住——
 // 报完工的前提是「已验收」，被挡住就不能算已验收。
+// ── 收工口径反转 + 签收把关（2026-10-17 补）────────────────────────
+// 背景（自查实证）：原逻辑只在「账本已经写了 chain_status=ACCEPTED」时才查验收矩阵，
+// 于是**不宣布验收＝一次都不查**，全程 DELIVERED 的项目照样报完工 —— 红线形同虚设。
+// 现两条补齐：
+//   ① 有 QA 交付行、却没有任何 ACCEPTED / OPEN 收尾行 ⇒ 判 ACCEPTED-MISSING（角色交付≠已验收，
+//      必须显式落在 ACCEPTED 或 OPEN，否则不得收工）；单智能体项目（execution_mode=solo）豁免。
+//   ② ACCEPTED 且矩阵声明「发布类型：首次发布」⇒ 矩阵内必须有显式用户签收记录，
+//      否则 SIGNOFF-MISSING（首次发布未签收不得完工）。
+{
+  const rows = readRows("TASK-MODEL-LOG.jsonl");
+  const qaRows = rows.filter((d) => d.role === "qa" || d.role === "senior-expert");
+  const closed = rows.filter((d) => d.chain_status === "ACCEPTED" || d.chain_status === "OPEN");
+  const acceptedRows = rows.filter((d) => d.chain_status === "ACCEPTED");
+  let soloMode = false;
+  const gs = join(dir, "GOVERNANCE-STATE.json");
+  if (existsSync(gs)) {
+    try { soloMode = String((JSON.parse(readFileSync(gs, "utf8")) || {}).execution_mode) === "solo"; }
+    catch { /* 坏 JSON 不豁免 */ }
+  }
+  if (!soloMode && qaRows.length && !closed.length) {
+    fails.push(`ACCEPTED-MISSING: 账本有 ${qaRows.length} 行 qa/senior 交付，但没有任何收尾行`
+      + `（chain_status=ACCEPTED 已验收 / OPEN 未完）—— 角色交付 ≠ 已验收。`
+      + `报完工前必须显式落ACCEPTED 或 OPEN（单智能体项目写 docs/model/GOVERNANCE-STATE.json `
+      + `"execution_mode":"solo" 可豁免本条）`);
+  }
+  const mp0 = join(dirname(dir), "qa", "产品验收追踪矩阵.md");
+  if (acceptedRows.length && existsSync(mp0)) {
+    const txt0 = readFileSync(mp0, "utf8");
+    const firstRelease = /发布类型\s*[：:]\s*\**\s*首次发布/.test(txt0);
+    const signed = /用户签收\s*[：:]\s*\**\s*(已签收|通过|已通过)/.test(txt0);
+    if (firstRelease && !signed) {
+      fails.push(`SIGNOFF-MISSING: 账本判已验收（ACCEPTED），矩阵声明「发布类型：首次发布」`
+        + `但没有显式用户签收记录 —— 按 AGENTS.md 红线「首次发布未取得用户签收不得报完工」不得放行。`
+        + `在 docs/qa/产品验收追踪矩阵.md 写一行「用户签收：已签收（YYYY-MM-DD）」；未签收先记 chain_status=OPEN`);
+    }
+  }
+}
 {
   const acceptedRows = [];
   for (const d of readRows("TASK-MODEL-LOG.jsonl")) {
@@ -473,9 +510,18 @@ function checkAppBaseline(root) {
   }
   // 需求真源不可判定或与候选都不匹配 ⇒ FAIL（2026-10-08）。
   // 修掉一个旁路：此前用 basename 包含判断，改个文件名即可让强门静默降级成 WARN。
+  // 2026-10-17 G2 修：只在**确实存在候选计划**时才判真源不可解析。
+  // 原写法无条件 FAIL，于是「按 README 新建的空项目」（docs/pm 里只有 *.template.md、
+  // 被过滤后 cands 为空）在第一道机器门上恒红；报错文案还说「docs/pm 下有 Product Plan」，
+  // 与事实不符（G2）。既误报又误导。
   if (!src) {
-    fails.push(`APP-TRUEOUT-SOURCE-UNRESOLVED — ${ts.err}。docs/pm 下有 Product Plan 但无法确认哪份是真源时，`
-      + `不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 \`路径.md\` 为需求真源）后重跑。`);
+    if (cands.length) {
+      fails.push(`APP-TRUEOUT-SOURCE-UNRESOLVED — ${ts.err}。docs/pm 下有 Product Plan 但无法确认哪份是真源时，`
+        + `不得默认放行：补齐 HANDOFF 的 PLAN_VERSION（格式：- PLAN_VERSION：以 \`路径.md\` 为需求真源）后重跑。`);
+    } else {
+      warns.push(`APP-TRUEOUT-SOURCE-UNRESOLVED（未拦截）— ${ts.err}；但 docs/pm 下**没有任何 Product Plan**`
+        + `（只有模板文件），本项不适用。项目真正开工产出 Plan 后此项自动转为强制。`);
+    }
     return;
   }
   if (cands.length && !cands.some((c) => c.isSrc)) {

@@ -28,11 +28,24 @@ DIRS = ["docs/roles", "docs/sop", "scripts/model", "docs/assets"]
 # 导致包内测试脚本缺夹具、跑不起来（2026-10-09 补：prototype-gate 夹具）。
 TREE_DIRS = ["scripts/model/fixtures"]
 # 证据目录里的隔离脚本副本含本机绝对路径与随机临时目录名，随包分发既无意义又会污染下游项目。
-TREE_EXCLUDE = ["/evidence/"]
+TREE_EXCLUDE = ["/evidence/", "/.git/", "/node_modules/"]  # 2026-10-17：gates 测试夹具里有一个真实 git 仓库，
+# 不排除会把 .git 的二进制对象同步进包并让读文件的代码抛 UnicodeDecodeError
 # 只同步 *.template.md 的（这几个目录里混有母版自己的实例记录：BUGS-*.md / CODE_REVIEW-*.md /
 #   GOVERNANCE_REVIEW-*.md / RESEARCH_REVIEW-*.md / PLAN-*.md / HANDOFF.md 等，**模板包不该带实例记录**）
 TEMPLATE_DIRS = ["docs/pm", "docs/plan", "docs/qa", "docs/review", "docs/handoff"]
 EXTRA = ["scripts/detect-client.sh", "scripts/model/check-ledger.mjs",
+         # 2026-10-17 补：AGENTS.md 与概览硬引用、但此前只存在于母版的治理脚本。
+         # 缺它们的后果＝新项目照 AGENTS 执行「公开仓自动注入／摘除」「提交前拦证据副本」
+         # 「恢复框架」「迁移状态」「两包同步」必然 no such file —— 规则写得到、落不了地。
+         "scripts/pre-commit-guard.sh",
+         "scripts/orca-gitignore.sh",
+         "scripts/orca-public-ignore.txt",
+         "scripts/orca-public-guard.sh",
+         "scripts/restore-framework.sh",
+         "scripts/migration-status.sh",
+         "scripts/_inject-agents-block.py",
+         # 2026-10-17：产品审查产出校验（原先「禁信 exit 0」只有文字）
+         "scripts/check-product-review.sh",
          "scripts/codebuddy-auto.sh", "scripts/_cb-rotate.py", "scripts/_cb-active.py", "scripts/_cb-count.py",
          "scripts/model/model-perf.mjs",   # 2026-10-16：角色×模型耗时对比（换模型提速的可测量依据）
          "scripts/check-channel-preflight.sh",  # weekly-channel-check.sh 是母版 launchd 专用，不随包分发

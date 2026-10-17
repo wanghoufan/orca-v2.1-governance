@@ -24,15 +24,28 @@ ACC_FILE="${WB_SWITCH_ACCOUNTS_FILE:-$HOME/.wb-switch/accounts.json}"
 STATE="$ROT_DIR/state.json"
 MAX="${AUTO_ROTATE_MAX:-3}"
 
+# ★ 必须用**真实程序的绝对路径**，绝不能用 PATH 里的 codebuddy。
+#   本脚本会被装成 ~/.local/bin/codebuddy 影子包装；若这里再调 `codebuddy`，
+#   会命中影子 → 影子再转回本脚本 → **无限递归**，进程耗光
+#   （2026-10-16 实测踩过：`fork: Resource temporarily unavailable`）。
+#   递归自检：若解析出的真实路径与影子同路径，直接退出报错而不是套娃。
+REAL="${CODEBUDDY_REAL:-$HOME/Library/pnpm/bin/codebuddy}"
+if [ ! -x "$REAL" ]; then
+  REAL="$(command -v codebuddy || true)"
+  # 解析出来的是影子自己 → 无效，回落 pnpm 路径
+  [ -n "$REAL" ] && [ "$REAL" != "$0" ] || REAL="$HOME/Library/pnpm/bin/codebuddy"
+fi
+[ -x "$REAL" ] || { echo "codebuddy-auto: 找不到真实 codebuddy 程序（CODEBUDDY_REAL=$REAL）" >&2; exit 127; }
+
 N="$(python3 "$HERE/_cb-count.py" "$ACC_FILE" 2>/dev/null || echo 0)"
 if [ "${N:-0}" -eq 0 ]; then
   echo "codebuddy-auto: 读不到账号列表，退回裸 codebuddy" >&2
-  exec codebuddy "$@"
+  exec "$REAL" "$@"
 fi
 
 is_limited() { printf '%s' "$1" | grep -qE '429|频率限制|rate.?limit'; }
 
-out="$(codebuddy "$@" 2>&1)"; rc=$?
+out="$("$REAL" "$@" 2>&1)"; rc=$?
 if ! is_limited "$out"; then
   printf '%s\n' "$out"
   exit "$rc"
@@ -43,7 +56,7 @@ i=1
 while [ "$i" -lt "$MAX" ]; do
   nxt=$(( (cur + i) % N ))
   python3 "$HERE/_cb-rotate.py" "$ACC_FILE" "$STATE" "$nxt" >/dev/null 2>&1
-  out="$(codebuddy "$@" 2>&1)"; rc=$?
+  out="$("$REAL" "$@" 2>&1)"; rc=$?
   if ! is_limited "$out"; then
     printf '%s\n' "$out"
     echo "[codebuddy-auto] 原账号限流 → 自动切到第 $((nxt+1))/$N 个账号，重试成功" >&2

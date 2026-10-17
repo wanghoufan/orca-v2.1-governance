@@ -63,11 +63,14 @@ ls <项目目录>/docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl    # 应存
 # 跨平台：macOS 用 -i ''（BSD sed）；Linux / Git-Bash 用 -i；Windows 请用 git-bash 或自行处理换行
 sed -i '' "/\"_example\"/d" <项目目录>/docs/model/*.jsonl     # macOS
 sed -i    "/\"_example\"/d" <项目目录>/docs/model/*.jsonl     # Linux / Git-Bash
-node <项目目录>/scripts/model/check-ledger.mjs                       # 期望 LEDGER-OK
+node <项目目录>/scripts/model/check-ledger.mjs                       # 期望 LEDGER-OK（空账本/无 Plan 属正常，只报 WARN）
 ```
 
 **非空目录的「规则层」清单**（只覆盖这几份，其余一律不碰）：
-`AGENTS.md`｜`USER_MODEL_OVERRIDE.md`｜`ORCA治理体系说明.md`｜`经验一句话.md`｜`scripts/model/check-ledger.mjs`｜`scripts/detect-client.sh`｜`scripts/check-sync.sh`｜`scripts/check-channel-preflight.sh`
+**权威清单以 `scripts/_sync-packages.py` 的 `PAIRS`＋`DIRS`＋`EXTRA` 为单一真源**，下表只是人读副本（2026-10-17 G6 补齐，此前漏了 AGENTS/概览硬引用的脚本）：
+`AGENTS.md`｜`USER_MODEL_OVERRIDE.md`｜`ORCA治理体系说明.md`｜`经验一句话.md`｜
+`scripts/model/check-ledger.mjs`｜`scripts/model/model-perf.mjs`｜`scripts/detect-client.sh`｜`scripts/check-sync.sh`｜`scripts/check-channel-preflight.sh`｜
+**AGENTS 与概览硬引用、漏了会 `no such file` 的**：`scripts/pre-commit-guard.sh`｜`scripts/check-product-review.sh`｜`scripts/codebuddy-auto.sh`＋`_cb-rotate.py`/`_cb-active.py`/`_cb-count.py`｜`scripts/orca-gitignore.sh`｜`scripts/orca-public-guard.sh`＋`orca-public-ignore.txt`｜`scripts/restore-framework.sh`｜`scripts/migration-status.sh`｜`scripts/_inject-agents-block.py`
 ＋ **补新增**（不存在才放，已存在不覆盖）：`docs/qa/产品验收追踪矩阵.template.md`｜`docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`｜`docs/model/JEV-DECISION-LOG.jsonl`
 
 **规则文件不要挑行合并**：要么整个文件覆盖，要么按归位表整包处理——手工挑行是这类操作里最容易漏、最容易冲突的做法。

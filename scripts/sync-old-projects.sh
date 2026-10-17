@@ -48,6 +48,10 @@ docs/roles/task-manager.md
 docs/sop/android-machine-profile.md
 docs/sop/android.md
 docs/sop/app-theme-i18n.md
+docs/sop/app-brand-assets.md
+docs/sop/app-navigation.md
+docs/sop/app-ui-layers.md
+docs/sop/app-simplicity.md
 docs/sop/decision-router.md
 docs/sop/docker.md
 docs/sop/sqlite.md
@@ -64,6 +68,14 @@ docs/handoff/HANDOFF.template.md
 docs/handoff/EXT-WORKLOG.template.md
 scripts/model/check-ledger.mjs
 scripts/codebuddy-auto.sh
+scripts/check-product-review.sh
+scripts/pre-commit-guard.sh
+scripts/check-sync.sh
+scripts/migration-status.sh
+scripts/orca-gitignore.sh
+scripts/orca-public-guard.sh
+scripts/orca-public-ignore.txt
+scripts/restore-framework.sh
 scripts/_cb-rotate.py
 scripts/_cb-active.py
 scripts/_cb-count.py
@@ -72,6 +84,7 @@ scripts/model/tm-qualification.test.mjs
 scripts/detect-client.sh
 scripts/check-channel-preflight.sh
 docs/sop/background-services.md
+USER_MODEL_OVERRIDE.md
 GOVERNANCE_VERSION
 Orca 编排治理监督者提示词.md
 Orca 通用编排者持续推进协议.md
@@ -148,6 +161,14 @@ for dir in "$PROJECTS_ROOT"/*/; do
       # 包内 docs/model 的规范正文（非 .jsonl）
       cd "$PKG" 2>/dev/null && find docs/model -type f ! -name '*.jsonl' | sort
       cd "$ROOT" 2>/dev/null || true
+      # 2026-10-17 G1 补：docs/sop 与治理脚本改为**从老包自动枚举**。
+      # 原先只枚举 scripts/model/docs/model，于是新增的 app-* 四份 SOP 与
+      # check-product-review / pre-commit-guard / orca-* 等脚本永远漏铺 ——
+      # 老项目照 AGENTS 执行必然 no such file，正是「有体系、铺不下去」。
+      cd "$PKG" 2>/dev/null && find docs/sop -maxdepth 1 -type f -name '*.md' | sort
+      cd "$ROOT" 2>/dev/null || true
+      cd "$PKG" 2>/dev/null && find scripts -maxdepth 1 -type f ! -name '_sync-packages.py' ! -name 'weekly-channel-check.sh' | sort
+      cd "$ROOT" 2>/dev/null || true
     } | awk 'NF && !seen[$0]++'
   )"
   while IFS= read -r f; do
@@ -175,6 +196,24 @@ for dir in "$PROJECTS_ROOT"/*/; do
       归位表.template.md) dst="$govroot/docs/templates/$f" ;;
       Orca*.md) dst="$govroot/docs/prompts/$f" ;;
     esac
+    # USER_MODEL_OVERRIDE.md：**不拷实文件，落母版软链**（母版规矩：分工表单一真源＝母版，
+    # 各项目根表均为软链；拷实文件＝立刻分叉，改表只改得到一份）。
+    # 2026-10-17 实测漏洞：FILES 手写枚举里没有它 ⇒ 批量铺包从来没铺过分工表，
+    # 18 个已铺项目只有 10 个根目录有，其余 8 个只能靠猜模型 ID。
+    if [ "$f" = "USER_MODEL_OVERRIDE.md" ]; then
+      tgt="$ROOT/USER_MODEL_OVERRIDE.md"
+      if [ ! -f "$tgt" ]; then echo "  ! 母版缺 USER_MODEL_OVERRIDE.md，跳过软链"; continue; fi
+      if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$tgt" ]; then
+        skipped=$((skipped+1)); continue
+      fi
+      # 已存在但不是指向母版的软链（多为早年的实文件拷贝）→ 备份后改成软链，禁静默删
+      if [ -e "$dst" ] || [ -L "$dst" ]; then
+        if [ ! -e "$dst.旧版-$STAMP" ]; then mv "$dst" "$dst.旧版-$STAMP"; backed=$((backed+1)); fi
+        rm -f "$dst"
+      fi
+      if [ -z "$DRY_RUN" ]; then ln -s "$tgt" "$dst"; fi
+      copied=$((copied+1)); continue
+    fi
     if [ -f "$dst" ] && diff -q "$src" "$dst" >/dev/null 2>&1; then
       skipped=$((skipped+1)); continue
     fi
