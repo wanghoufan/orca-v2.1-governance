@@ -38,6 +38,7 @@
 - Phase2（DEVELOP）：锁定 `DEV_BASELINE=PRODUCT_PLAN_Vx.x`，默认主链 Builder→Reviewer→QA→Supervisor→TM（模型以 override 表为准）；禁随意改 Plan（Plan 变更只走 Change C Controlled Reopen＋Human Approval＋新版本＋新基线）；product-reviewer（Research Reviewer）默认不派，recorder/neat 只在收尾派。
 - Change Request（用户口令`变更请求：……`，TM 分类）：`CHANGE_REQUEST: NONE / A / B / C`——A=开发内小改留 DEVELOP 不召 Planner；B=局部功能变化更新局部 Requirement/DoD 留 DEVELOP 不召 Sol Planner；C=产品/架构变更进 `PLAN_REOPEN_REQUIRED`，局部暂停＋Sol Planner＋Research Reviewer＋Human Approval＋新 Plan 版本＋新 DEV_BASELINE 回 DEVELOP，不全量重跑。
 - 独立重申：task-manager（唯一对人说话）与 supervisor（只对编排者说话）保持独立，不合并；无 Spark Gate；无额度状态机字段。
+- **连续推进模式（2026-10-16 用户令）**：用户说`一路推到底`／「不要中途找我」＝**对本次目标的连续推进授权**。PLAN 完成后**自动进 DEVELOP**、产品审查后**自动继续**、各复核环节**环间不问**，收工**只报一次**。**授权范围＝用户当次给的那个目标**，做完即停。**四类红线（secrets／不可逆删除／生产与他人项目／commit-push 授权）＋首次发布签收＋超出既定 Plan 范围的变更（Change C）仍然必须停** —— 本模式**不是**无限通行证，也不放宽任何红线。与单智能体触发口令「你是唯一开发者」**正交**：前者管「停不停」，后者管「几个人干活」。
 - 升级保留：同一 Task 累计被 supervisor 打回 2 次自动升 senior-expert（Sol），或编排者判定 P0-hard 手动升；senior 接手后被打回 2 次即停线找人（详见本文件升级节）。
 
 ## 角色（9 常驻 + 1 升级专用 + 1 专项，不再新增）
