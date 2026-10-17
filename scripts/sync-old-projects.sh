@@ -1,6 +1,15 @@
 #!/bin/bash
 # sync-old-projects.sh｜把母版最新治理规则批量铺到所有老项目（备份不覆盖铁律）
 # 用法：在母版根执行 `bash scripts/sync-old-projects.sh`（先加 --dry-run 预演）
+#
+# --additive-only（2026-10-17 新增）：**只补缺失文件，绝不覆盖任何已存在的文件**。
+#   为什么需要：原默认会覆盖已有治理文件，而规则是**每轮开工时读的**——
+#   正在开发中的项目中途拿到新规则（如「neat-freak 不再派工」）会与它本轮已按旧规则的
+#   行为冲突，同一轮里两套口径并存。原先只能用「跳过整个项目」来规避，代价是
+#   有未提交业务改动的项目（大概率只是刚跑过、并非正在跑）也一并被跳过，缺 4 份 APP SOP
+#   与 8 个治理脚本长期补不上。
+#   本模式下写入面＝「该文件此前不存在」，**不产生任何既有文件的改动**，
+#   因此可安全用于正在开发中的项目；代价是已存在的旧版本不会被更新到最新。
 # 配套：scripts/migration-status.sh（查全表状态）
 #
 # 铁律（与《迁移整理提示词》一致）：
@@ -25,7 +34,9 @@ SKIP_DIRTY="${SKIP_DIRTY:-1}"
 TODAY="$(date +%F)"
 STAMP="${STAMP:-2026-10-12}"
 RULES_VERSION="${RULES_VERSION:-2026-10-12-单智能体+账本机器校验+证据留存}"
-DRY_RUN="${1:-}"
+DRY_RUN=""
+for a in "$@"; do [ "$a" = "--dry-run" ] && DRY_RUN=1; [ "$a" = "--additive-only" ] && ADDITIVE_ONLY=1; done
+ADDITIVE_ONLY="${ADDITIVE_ONLY:-0}"
 BLOCK_BEGIN="<!-- ORCA-RULES-BLOCK:BEGIN -->"
 export BLOCK_BEGIN
 
@@ -69,6 +80,8 @@ docs/handoff/EXT-WORKLOG.template.md
 scripts/model/check-ledger.mjs
 scripts/codebuddy-auto.sh
 scripts/check-product-review.sh
+scripts/check-dispatch-output.sh
+scripts/install-governance-hooks.sh
 scripts/pre-commit-guard.sh
 scripts/check-sync.sh
 scripts/migration-status.sh
@@ -110,10 +123,13 @@ for dir in "$PROJECTS_ROOT"/*/; do
     if [ "$lastc" = "$TODAY" ]; then echo "SKIP(今天有commit=$lastc): $name"; nskip=$((nskip+1)); continue; fi
     # 业务文件有未提交改动 ⇒ 可能正在写代码，铺规则会与之打架 ⇒ 跳过。
     # 纯治理文件未提交**不跳** —— 那通常就是上次铺规则留下的，正好该被这次覆盖。
+    # 排除表必须覆盖**全部治理脚本路径**（2026-10-17 实测踩坑）：原先只排除 scripts/model/，
+    # 于是 `scripts/_cb-active.py` 这类治理脚本被当成「业务文件有未提交改动」⇒
+    # 几乎每个项目都被跳过（实测 36 个里 33 个），整轮铺包等于没跑。
     # 判据必须用「源码扩展名白名单」而非「排除治理路径」的反向写法：
     # 反向写法实测把「经验一句话.md」「agents.md」误判成业务文件 ⇒ 36 个里 33 个被跳过。
     if [ "$SKIP_DIRTY" = "1" ]; then
-      dirtybiz="$(git -C "$d" status --porcelain 2>/dev/null | grep -E '\.(ts|tsx|js|jsx|mjs|py|java|kt|swift|go|rs|rb|php|css|scss|html|json|yaml|yml|sql|sh|gradle|xml)$' | grep -vE 'AGENTS|agents|README|经验一句话|编排者|外部开发者|归位表|Orca|GOVERNANCE|CHANGELOG|scripts/model/|[Ss]cripts/model/|\.project\.yaml|\.arts/' | head -1)"
+      dirtybiz="$(git -C "$d" status --porcelain 2>/dev/null | grep -E '\.(ts|tsx|js|jsx|mjs|py|java|kt|swift|go|rs|rb|php|css|scss|html|json|yaml|yml|sql|sh|gradle|xml)$' | grep -vE 'AGENTS|agents|README|经验一句话|编排者|外部开发者|归位表|Orca|GOVERNANCE|CHANGELOG|[Ss]cripts/model/|[Ss]cripts/_cb-|[Ss]cripts/codebuddy-auto|[Ss]cripts/(check|orca|restore|migration|detect|weekly|verify)[A-Za-z-]*\.[a-z]+|[Ss]cripts/_[a-z-]+\.(py|sh)|\.project\.yaml|\.arts/' | head -1)"
       if [ -n "$dirtybiz" ]; then
         echo "SKIP(业务文件有未提交改动，可能正在写代码): $name → ${dirtybiz:0:44}"
         nskip=$((nskip+1)); continue
@@ -177,6 +193,12 @@ for dir in "$PROJECTS_ROOT"/*/; do
     [ -f "$src" ] || continue
     dst="$govroot/$f"
     if [ "$f" = "AGENTS.md" ]; then
+      # additive-only：**AGENTS 区块也不碰**。否则会出现「新 AGENTS 区块 + 旧角色卡/旧提示词」
+      # 这种必然的半套组合 —— 规则之间正是这个模式声称要避免的打架。
+      if [ "$ADDITIVE_ONLY" = "1" ]; then
+        echo "  [additive-only 跳过] AGENTS.md 注入区块（已存在则不改，防新规则与旧角色卡打架）"
+        skipped=$((skipped+1)); continue
+      fi
       if [ "$agents_injected" = "1" ]; then
         if [ -z "$DRY_RUN" ]; then
           python3 "$ROOT/scripts/_inject-agents-block.py" "$dst" "$STAMP" "$RULES_VERSION" "$PKG/AGENTS.md"
@@ -206,6 +228,12 @@ for dir in "$PROJECTS_ROOT"/*/; do
       if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$tgt" ]; then
         skipped=$((skipped+1)); continue
       fi
+      # additive-only：已存在但不是指向母版的软链（早年的实文件拷贝）也不碰，
+      # 避免在正在开发的项目里把它改名+替换 —— 那是一次真实的口径突变。
+      if [ "$ADDITIVE_ONLY" = "1" ] && { [ -e "$dst" ] || [ -L "$dst" ]; }; then
+        echo "  [additive-only 跳过] $(basename "$dst") 已存在但非母版软链，需人工确认后再换"
+        skipped=$((skipped+1)); continue
+      fi
       # 已存在但不是指向母版的软链（多为早年的实文件拷贝）→ 备份后改成软链，禁静默删
       if [ -e "$dst" ] || [ -L "$dst" ]; then
         if [ ! -e "$dst.旧版-$STAMP" ]; then mv "$dst" "$dst.旧版-$STAMP"; backed=$((backed+1)); fi
@@ -227,6 +255,9 @@ for dir in "$PROJECTS_ROOT"/*/; do
         if [ -z "$DRY_RUN" ]; then mkdir -p "$(dirname "$dst")"; cp "$src" "$dst"; fi
         copied=$((copied+1)); continue ;;
     esac
+    if [ "$ADDITIVE_ONLY" = "1" ] && [ -e "$dst" ]; then
+      skipped=$((skipped+1)); continue      # 已存在 -> 不碰（零覆盖）
+    fi
     if [ -f "$dst" ]; then
       if [ ! -f "$dst.旧版-$STAMP" ]; then
         if [ -z "$DRY_RUN" ]; then cp "$dst" "$dst.旧版-$STAMP"; fi
@@ -240,14 +271,33 @@ for dir in "$PROJECTS_ROOT"/*/; do
   # 账本：只确保存在，内容零改动
   if [ -z "$DRY_RUN" ]; then mkdir -p "$govroot/docs/model"
     for lg in TASK-MODEL-LOG.jsonl DISPATCH-LOG.jsonl; do
-      [ -f "$govroot/docs/model/$lg" ] || printf '%s\n' '{"_example":true,"note":"模板示例行，不参与统计，首个真实任务前删除"}' > "$d/docs/model/$lg"
+      [ -f "$govroot/docs/model/$lg" ] || printf '%s\n' '{"_example":true,"note":"模板示例行，不参与统计，首个真实任务前删除"}' > "$govroot/docs/model/$lg"
     done
     # 统一状态标记（可机读，供 migration-status.sh 汇总）
     ph="UNKNOWN"
     [ -f "$govroot/docs/handoff/HANDOFF.md" ] && ph=$(grep -oE "PROJECT_PHASE[=：: ]+[A-Z_]+" "$govroot/docs/handoff/HANDOFF.md" 2>/dev/null | head -1 | sed 's/.*[=：: ]//')
     [ -z "$ph" ] && ph="ABSENT"
     lgr=0; [ -f "$govroot/docs/model/TASK-MODEL-LOG.jsonl" ] && lgr=$(( $(wc -l < "$govroot/docs/model/TASK-MODEL-LOG.jsonl" | tr -d ' ') - 1 ))
-    cat > "$govroot/docs/model/GOVERNANCE-STATE.json" <<EOF
+    # 2026-10-17 修：**合并写**，不再整份覆盖。
+    # 整份覆盖会抹掉项目自己声明的 `execution_mode:"solo"` —— 而 check-ledger 正是靠该字段
+    # 豁免「派工零记录」与「ACCEPTED-MISSING」；被铺包工具自己抹掉，等于豁免声明形同虚设。
+    GS="$govroot/docs/model/GOVERNANCE-STATE.json"
+    if [ -f "$GS" ]; then
+      python3 - "$GS" "$RULES_VERSION" "$STAMP" "$ph" "$lgr" <<'PYEOF'
+import json, sys
+fp, rv, st, ph, lgr = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], int(sys.argv[5])
+try:
+    d = json.load(open(fp, encoding="utf-8"))
+    if not isinstance(d, dict):
+        d = {}
+except Exception:
+    d = {}
+d.update({"rules_version": rv, "synced_at": st, "project_phase_field": ph,
+          "task_ledger_rows": lgr, "agents_block_injected": True})
+json.dump(d, open(fp, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+PYEOF
+    else
+      cat > "$GS" <<EOF
 {
   "rules_version": "$RULES_VERSION",
   "synced_at": "$STAMP",
@@ -257,6 +307,7 @@ for dir in "$PROJECTS_ROOT"/*/; do
   "product_acceptance_ac_added": false
 }
 EOF
+    fi
   fi
 done
 

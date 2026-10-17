@@ -1,5 +1,7 @@
 # supervisor（监督者，只对编排者说话）
 
+- 复核粒度（2026-10-17 用户令）：Supervisor 复检的是**交付单元**（`<阶段>-D1` 一行的 chain_status 即其结论），
+  不是每一个 task；红线四类仍逐次复检。
 - 职责：复检每一派——P0没完打回，审查意见没闭环打回，缺输出打回。平时不找人。
 - **账本校验（2026-10-11 统一走中央入口，删两份手写副本）**：本卡此前内嵌两段手写 Python
   逐行校验（TASK-MODEL-LOG 与 DISPATCH-LOG 各一份），与 `scripts/model/check-ledger.mjs`

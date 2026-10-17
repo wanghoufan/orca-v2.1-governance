@@ -14,10 +14,13 @@
 #
 # 用法（替换裸 codebuddy）：
 #   bash scripts/codebuddy-auto.sh --model deepseek-v4.1-flash --effort high -y -p "任务"
+#   · 心跳：每次调用前后写一行到 ${CODEBUDDY_HB:-~/.codebuddy-rotate/heartbeat.log}（时刻/阶段/pid），
+#     编排者据此判「在干」还是「卡死」，不必猜、不必高频空转轮询
 # 环境变量：
 #   CODEBUDDY_ROTATE_DIR     默认 ~/.codebuddy-rotate
 #   WB_SWITCH_ACCOUNTS_FILE  默认 ~/.wb-switch/accounts.json
 #   AUTO_ROTATE_MAX          默认 3，试几个账号
+#   CODEBUDDY_HB             心跳文件路径（默认 ~/.codebuddy-rotate/heartbeat.log）
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROT_DIR="${CODEBUDDY_ROTATE_DIR:-$HOME/.codebuddy-rotate}"
 ACC_FILE="${WB_SWITCH_ACCOUNTS_FILE:-$HOME/.wb-switch/accounts.json}"
@@ -43,9 +46,25 @@ if [ "${N:-0}" -eq 0 ]; then
   exec "$REAL" "$@"
 fi
 
+# ── dispatch heartbeat (2026-10-17, from a project orchestrator's real finding) ──
+# Problem: a builder ran 15 minutes with 0 bytes of log, and the orchestrator could not tell
+# "still working" from "hung" -- because two states are indistinguishable without a signal.
+# Its workaround was polling conservatively, which cost idle wakeups and still guessed.
+# Fix: the wrapper (command layer, so it applies to every project automatically) writes a
+# heartbeat file before each call and after it finishes. Orchestrators read the mtime/line
+# to decide liveness instead of guessing.
+HB_FILE="${CODEBUDDY_HB:-$ROT_DIR/heartbeat.log}"
+hb() {
+  mkdir -p "$(dirname "$HB_FILE")" 2>/dev/null || return 0
+  printf '%s	%s	pid=%s
+' "$(date +%H:%M:%S)" "$1" "$$" >> "$HB_FILE" 2>/dev/null || true
+}
+
 is_limited() { printf '%s' "$1" | grep -qE '429|频率限制|rate.?limit'; }
 
+hb "call-start $*"
 out="$("$REAL" "$@" 2>&1)"; rc=$?
+hb "call-end rc=$rc"
 if ! is_limited "$out"; then
   printf '%s\n' "$out"
   exit "$rc"
@@ -56,7 +75,9 @@ i=1
 while [ "$i" -lt "$MAX" ]; do
   nxt=$(( (cur + i) % N ))
   python3 "$HERE/_cb-rotate.py" "$ACC_FILE" "$STATE" "$nxt" >/dev/null 2>&1
+  hb "retry-start account=$nxt"
   out="$("$REAL" "$@" 2>&1)"; rc=$?
+  hb "retry-end rc=$rc account=$nxt"
   if ! is_limited "$out"; then
     printf '%s\n' "$out"
     echo "[codebuddy-auto] 原账号限流 → 自动切到第 $((nxt+1))/$N 个账号，重试成功" >&2

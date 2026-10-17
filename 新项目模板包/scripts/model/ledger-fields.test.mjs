@@ -73,6 +73,10 @@ const CASES = [
   ["case25-firstrelease-nosignoff", 1, ["SIGNOFF-MISSING"]],
   ["case26-firstrelease-signed", 0, []],
   ["case27-solo-exempt", 0, []],
+  // 两账本交叉校验（2026-10-17）：同一 (task,role) 在两账的 result 必须一致，
+  // 否则两本手写账已漂 —— 现场由 supervisor 抓出过缺 chain_status/对不齐的情况。
+  ["case28-xref-consistent", 0, []],
+  ["case29-xref-result-drift", 1, ["LEDGER-XREF"]],
 ];
 for (const [fixture, wantExit, mustInclude] of CASES) {
   const r = withFixture(fixture, (d) => runLedger(d));
@@ -205,7 +209,9 @@ for (const [fixture, wantExit, mustInclude] of CASES) {
 {
   const r = withFixture("case01-valid", (d) => {
     writeFileSync(join(d, "docs/model/DISPATCH-LOG.jsonl"),
-      JSON.stringify({ date: "2026-10-11", task: "T1", role: "supervisor",
+      // task 用夹具里真实存在的 "t"（case01 的 TASK 行 task=t）。写成不存在的 task 会让
+      // 新的 LEDGER-XREF「整条漏记」判定报 FAIL —— 那正是本用例不想碰的规则。
+      JSON.stringify({ date: "2026-10-11", task: "t", role: "supervisor",
         model: "opencode/muse-spark-1.3-contributor-free", used: "主",
         runtime: "opencode", result: "FAIL" }) + "\n");
     return runLedger(d);

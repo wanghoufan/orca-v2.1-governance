@@ -1,3 +1,88 @@
+## 2026-10-17 (PENDING) perf(governance): 复核粒度改为「交付单元」—— 默认制度，不需口令
+
+**为什么**：用户明确指出「不能一个小改动、一个小阶段就派三四个角色，那是大阶段结束才这样」，
+并追加「从制度上就是这样子，不要还要靠我额外的口令」。核实确认：现行规则确实把
+builder→code-reviewer→qa→supervisor 挂在**每个 task** 上（`AGENTS.md` Phase2 主链 ＋ 跳步条只豁免
+「纯文档/格式类」，逻辑/UI 类改动即使只有一行也要走满三道）—— 这与用户「复核粒度＝交付单元」的
+原意不符。**这不是执行者偷懒，是规则本身写成了按 task 触发。**
+
+**改了什么**
+1. **复核粒度＝交付单元**（`AGENTS.md` 新增专条，默认制度、**明文标注不需任何口令**）：
+   - 同一里程碑/大阶段内的多个小任务合并为一个**交付单元**，复核链对**交付单元**跑一次，**不对每个 task 跑**；
+   - 单 task 完成＝builder **自审＋轻量自测**，不派 reviewer/qa/supervisor；账本照记一行（记账≠复核）；
+   - 到**交付单元边界**（阶段收口／功能可用／准备给人看）才依次派 `code-reviewer → qa → supervisor` 一次走完，
+     用 `<阶段>-D1` 独立 task id 记录复核结论；
+   - **四类不得延后**（命中即按原粒度立即复核）：①公共契约／数据库 schema／鉴权；②真机、线上数据、生产配置；
+     ③用户可见缺陷的修复；④secrets 或不可逆删除。
+2. **质量门一道没减**：`check-ledger` 的 `ACCEPTED-MISSING`／`SIGNOFF-MISSING` 仍按「有 qa 行必须闭环」判定，
+   只是 qa 行改为在**交付单元**产生，而非每个 task 产生。
+3. 同步落 `编排者提示词.md` 与 `docs/roles/{qa,code-reviewer,supervisor}.md`，并在概览补该机制 ＋ 检查点第 21 条。
+4. 新增 `scripts/model/delivery-unit.test.mjs`（14 例文本门）把这条锁死：**必须写成默认制度**、
+   必须含四类不得延后、必须含「质量门一道没减」，且**不得出现「每个 task 走全链」的表述**——
+   规则回退到按 task 触发时测试即 FAIL。
+
+**怎么验（全部实跑）**：`SYNC-OK`｜`CHANNEL-OK`｜delivery-unit **14/14**｜continuous-push 9/9｜tm 44/44｜proto 9/9｜
+ui-leak 2/2｜ledger-fields 47/47｜solo 15/15｜gates 21/21｜codebuddy-rotate 12/12。
+
+## 2026-10-17 (PENDING) fix(governance): 第二轮体系自查 —— 堵「有实现、无触发路径」与三个实测绕过口
+
+**为什么**：第二轮四路只读审查（一致性／可落实性／账本／概览与测试真实性）。第一轮修完新增机制后复审发现：
+**新增的门大多「有实现、没有触发路径」** —— 这是比「纸面规则」更隐蔽的一类，因为它看起来已经造好了。
+
+### P0（全部已修）
+1. **三道账本门结构上跑不到一次**：ACCEPTED-MISSING／SIGNOFF-MISSING／LEDGER-XREF 的唯一触发链是
+   `pre-commit-guard.sh → check-ledger`，而**全仓没有任何安装器**（脚本自承「可作为 hook，也可手动跑」）；
+   母版那条分支又永远为假（母版账本按设计只留 `_example` 空壳）。
+   修法：新增 `scripts/install-governance-hooks.sh`（幂等、先备份他人 hook），并纳入分发与 check-sync 纳管；
+   实测装进临时项目仓后，项目仓的 hook **不带** `--allow-example`，账本为空会被当场拦（exit 1）。
+2. **并发放开只在三处生效，分工表与概览仍写「必须串行」**：`AGENTS.md` 与提示词已改，但 `AGENTS.md` 又指向
+   `USER_MODEL_OVERRIDE.md`「产品审查双审派工约定」——编排者照指引去读那张表读到的是旧令。
+   现三处（分工表两处 + 概览）统一为「可并发＋产出校验，零产出则退回串行」。
+3. **首次发布签收有三个完整绕过口**（均为审查实测复现）：
+   ①「用户签收：通过率 100%，功能验收良好」一句即算已签收 → 现在要求**整行是签收结论且带日期**；
+   ②「发布类型：首发版/首版」不再触发 → 口径扩到首发/首版/首次上线/首发版；
+   ③把 QA 交付记成别的角色即可让两道门同时静默 → 已在文档写明，并在概览记「以 OPEN 收尾不得报完工」。
+4. **AC 未闭环检测可被编号写法骗过**：`| AC01 | 未测 |`（无连字符）或整份矩阵无编号 → 原来整份跳过、exit 0。
+   现在不带编号的行只要出现未测信号照样拦（实测反例已复现并确认被拦）。
+5. **「派工整条漏记」完全放行**：LEDGER-XREF 的 orphan 分支原先只 WARN（实测追加 1 条即 exit 0）。
+   现在分两类判定：task 存在但 role 不同＝口径差异（只报）；task 整条不存在＝真漏记，**比例过半即 FAIL**。
+6. **`--additive-only` 会主动造出半套**：AGENTS 区块被无条件重写、角色卡与提示词却因「已存在」被跳过
+   ⇒ 新区块 + 旧角色卡的必然组合；且该模式下 `SKIP_DIRTY` 被整体关闭（脏工作区保护恰在最需要它的模式里失效）。
+   修法：additive-only 下 AGENTS 区块也「不碰」；恢复 `SKIP_DIRTY`。
+7. **铺包抹掉单智能体豁免**：`GOVERNANCE-STATE.json` 原为整份覆盖，不含 `execution_mode` ——
+   而它正是 `check-ledger` 豁免「派工零记录」与「ACCEPTED-MISSING」的依据。改成**合并写**，只更新自己那几个键。
+8. **铺包账本空壳写错目录**：用 `$d` 而非 `$govroot`，043 这类「治理根在子目录」的项目会落到项目根。已修。
+
+### P1 / P2
+概览补 7 项漏写机制（通用零产出守卫／派工心跳／零覆盖铺包／两类只报巡检／性能断言口径／LEDGER-XREF／A2 边界）
+并把 OVERVIEW 关键词清单补 13 个词（补完当场抓出概览真缺 2 项）｜
+`gates.test.mjs` 从 11 → **21**（补 `check-dispatch-output` 全分支、`install-hooks` 三例；并去掉「每次运行清空夹具」
+这个与文件头自述矛盾的写法）｜README 规则层清单补新脚本｜CHANGELOG 验证数字 45 → 47 更正。
+
+**怎么验（全部实跑）**：`SYNC-OK`｜`CHANNEL-OK`｜tm 44/44｜proto 9/9｜ui-leak 2/2｜ledger-fields **47/47**
+｜solo 15/15｜**gates 21/21**｜codebuddy-rotate 12/12｜continuous-push 9/9；
+另做三个绕过口的**独立复现**：假签收句仍拦 exit 1｜`AC01` 无连字符+未测被拦｜派工整条漏记过半 exit 1。
+
+## 2026-10-17 (PENDING) perf(governance): 负担过重？—— 砍在「等待与并发」，不砍在质量门
+
+**为什么**：用户看到某项目编排者交底「每笔任务串三道复核、codebuddy 禁并发只能干等、5 分钟一轮询」，
+质疑「以前是大阶段才走这么多流程，现在每个任务都这么重是不是复杂过头了」。**逐条核实后结论是：
+规则层并没有要求每个任务跑满四道，真正吃时间的是并发与等待策略**（数据：016 平均每 task 1.44 行、028 是 1.0 行，
+并非 4 次往返；`AGENTS.md` 跳步条自 V2.1 首个提交起就允许小活跳 planner/product）。
+
+**改了什么**
+1. **A2 放宽一处门禁（唯一一处）**：单文件且**纯文档/注释/格式类**（不改业务行为、不动逻辑）的小修，
+   可只做代码自审、不派 qa 与 supervisor。**真改逻辑、真机、真数据的活仍走满复核链** ——
+   原则是「负担过重要在并发与等待上解，不在质量门上让」。AGENTS 与编排者提示词同步。
+2. **B1 并发放开但加兜底**：产品审查双审链由「禁并发」改为「**可并发，但必须跑产出非空校验**」。
+   2026-10-07 禁并发是因为实测「双实例并发互相干扰、被抢的一方静默失败且 exit 0、零产出」；
+   如今校验器已就位（`check-product-review.sh`），**并发省下的等待 > 事后发现零产出再重跑的成本**。
+   禁并发降为**兜底手段**：同一批并发出现零产出，该通道后续退回串行。
+3. **B1-b 等待改递进**：`30s → 90s → 长窗口`，而不是一开始就长睡。
+   代价是多几次空转，换快任务不被长等待拖住。**只改等待节奏，不改任何门禁。**
+
+**怎么验**：`SYNC-OK`｜`CHANNEL-OK`｜continuous-push 9/9｜gates 11/11｜ledger-fields 47/47（另有 5 套回归本轮未触发改动，按惯例一并复跑）。
+
 ## 2026-10-17 (571be18) fix(governance): 整改独立审查报告 PASS_WITH_FIXES（4×P1 + 8×P2，逐条核实后全修）
 
 **为什么**：独立审查（ark-code-latest，269 行）给出 `PASS_WITH_FIXES`，列 4 项 P1＋8 项 P2。
@@ -28,7 +113,7 @@ G11 新增**角色覆盖巡检**（`ROLE-COVERAGE`，只报不阻塞）：实测
   由「archive 信息级」升为**硬校验**（原先行首不是角色名，两处正则都不命中，模型消失也不会拦）。
 另修 P3 的 G14 措辞过强（「所有字段错误一律 FAIL」→「结构错 FAIL、写法不规范 WARN」，与 `checkModel` 设计一致）。
 
-**怎么验（全部实跑）**：`SYNC-OK`｜`CHANNEL-OK`｜tm 44/44｜proto 9/9｜ui-leak 2/2｜ledger-fields 45/45｜solo 15/15｜
+**怎么验（全部实跑）**：`SYNC-OK`｜`CHANNEL-OK`｜tm 44/44｜proto 9/9｜ui-leak 2/2｜ledger-fields 47/47｜solo 15/15｜
 **gates 11/11**（新增 2 条：缺 only-A/only-B 被拦、`--allow-example` 不得硬编码）｜codebuddy-rotate 12/12｜continuous-push 9/9｜7-Skill `VALID`；
 另做**现场复现**：按 README 整包新建项目实测首门 exit 0；`sync-old-projects.sh --dry-run` 实跑并逐项验枚举含 4 份 SOP 与 6 个脚本。
 
@@ -74,7 +159,7 @@ G11 新增**角色覆盖巡检**（`ROLE-COVERAGE`，只报不阻塞）：实测
   db-admin 零记录、028/039 账本逐字相同）**按铁律不重写他人实绩**，逐条记入 `docs/model/NEXT-TASKS.md` §四。
 
 **怎么验（全部实跑，非口头）**
-`SYNC-OK`｜`CHANNEL-OK`｜tm-qualification **44/44**｜prototype-gate **9/9**｜ui-leak **2/2**｜ledger-fields **45/45**（新增 4 例）
+`SYNC-OK`｜`CHANNEL-OK`｜tm-qualification **44/44**｜prototype-gate **9/9**｜ui-leak **2/2**｜ledger-fields **47/47**（新增 4 例）
 ｜solo-agent **15/15**｜gates **9/9**（新增）｜codebuddy-rotate **12/12**（新增）｜continuous-push **9/9**（新增）｜7-Skill `VALID`；
 另实测包内 `continuous-push` 独立可跑、包内脚本齐备、`pre-commit` 负例 exit 1。
 

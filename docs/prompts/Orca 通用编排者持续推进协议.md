@@ -430,6 +430,7 @@ orca orchestration check --ack <delivery_id> --wait --types worker_done,escalati
 ```
 
 - 单次等待窗口建议 900000ms（15 分钟）量级，短窗口仅用于密集交互期。
+- **2026-10-17 用户令（省等待，不省门禁）**：等待要**递进**而非一开始就长睡——先 `30s` 看一眼，未完成再 `90s`，仍未完成再进长窗口。代价是多几次空转，换来快任务不被 15 分钟长睡拖住；**只改等待节奏，不改任何门禁、不许跳复核**。
 - 每轮醒来：处理整批 Delivery → 回答 `question`（`orchestration reply`）→ 结算 `worker_done`（reuse / worker-retain / worker-release 三选一）→ ack → 继续等待。
 - 等待与等待之间插入一次文件状态清扫（见 §九）。
 

@@ -105,13 +105,13 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 - 监督：supervisor 兼 **Task Manager Observer**（只标记异常、按现有机制提醒/唤醒/替喊一次；不评分/不接管/不改表/不跨 Gate）；评分汇总由 **Governance Steward**（治理管理层，非 9+1+1 角色，周期审计）做，只出主备**建议**；**主备由用户最终决定**，Steward 不自动改表。
 - 五维评分 100：派工/下一步 30＋持续推进 25＋治理遵守 20＋响应 15＋资源 10；响应阈值据 watchdog（`CONSUME_STALE_SEC=300`/`COOLDOWN_SEC=900`）分 NORMAL/SLOW/STALL；`infra_error` 不计入能力分。
 - Gate：`Score≥90 且 P0 治理违规=0 且 Human Gate 违规=0 → QUALIFIED`；**采样门槛**（有效 Episode <30 或项目 <3 保持 CANDIDATE，不得凭少量样本判通过）。
-- **产品审查链（2026-10-07 用户定）**：口令「第三阶段产品审查」触发（**「第三阶段」仅为口令字面，不代表新增 Phase**），位置在 Phase1 末尾、Develop Approval Gate 之前，**不新增角色/Phase/Gate**。planner（`codex/gpt-6.1-sol`）任组织者并冻结 Plan 版本→**串行**派两份互不可见的独立审查（实测 codebuddy 双实例并发会互相干扰、且失败是静默 exit 0，故必须串行＋校验产出文件非空；planner 已带 `-s danger-full-access` 可直接写盘（解禁失效时才退回 stdout））（`product-reviewer` × `codebuddy/glm-5.3-flash` 与 `codebuddy/deepseek-v4-pro`，只读）→交回 planner 参考/比较/汇总/裁决→产出 `docs/review/PRODUCT_REVIEW_<plan版本>_<日期>.md`（一致项／分歧＋裁决／仅A／仅B／体验改进／交互顺序／功能候选／**明确不采纳项**）→用户 Human Gate → 说「第二阶段，开发」才进 DEVELOP。审查维度限**用户使用体验／交互逻辑与流程顺序／新增或优化功能**，非代码层面；代码类意见判 `WRONG_ROUTE`。
+- **产品审查链（2026-10-07 用户定）**：口令「第三阶段产品审查」触发（**「第三阶段」仅为口令字面，不代表新增 Phase**），位置在 Phase1 末尾、Develop Approval Gate 之前，**不新增角色/Phase/Gate**。planner（`codex/gpt-6.1-sol`）任组织者并冻结 Plan 版本→**可并发**派两份互不可见的独立审查（2026-10-07 曾因 codebuddy 双实例并发互相干扰、失败是静默 exit 0 而要求串行；**2026-10-17 改为可并发＋产出非空校验兜底，零产出则该通道退回串行**；planner 已带 `-s danger-full-access` 可直接写盘（解禁失效时才退回 stdout））（`product-reviewer` × `codebuddy/glm-5.3-flash` 与 `codebuddy/deepseek-v4-pro`，只读）→交回 planner 参考/比较/汇总/裁决→产出 `docs/review/PRODUCT_REVIEW_<plan版本>_<日期>.md`（一致项／分歧＋裁决／仅A／仅B／体验改进／交互顺序／功能候选／**明确不采纳项**）→用户 Human Gate → 说「第二阶段，开发」才进 DEVELOP。审查维度限**用户使用体验／交互逻辑与流程顺序／新增或优化功能**，非代码层面；代码类意见判 `WRONG_ROUTE`。
 - **APP 基础能力前置（2026-10-08 用户定）**：面向用户的 APP **自动继承**主题三态（`LIGHT`/`DARK`/`SYSTEM`，默认 SYSTEM）＋初始中英双语（默认跟随系统，不支持语言回退 `zh-CN`）＋设置持久化＋切换不丢状态；单一真源 `docs/sop/app-theme-i18n.md`。用户不提也会在 Product Plan／三方向／原型／SDD／QA 全链覆盖；**只有用户对某项目明确提特殊要求才允许在 Plan 记覆盖**，Planner/Builder 不得自行取消。沉浸式页面禁擅自强制另一态；可扩展架构（加 ru/ko/th 只增资源不重写核心）是硬性 AC；优先复用官方成熟主题与 i18n 组件。**`-s danger-full-access` 解禁口径以 `AGENTS.md` 为准**（2026-10-07 用户令已放宽到 QA＋planner＋senior-expert，模型表行内旧「仅限 QA」表述以此为准）。**Episode 记账三条**（AGENTS「Task Manager Qualification」节）：①编排者每轮收工必自记一行，构成 Episode 才记，**非 Episode 不记、禁凑数硬记**；②写后必跑 `tm-qualification.mjs` 校验，**不得改写历史行**；③**母版与两包账本只留 `_example` 空壳**，真实 Episode 落各项目自己账本。**APP 主题/多语言与品牌资产的机器门差异**：两者的**阶段级拦截都依赖七颗 Design Pipeline Skill**（不随本模板包分发）；只用本模板包时机器强制点仅 `PRODUCT_PLAN` 声明字段＋`check-ledger` 的 APP/品牌各码，装了七颗 Skill 才额外有各阶段 `BLOCKED`。**APP 品牌资产同样前置必选**（单一真源 `docs/sop/app-brand-assets.md`）：中文名／英文名／安卓图标／启动画面——Product Plan 写方向 → A/B/C 每方向附四类候选 → 原型须体现启动页与命名/图标候选 → **Human 2/Design Freeze 前拍板最终四项**；**未拍板开发阶段不得自行决定**（`check-ledger` 报 `APP-BRAND-ASSETS-MISSING`，Freeze 无 BRAND Freeze 即不成立）。**不新增 Skill/角色/状态/Human Gate**，强制点落在既有 Gate。
 - 证据（**不改现有账本 schema**）：事件日志 `docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`；评分 `scripts/model/tm-qualification.mjs`；测试 `scripts/model/tm-qualification.test.mjs`；规范 `docs/model/TASK-MANAGER-QUALIFICATION.md`。
 - **Episode 记账（2026-10-07 定）**：编排者**每轮收工必自记一行**，一 Episode 一行；非 Episode 的轮次不记也不硬凑。写后必跑 `scripts/model/tm-qualification.mjs` 校验；无计时证据的 `decision_latency_ms` 填 `null` 不许编；历史行不得改写。**母版与两包的 `docs/model/*.jsonl` 永远只留 `_example` 空壳**（母版是分发源，写真实行会致 check-sync `SYNC-FAIL`），真实 Episode 记到各项目自己的账本。**supervisor 抽查对账**（拿 DISPATCH-LOG 真实派工逐条核是否漏记，漏记/对不上打回，补记由编排者执行）。Episode 层证据不替代 DISPATCH-LOG/TASK-MODEL-LOG 派工账。
 - 候选（真调已过）：`opencode-go/deepseek-v4.1-flash`、`opencode-go/mimo-v2.6-flash`（Runtime=opencode）；真实多项目 A/B 数据由用户后续在真实项目跑。
 
-## 七之三、2026-10-16／17 新增机制（三件，都是「把文字变成机器」）
+## 七之三、2026-10-16／17 新增机制（五件，都是「把文字变成机器」）
 
 - **连续推进模式（一路推到底）**：用户说`一路推到底`／「不要中途找我」＝对**当次目标**的连续推进授权，
   PLAN 完成后自动进 DEVELOP、产品审查后自动继续、复核环间不问、收工只报一次。
@@ -119,7 +119,7 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 - **codebuddy 429 自动切账号**：`codebuddy` 命令层有影子包装（命令层强制，任何项目敲都走），
   撞频率限制自动换下一个账号重试、成功后粘住，全账号限流则如实返回 429（不伪装成功）；
   **只切账号、不动模型**。给派工最频繁的角色（builder）解掉「重派白等一轮」的往返。
-- **账本三道真门（2026-10-17 自查补）**：①**角色交付 ≠ 已验收**——有 QA 交付却无 `ACCEPTED`/`OPEN` 收尾行即 `ACCEPTED-MISSING`；
+- **账本四道真门（2026-10-17 自查补）**：⓪**两账本交叉对账**（`LEDGER-XREF`：同一 `task+role` 在 DISPATCH 与 TASK 的 result 必须一致，不一致即 FAIL —— 两本手写账迟早漂）；①**角色交付 ≠ 已验收**——有 QA 交付却无 `ACCEPTED`/`OPEN` 收尾行即 `ACCEPTED-MISSING`；
   ②**首次发布必须显式签收**——矩阵声明「首次发布」而无「用户签收」记录即 `SIGNOFF-MISSING`；
   ③**提交前自动跑账本校验**——最硬的那道门不再只靠「收工前必跑」这句文字。
   另有产品审查产出校验脚本：零产出或汇总缺段即 exit 1，**「禁信 exit 0」从此由脚本执行**。
@@ -135,6 +135,25 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 **已知边界（写明以免被误当成漏洞）**：以 `chain_status=OPEN` 收尾**不是**绕过签收的手段——
 `OPEN` 的语义是「未完」，因此**报完工必须落 `ACCEPTED`**；`OPEN` 收尾的项目不得计入「已完成」，
 由 supervisor 抽查是否把 `OPEN` 项目误报为完工（2026-10-17 审查 G10 记录，机器只拦 `ACCEPTED` 侧的签收）。
+
+- **通用零产出守卫**：`check-dispatch-output.sh` 对**任何**派工校验「声明的产出文件存在且非空」——
+  2026-10-07 那次「双实例并发、exit 0、零产出」的事故，事前看不见、事后才发现；
+  现在它是**并发放开的前提**：任何角色收工都要跑一次，别等下一环才发现白干。
+- **派工心跳**：codebuddy 包装器（命令层强制，所有项目自动生效）在每次调用前后写一行到
+  `~/.codebuddy-rotate/heartbeat.log`（时刻/阶段/pid）。编排者据此判断「在干」还是「卡死」，
+  **不必猜、不必高频空转轮询**。
+- **铺包零覆盖模式**：`sync-old-projects.sh --additive-only` 只补该文件此前不存在的、绝不覆盖已有文件 ——
+  解决「正在开发的项目中途换规则、两套口径并存」这个真实风险（代价：已存在的旧版本不会被更新）。
+- **两类只报巡检（不阻塞主门）**：产品验收矩阵覆盖率；已铺项目的治理脚本齐备度与角色记账覆盖度（机器锚点 `GOVERNANCE-SCRIPTS`／`ROLE-COVERAGE`，见 `check-sync.sh` 输出）。
+  按惯例**只报不改**：治理侧无权代改他人项目，由各项目自己补。
+- **复核粒度＝交付单元（默认制度，不需口令）**：复核链**不对每个小任务跑**，而是对**交付单元**（同一里程碑内
+  多个小任务的合并体）跑一次。单任务完成只做自审＋轻量自测；到阶段收口/功能可用/准备给人看时才依次走
+  code-reviewer → qa → supervisor 一次走完。**四类不得延后**：公共契约/数据库 schema/鉴权、真机与线上数据与生产配置、
+  用户可见缺陷修复、secrets 与不可逆删除。质量门一道没减，只是不再对每个小改动触发（机器锚点 `交付单元`）。
+
+- **性能/耗时类断言口径**：「A 比 B 快 N 倍」这类断言实测能在空载下飘到 7×，
+  属**负载敏感的偶发失败**，每咬一次白烧一轮复核。口径＝**双阈值（比值＋绝对耗时）** 或
+  **连跑 3 次取中位数**；未实测稳定性的耗时断言不得当门禁。
 
 ## 七之二、账本与证据的现役机制（2026-10-14 体系自查后补齐）
 
@@ -200,5 +219,7 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 
 17. 连续推进：用户说`一路推到底`后是否真的环间不问（而不是又回头问），同时首次发布签收是否仍然停下。
 18. 429 自动切账号：派工是否走命令层包装（不是靠编排者记得改调用）；影子包装是否仍在位。
-19. 账本三门：ACCEPTED-MISSING／SIGNOFF-MISSING 是否拦得住「未签收就报完工」；pre-commit 是否真串了账本校验。
+19. 账本四门：LEDGER-XREF（两账 result 漂移）／ACCEPTED-MISSING／SIGNOFF-MISSING 是否拦得住「未签收就报完工」；pre-commit 是否真串了账本校验。
+21. 复核粒度：是否对**交付单元**（而非每个 task）跑复核链；四类不得延后的是否按原粒度立即复核。
+22. 负担豁免边界：单文件纯文档/注释/格式类小修免派 qa 与 supervisor，**但留痕照旧**（已铺包项目仍须落极简 QA 记录）——免派工 ≠ 免留痕。
 20. 产品审查产出：`check-product-review.sh` 是否收工真跑（exit 0 才算产出，非 exit 0）。

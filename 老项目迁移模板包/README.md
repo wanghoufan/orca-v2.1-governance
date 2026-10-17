@@ -70,7 +70,7 @@ node <项目目录>/scripts/model/check-ledger.mjs                       # 期�
 **权威清单以 `scripts/_sync-packages.py` 的 `PAIRS`＋`DIRS`＋`EXTRA` 为单一真源**，下表只是人读副本（2026-10-17 G6 补齐，此前漏了 AGENTS/概览硬引用的脚本）：
 `AGENTS.md`｜`USER_MODEL_OVERRIDE.md`｜`ORCA治理体系说明.md`｜`经验一句话.md`｜
 `scripts/model/check-ledger.mjs`｜`scripts/model/model-perf.mjs`｜`scripts/detect-client.sh`｜`scripts/check-sync.sh`｜`scripts/check-channel-preflight.sh`｜
-**AGENTS 与概览硬引用、漏了会 `no such file` 的**：`scripts/pre-commit-guard.sh`｜`scripts/check-product-review.sh`｜`scripts/codebuddy-auto.sh`＋`_cb-rotate.py`/`_cb-active.py`/`_cb-count.py`｜`scripts/orca-gitignore.sh`｜`scripts/orca-public-guard.sh`＋`orca-public-ignore.txt`｜`scripts/restore-framework.sh`｜`scripts/migration-status.sh`｜`scripts/_inject-agents-block.py`
+**AGENTS 与概览硬引用、漏了会 `no such file` 的**：`scripts/pre-commit-guard.sh`｜`scripts/check-product-review.sh`｜`scripts/check-dispatch-output.sh`（通用零产出守卫）｜`scripts/install-governance-hooks.sh`（把账本门真正装进项目仓的 hook）｜`scripts/codebuddy-auto.sh`＋`_cb-rotate.py`/`_cb-active.py`/`_cb-count.py`｜`scripts/orca-gitignore.sh`｜`scripts/orca-public-guard.sh`＋`orca-public-ignore.txt`｜`scripts/restore-framework.sh`｜`scripts/migration-status.sh`｜`scripts/_inject-agents-block.py`
 ＋ **补新增**（不存在才放，已存在不覆盖）：`docs/qa/产品验收追踪矩阵.template.md`｜`docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`｜`docs/model/JEV-DECISION-LOG.jsonl`
 
 **规则文件不要挑行合并**：要么整个文件覆盖，要么按归位表整包处理——手工挑行是这类操作里最容易漏、最容易冲突的做法。

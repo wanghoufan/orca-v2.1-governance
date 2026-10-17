@@ -46,6 +46,10 @@ EXTRA = ["scripts/detect-client.sh", "scripts/model/check-ledger.mjs",
          "scripts/_inject-agents-block.py",
          # 2026-10-17：产品审查产出校验（原先「禁信 exit 0」只有文字）
          "scripts/check-product-review.sh",
+         # 2026-10-17：通用派工产出守卫（零产出/静默失败不再只覆盖产品审查链）
+         "scripts/check-dispatch-output.sh",
+         # 2026-10-17：账本三门的触发路径（此前有实现、无安装器＝永远跑不到）
+         "scripts/install-governance-hooks.sh",
          "scripts/codebuddy-auto.sh", "scripts/_cb-rotate.py", "scripts/_cb-active.py", "scripts/_cb-count.py",
          "scripts/model/model-perf.mjs",   # 2026-10-16：角色×模型耗时对比（换模型提速的可测量依据）
          "scripts/check-channel-preflight.sh",  # weekly-channel-check.sh 是母版 launchd 专用，不随包分发

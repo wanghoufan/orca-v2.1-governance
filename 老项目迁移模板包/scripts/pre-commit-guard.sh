@@ -54,7 +54,12 @@ for lg in TASK-MODEL-LOG DISPATCH-LOG; do
       esac
       if ! node scripts/model/check-ledger.mjs docs/model $exflag; then
         echo "PRE-COMMIT-GUARD 拦截：账本机器校验未过（check-ledger exit≠0），见上方 LEDGER-FAIL" >&2
-        echo "  · 本仓是母版：账本只允许 _example 空壳；若你在项目仓，请改用对应项目路径" >&2
+        if [ -n "$exflag" ]; then
+          printf '%s\n' '  · 母版仓：账本只允许 _example 空壳（本次按母版口径校验）' >&2
+        else
+          printf '%s\n' '  · 项目仓：**不得使用 --allow-example**（等于放过「示例行未删」）' >&2
+          printf '%s\n' '    若 LEDGER-FAIL 是「空账本」属未开工正常态，先建空账本文件再提交' >&2
+        fi
         rc=1
       fi
     fi

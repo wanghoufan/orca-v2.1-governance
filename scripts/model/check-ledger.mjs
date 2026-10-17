@@ -334,6 +334,61 @@ check("DISPATCH-LOG.jsonl",
 //   ③ 首次发布类型的交付另由签收规则把关（此处只查 AC 是否闭环）。
 // 口径说明：`BLOCKED` 是「被外部条件挡住」，仍属未闭环，故一并拦住——
 // 报完工的前提是「已验收」，被挡住就不能算已验收。
+// ── 两账本交叉校验（2026-10-17 补，来自项目编排者的实跑发现）────────────
+// 背景：TASK-MODEL-LOG 与 DISPATCH-LOG 是**两本手写账**，字段多、每笔 5 行，
+// 迟早会漂 —— supervisor 在某个项目就抓到过「DISPATCH 记 4 行、TASK 记 4 行，
+// 但有 3 条 TASK 行缺 chain_status」这类不一致。
+// 为什么**不做**「TASK 由 DISPATCH 派生」：DISPATCH 没有 rework / cost_cny / chain_status
+// 等字段，且存量账本无法迁移 —— 派生等于废掉一半字段或重写历史（触碰实绩铁律）。
+// 折中且有效：**机器逐笔对账**。同一 task 在两本账里的 role/result 必须一致，
+// 且 DISPATCH 的每一条真实行都要能在 TASK 找到对应行。
+{
+  const tByKey = new Map();      // task\0role -> row
+  const tByTask = new Map();     // task       -> Set(role)
+  for (const d of readRows("TASK-MODEL-LOG.jsonl")) {
+    tByKey.set(`${d.task}\u0000${d.role}`, d);
+    if (!tByTask.has(d.task)) tByTask.set(d.task, new Set());
+    tByTask.get(d.task).add(d.role);
+  }
+  let mismatch = 0, roleDiff = 0, orphan = 0, checked = 0;
+  const detail = [];
+  for (const d of readRows("DISPATCH-LOG.jsonl")) {
+    const t = tByKey.get(`${d.task}\u0000${d.role}`);
+    if (!t) {
+      // 分两类，否则会把「角色口径差异」误判成「整条派工漏记」：
+      //   task 在账里有、只是 role 不同 => 口径不一致（WARN）
+      //   task 压根不在账里           => 真·漏记（比例过半则 FAIL）
+      if (tByTask.has(d.task)) { roleDiff++; } else { orphan++; }
+      continue;
+    }
+    checked++;
+    if (d.result && t.result && d.result !== t.result) {
+      mismatch++;
+      if (detail.length < 5) detail.push(`${d.task}/${d.role}: dispatch=${d.result} vs task=${t.result}`);
+    }
+  }
+  if (mismatch) {
+    fails.push(`LEDGER-XREF: 同一任务在两本账的 result 不一致（${mismatch} 处）—— 两账手写必漂：`
+      + `${detail.join("；")}`);
+  }
+  if (orphan) {
+    const total = checked + orphan + roleDiff;
+    const ratio = total > 0 ? orphan / total : 0;
+    if (ratio > 0.5) {
+      fails.push(`LEDGER-XREF: DISPATCH 有 ${orphan} 条 task 在 TASK-MODEL-LOG 整条不存在`
+        + `（占全部 ${Math.round(ratio * 100)}%）—— 任务账漏记整条派工，比例过半不得放行。`
+        + `若实为 task id 拼写不一致，改齐后重跑`);
+    } else {
+      warns.push(`LEDGER-XREF: DISPATCH 有 ${orphan} 条 task 在 TASK-MODEL-LOG 整条不存在`
+        + `（占 ${Math.round(ratio * 100)}%，未过半，只报）`);
+    }
+  }
+  if (roleDiff) {
+    warns.push(`LEDGER-XREF: DISPATCH 有 ${roleDiff} 条的 role 与 TASK 同 task 的角色集合不一致`
+      + `（口径差异，只报；同 task 的 result 已另行对账）`);
+  }
+}
+
 // ── 收工口径反转 + 签收把关（2026-10-17 补）────────────────────────
 // 背景（自查实证）：原逻辑只在「账本已经写了 chain_status=ACCEPTED」时才查验收矩阵，
 // 于是**不宣布验收＝一次都不查**，全程 DELIVERED 的项目照样报完工 —— 红线形同虚设。
@@ -362,8 +417,11 @@ check("DISPATCH-LOG.jsonl",
   const mp0 = join(dirname(dir), "qa", "产品验收追踪矩阵.md");
   if (acceptedRows.length && existsSync(mp0)) {
     const txt0 = readFileSync(mp0, "utf8");
-    const firstRelease = /发布类型\s*[：:]\s*\**\s*首次发布/.test(txt0);
-    const signed = /用户签收\s*[：:]\s*\**\s*(已签收|通过|已通过)/.test(txt0);
+    // 首发/首版/首次发布 都算首次发布 —— 口径不能靠改两个字绕开
+    const firstRelease = /发布类型\s*[：:]\s*\**\s*(首次发布|首发|首版|首次上线|首发版)/.test(txt0);
+    // 2026-10-17 修：原正则 `(已签收|通过|已通过)` 会被「用户签收：通过率 100%，功能验收良好」
+    // 这类句子骗过（实测放行）。现在要求**整行就是一个签收结论**，且必须带日期。
+    const signed = /^\s*[-*|]?\s*用户签收\s*[：:]\s*\**\s*(已签收|已通过|通过)\s*\**\s*[（(]?\s*20\d{2}-\d{2}-\d{2}\s*[）)]?\s*$/m.test(txt0);
     if (firstRelease && !signed) {
       fails.push(`SIGNOFF-MISSING: 账本判已验收（ACCEPTED），矩阵声明「发布类型：首次发布」`
         + `但没有显式用户签收记录 —— 按 AGENTS.md 红线「首次发布未取得用户签收不得报完工」不得放行。`
@@ -385,7 +443,11 @@ check("DISPATCH-LOG.jsonl",
       const lines = readFileSync(mp, "utf8").split("\n");
       const bad = [];
       lines.forEach((ln, i) => {
-        if (!/AC-\d+/.test(ln)) return;
+        // 2026-10-17 修：原来只扫「含 AC-<数字>」的行，改写成 AC01 / ac_2 就整份漏检
+        // （实测反例：`| AC01 | 未测 |` 与「整份无编号」都 exit 0）。
+        // 现在：带编号的行按编号判定；**不含任何编号的行**，只要出现未测信号也照样拦。
+        const hasAc = /\bAC[\s_-]?\d+\b/i.test(ln);
+        if (!hasAc && !/未测|(^|[^A-Z])OPEN([^A-Z]|$)|FAIL|BLOCKED/.test(ln)) return;
         if (/未测|(^|[^A-Z])OPEN([^A-Z]|$)|FAIL|BLOCKED/.test(ln)) bad.push(`#${i + 1}`);
       });
       if (bad.length) {

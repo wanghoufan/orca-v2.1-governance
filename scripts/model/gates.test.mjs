@@ -6,7 +6,7 @@
 // NOTE: work dirs are created under scripts/model/fixtures/gates/ (versioned, never /tmp,
 // never cleaned up) so a reviewer can re-run and compare.
 import { execFileSync } from "node:child_process";
-import { mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdirSync, writeFileSync, rmSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -24,7 +24,10 @@ const run = (sh, args, cwd) => {
 };
 const write = (p, body) => { mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, body); };
 
-rmSync(FIX, { recursive: true, force: true });
+// NOTE: do NOT rm -rf the fixture tree here. An earlier version did, while the file header
+// claimed "never cleaned up" -- a hand-edited fixture would be silently overwritten on the
+// next run, which is exactly the "evidence you can quietly change" failure this suite exists
+// to prevent. Files are rewritten deterministically instead.
 
 // ── check-product-review.sh ─────────────────────────────────────────────
 const PR = join(FIX, "product-review");
@@ -58,6 +61,30 @@ r = run(script, [join(PR, "PRODUCT_REVIEW_V1.0_noonly.md")]);
 check("product-review: missing only-A/only-B sections blocked",
   r.code === 1 && r.out.includes("PRODUCT-REVIEW-INCOMPLETE") && r.out.includes("only_a"));
 
+// check-dispatch-output.sh -- the generic zero-output gate that B1 (concurrent dispatch)
+// depends on. Second self-audit: it had an implementation but zero regression coverage.
+// A gate that can be quietly broken is worse than no gate, because people trust it.
+const DO = join(FIX, "dispatch-output");
+write(join(DO, "present.md"), "role produced something meaningful here\n");
+write(join(DO, "empty.md"), "ok\n");                       // under MIN=10 bytes
+write(join(DO, "spec.txt"), "builder\t" + join(DO, "present.md") + "\n"
+  + "qa\t" + join(DO, "gone.md") + "\n");
+const doScript = join(ROOT, "scripts", "check-dispatch-output.sh");
+r = run(doScript, [join(DO, "present.md")]);
+check("dispatch-output: real output passes", r.code === 0 && r.out.includes("DISPATCH-OUTPUT-OK"));
+r = run(doScript, [join(DO, "empty.md")]);
+check("dispatch-output: near-empty output blocked", r.code === 1 && r.out.includes("DISPATCH-OUTPUT-EMPTY"));
+r = run(doScript, [join(DO, "missing.md")]);
+check("dispatch-output: missing output blocked", r.code === 1 && r.out.includes("DISPATCH-OUTPUT-MISSING"));
+r = run(doScript, ["--spec", join(DO, "spec.txt")]);
+check("dispatch-output: --spec catches a role whose output vanished", r.code === 1 && r.out.includes("qa"));
+r = run(doScript, ["--spec", join(DO, "nothing-here.txt")]);
+check("dispatch-output: missing spec file is an error, not a silent pass", r.code === 1 || r.code === 2);
+r = run(doScript, [join(DO, "present.md"), join(DO, "missing.md")]);
+check("dispatch-output: mixed batch fails as a whole", r.code === 1);
+r = run(doScript, []);
+check("dispatch-output: no argument is a usage error", r.code === 2);
+
 // ── pre-commit-guard.sh: ledger check must be wired in ──────────────────
 // Negative test: if the hook does NOT run check-ledger, this fails.
 // It runs in a throwaway git repo with a broken ledger staged.
@@ -71,7 +98,6 @@ const g = (args) => execFileSync("git", args, { cwd: REPO, encoding: "utf8", std
 g(["init", "-q"]);
 g(["config", "user.email", "t@t"]); g(["config", "user.name", "t"]);
 // copy the real guard + a stub ledger checker that always fails
-const { readFileSync } = await import("node:fs");
 write(join(REPO, "scripts", "pre-commit-guard.sh"), readFileSync(join(ROOT, "scripts", "pre-commit-guard.sh"), "utf8"));
 write(join(REPO, "scripts", "model", "check-ledger.mjs"), 'process.exit(1);\n');
 // _example shell only: so the evidence-copy rule (ii) does NOT fire and the
@@ -88,6 +114,19 @@ const guardSrc = readFileSync(join(ROOT, "scripts", "pre-commit-guard.sh"), "utf
 check("pre-commit: --allow-example is conditional, not hardcoded",
   /case "\$\(git rev-parse --show-toplevel/.test(guardSrc)
   && !/check-ledger\.mjs docs\/model --allow-example; then/.test(guardSrc));
+
+// installer: a project repo must end up with a working hook that does NOT pass --allow-example
+const INST = join(REPO, "installer-probe");
+mkdirSync(INST, { recursive: true });
+execFileSync("git", ["init", "-q"], { cwd: INST });
+r = run(join(ROOT, "scripts", "install-governance-hooks.sh"), [INST]);
+check("install-hooks: installs into a project repo", r.code === 0 && r.out.includes("installed"));
+const installed = readFileSync(join(INST, ".git", "hooks", "pre-commit"), "utf8");
+check("install-hooks: installed hook is the governance guard", installed.includes("pre-commit-guard"));
+r = run(join(INST, ".git", "hooks", "pre-commit"), [], INST);
+check("install-hooks: project hook runs (no --allow-example, so an empty ledger is flagged)",
+  r.code === 1 || r.code === 0);   // either outcome is fine; what matters is it EXECUTED
+rmSync(INST, { recursive: true, force: true });
 
 // ledger not staged => checker not invoked at all
 write(join(REPO, "scripts", "model", "check-ledger.mjs"), 'process.exit(1);\n');

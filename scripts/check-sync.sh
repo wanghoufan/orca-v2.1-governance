@@ -40,6 +40,7 @@ for pkg in "新项目模板包" "老项目迁移模板包"; do
            scripts/model/tm-qualification.mjs scripts/model/tm-qualification.test.mjs \
             scripts/model/prototype-gate.test.mjs \
             scripts/model/ui-leak.mjs scripts/model/ui-leak.test.mjs \
+           scripts/model/delivery-unit.test.mjs scripts/model/continuous-push.test.mjs \
            经验一句话.md; do
     check "$f" "$pkg/$f"
   done
@@ -47,7 +48,7 @@ for pkg in "新项目模板包" "老项目迁移模板包"; do
   check_norm "README.md" "$pkg/README.md"
   check "scripts/detect-client.sh" "$pkg/scripts/detect-client.sh"
   check "scripts/check-channel-preflight.sh" "$pkg/scripts/check-channel-preflight.sh"  # 2026-10-08 补纳管
-  for f in scripts/check-product-review.sh scripts/pre-commit-guard.sh scripts/orca-gitignore.sh \
+  for f in scripts/check-product-review.sh scripts/check-dispatch-output.sh scripts/install-governance-hooks.sh scripts/pre-commit-guard.sh scripts/orca-gitignore.sh \
            scripts/orca-public-guard.sh scripts/orca-public-ignore.txt scripts/restore-framework.sh \
            scripts/migration-status.sh scripts/_inject-agents-block.py; do
     check "$f" "$pkg/$f"   # 2026-10-17：AGENTS/概览硬引用却只在母版 ⇒ 新项目必然 no such file
@@ -126,7 +127,7 @@ done
 # 2026-10-14 体系自查补：上列关键词只覆盖旧机制，本轮新增的账本/证据/跨目录机制
 # **一个都不在清单里** ⇒ 概览漏更新也照样 OVERVIEW-OK 通过（这是个漏卡点）。
 # 措辞用「概览里的原文写法」做锚，避免同义词对不上造成永久误报。
-for kw in "一路推到底" "连续推进" "codebuddy" "429" "自动切账号" "elapsed_sec" "model-perf" "ACCEPTED-MISSING" "SIGNOFF-MISSING" "pre-commit" "check-product-review" "编排者自做" "neat-freak"; do
+for kw in "一路推到底" "连续推进" "交付单元" "check-dispatch-output" "additive-only" "heartbeat" "心跳" "GOVERNANCE-SCRIPTS" "ROLE-COVERAGE" "LEDGER-XREF" "双阈值" "可并发" "免派工"  "codebuddy" "429" "自动切账号" "elapsed_sec" "model-perf" "ACCEPTED-MISSING" "SIGNOFF-MISSING" "pre-commit" "check-product-review" "编排者自做" "neat-freak"; do
   grep -q -- "$kw" ORCA治理体系说明.md || { echo "OVERVIEW-STALE: 概览缺 $kw"; fail=1; }
 done
 for kw in "派工逐派不漏记" "supersedes" "有效拦截" "违规分级" "未测不按满分算" "响应速度只认时间戳" "原始输入留存" "--auto" "取消历史豁免" "升级触发机器校验"; do
@@ -158,6 +159,43 @@ echo "AC-MATRIX: $((ac_total-ac_missing))/$ac_total 有落盘；缺失 $ac_missi
 # 背景：schema 对 11 个角色全开放，但**没有任何门保证都真被记** —— db-admin 至今零记录，
 # supervisor(54样本/仅1种模型) 与 product-reviewer(86%单一模型) 无对照数据，
 # 「按能力换模型」因此缺依据。此处只提示覆盖缺口，不新增 Gate、不改判定。
+# 治理脚本齐备巡检（2026-10-17；**只报不阻塞**）：
+# 背景：项目编排者实测发现「codebuddy-auto.sh 只在母版仓存在、某项目 software/scripts/ 里没有」，
+# 换机或断软链就失效；更普遍的是已铺项目可能缺 check-product-review / pre-commit-guard 等
+# AGENTS 硬引用的脚本 ⇒ 照规则执行必然 no such file。
+# 为什么不阻塞：做成 SYNC-OK 阻塞＝母版门禁被**别人项目**的状态绑架，且治理侧无权代改他人项目。
+# 与产品验收巡检同惯例：报出来，由各项目自己补。
+echo "--- 治理脚本齐备巡检（只报，不影响 SYNC 主结论） ---"
+gov_ok=0; gov_bad=0
+for d in "$ACROOT"/*/; do
+  [ -d "$d" ] || continue
+  base="$(basename "$d")"
+  case "$base" in 0-*|999-*|临时备份*) continue ;; esac      # 治理根与索引类目录不是项目
+  # 治理根：项目根，或下一层里唯一含 AGENTS.md 的目录（043 这类 software/ 内治理）
+  g="${d%/}"
+  if [ ! -f "$d/AGENTS.md" ]; then
+    hit=""; multi=0
+    for sub in "${d%/}"/*/; do
+      [ -f "$sub/AGENTS.md" ] || continue
+      if [ -z "$hit" ]; then hit="${sub%/}"; else multi=1; fi
+    done
+    [ "$multi" = "1" ] && continue
+    [ -n "$hit" ] || continue
+    g="$hit"
+  fi
+  # 只认**确实铺过治理包**的项目（有角色卡目录），否则会把一堆普通目录算成缺失
+  [ -d "$g/docs/roles" ] || [ -f "$g/docs/model/TASK-MODEL-LOG.jsonl" ] || continue
+  miss=""
+  for need in scripts/check-product-review.sh scripts/check-dispatch-output.sh scripts/pre-commit-guard.sh scripts/codebuddy-auto.sh scripts/orca-gitignore.sh; do
+    [ -f "$g/$need" ] || miss="$miss $(basename "$need")"
+  done
+  if [ -z "$miss" ]; then gov_ok=$((gov_ok+1)); else
+    gov_bad=$((gov_bad+1))
+    echo "GOVERNANCE-SCRIPTS-MISSING: $base 缺:${miss}"
+  fi
+done
+echo "GOVERNANCE-SCRIPTS: ${gov_ok} ok / $((gov_ok+gov_bad)) synced-projects (missing=${gov_bad}, report-only)"
+
 echo "--- 角色账本覆盖巡检（只报，不影响 SYNC 主结论） ---"
 for d in "$ACROOT"/*/; do
   [ -d "$d" ] || continue
