@@ -51,6 +51,10 @@ EXTRA = ["scripts/detect-client.sh", "scripts/model/check-ledger.mjs",
          # 2026-10-17：账本三门的触发路径（此前有实现、无安装器＝永远跑不到）
          "scripts/install-governance-hooks.sh",
          "scripts/codebuddy-auto.sh", "scripts/_cb-rotate.py", "scripts/_cb-active.py", "scripts/_cb-count.py",
+         # 2026-10-22：新项目铺包一条命令（手工 7 步压成 1 步，每步自检、失败即回滚）。
+         # 缺它的后果＝新项目铺包靠人记 7 步，实测漏了 3 个坑（账本空壳未删／分工表未建软链／
+         # 母版 README 覆盖项目 README），且当场不报错。
+         "scripts/new-project-setup.sh",
          "scripts/model/model-perf.mjs",   # 2026-10-16：角色×模型耗时对比（换模型提速的可测量依据）
          "scripts/check-channel-preflight.sh",  # weekly-channel-check.sh 是母版 launchd 专用，不随包分发
          # 账本空壳（2026-10-07 补）：此前不在同步清单里，母版改动后 check-sync 报 SYNC-FAIL。

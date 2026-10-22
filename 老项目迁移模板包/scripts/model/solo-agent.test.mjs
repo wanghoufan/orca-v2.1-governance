@@ -12,7 +12,7 @@
 import { execFileSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { existsSync, mkdtempSync, cpSync, rmSync, readdirSync } from "node:fs";
+import { existsSync, mkdtempSync, cpSync, rmSync, readdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -125,10 +125,10 @@ const skipIfNotMaster = (name) => {
     "ORCA治理体系说明.md"]);   // 仅母版仓库有，项目里不存在
   const absent = targets
     .filter(([f]) => !(MASTER_ONLY.has(f) && !IS_MASTER))   // 非母版时不算这些缺失
-    .filter(([f]) => !existsSync(join(ROOT, f)) || !grepHit(join(ROOT, f), "单智能体"))
+    .filter(([f]) => !existsSync(join(ROOT, f)) || !grepHit(join(ROOT, f), "主开发者"))
     .map(([f]) => f);
   if (!skipIfNotMaster("C1 单智能体口径已写入母版与两包关键文件"))
-    check("C1 单智能体口径已写入母版与两包关键文件", absent.length === 0, absent.join(", "));
+    check("C1 主开发者口径已写入母版与两包关键文件", absent.length === 0, absent.join(", "));
 }
 {
   const ROOT = join(HERE, "..", "..");
@@ -138,22 +138,23 @@ const skipIfNotMaster = (name) => {
   check("C2 多智能体独立性要求仍保留在角色卡内（未被单智能体口径覆盖）", multiOk);
 }
 
-// ── C' 组｜触发口令「你是唯一开发者」到位 ───────────────────────────
+// ── C' 组｜触发口令「你是主开发者」到位 ─────────────────────────────
 {
   const ROOT = join(HERE, "..", "..");
   // 用户只发这一句就够：口令必须写在规则里，且写明「不再询问／不自动派工／自行找规范」
   const ag = join(ROOT, "AGENTS.md");
-  const phrase = "你是唯一开发者";
+  const phrase = "你是主开发者";
   const parts = [
-    [phrase, "触发口令原文"],
+    [phrase, "触发口令原文（2026-10-17 改名）"],
+    ["你是唯一开发者", "旧口令保留为同义别名（不得失效）"],
     ["不得再次询问", "不再询问是否启用"],
-    ["不得自动派遣其他智能体", "不自动派遣其他智能体"],
+    ["不得自动派遣其他治理角色", "不自动派遣治理角色"],
     ["按需查找、读取并执行现有规范", "自行读取现有规范"],
     ["用户不负责逐项指定规范", "用户不指定规范"],
     ["不代表跳过产品方案确认", "不跳过 Human Gate 与授权"],
   ];
   const miss = parts.filter(([kw]) => !grepHit(ag, kw)).map(([, label]) => label);
-  check("C3 触发口令与四项配套条款在 AGENTS.md 齐备", miss.length === 0, miss.join(", "));
+  check("C3 触发口令与配套条款在 AGENTS.md 齐备", miss.length === 0, miss.join(", "));
 
   const rd = join(ROOT, "README.md");
   const rdOk = grepHit(rd, phrase) && grepHit(rd, "自行读取") && grepHit(rd, "只决定执行模式");
@@ -172,7 +173,7 @@ const skipIfNotMaster = (name) => {
 // 靠人工发现。口令是用户唯一入口，漏一处＝该处读者不知道有这回事。
 {
   const ROOT = join(HERE, "..", "..");
-  const phrase = "你是唯一开发者";
+  const phrase = "你是主开发者";
   const spots = [
     ["AGENTS.md", "触发口令"],
     ["README.md", "用户导航"],
@@ -226,5 +227,68 @@ const skipIfNotMaster = (name) => {
 
 const pass = results.filter((r) => r.ok).length;
 const fail = results.length - pass;
+// ── E 组｜2026-10-17 更正：主开发者 ≠ 只能一个人串行干活 ────────────────
+// 回归背景：原 AGENTS.md 写着「不得因为客户端支持子智能体就自动派工」，
+// 「唯一开发者」这个口令又把人数锁死 —— 于是子代理并行被长期误禁用。
+// 这组用例保证「可并行执行」这条永远不会被重新删掉。
+{
+  const ag = join(HERE, "..", "..", "AGENTS.md");
+  const md = readFileSync(ag, "utf8");
+  check("E1 明确「不派治理角色链」而不是「不派智能体」",
+    md.includes("不得自动派遣其他治理角色") || md.includes("不派治理角色链"));
+  check("E2 明确允许并鼓励派子代理并行推进",
+    /允许、且鼓励用子代理并行推进执行任务/.test(md));
+  check("E3 写明「不是只能一个人串行干活」",
+    md.includes("不是「只能一个人串行干活」"));
+  check("E4 执行层／判定层分界写清",
+    /执行层可外包给子代理/.test(md) && /判定层不外包/.test(md));
+  check("E5 子代理产出须附证据且落 docs/qa/<交付单元>/",
+    md.includes("可核查证据") && md.includes("docs/qa/<交付单元>/"));
+  check("E6 子代理不算独立审查者（标注不许拔高）",
+    md.includes("不是独立审查者"));
+  check("E7 关键路径主开发者须亲手复验一次",
+    /关键路径主开发者至少亲手复验一次/.test(md));
+  check("E7b 子代理模型/强度口径已写清",
+    /子代理的模型与推理强度怎么定/.test(md)
+    && /先看客户端支不支持/.test(md)
+    && /Codex 系与桌面版 GPT/.test(md)
+    && /省额度/.test(md)
+    && /优先用本体系分工表里的模型/.test(md)
+    && /不要写无法执行的规则/.test(md)
+    && /默认继承主线程/.test(md)
+    && /只有 GPT 一侧才讲模型映射/.test(md)
+    && /WorkBuddy／Qoder／CodeBuddy sh／opencode 等其他智能体与开发平台/.test(md)
+    && /一律继承主开发者模型/.test(md)
+    && /执行层在 GPT 侧统一用 `opencode-go\/deepseek-v4\.1-flash`/.test(md)
+    && /按频率限额/.test(md)
+    && /\| 子代理在干什么 \| 取哪一行 \| 现役模型 \|/.test(md)
+    && /写代码、改代码/.test(md)
+    && /只读研究、竞品\/参考资料调研/.test(md)
+    && /数据库 schema 审查/.test(md)
+    && /复核、判 PASS\/FAIL、宣布收工/.test(md)
+    && /禁把治理角色映射给子代理/.test(md)
+    && /不许声称/.test(md));
+  check("E8 该模式下你不是编排者",
+    md.includes("你不是编排者"));
+  check("E9 旧的禁并行窄表述已删除（AGENTS）",
+    !/不得因为当前客户端支持子智能体就自动派工/.test(md));
+
+  // 同一句窄表述当初也出现在 README（两包都带着），只改 AGENTS 等于没改 ——
+  // 这次实测就是把 README 里那句漏掉才被发现。README 与概览一起纳入。
+  const rd = readFileSync(join(HERE, "..", "..", "README.md"), "utf8");
+  check("E10 README 里的禁并行窄表述已删除", !/不会因为当前客户端支持子智能体就自动派工/.test(rd));
+  check("E10 README 章节名与 AGENTS/概览指向一致（链接不得是死的）",
+    rd.includes("主开发者开发使用说明") && md.includes("主开发者开发使用说明"));
+  check("E11 README 写明「不是只能一个人干活」并给出执行层/判定层",
+    rd.includes("只能一个人干活") && rd.includes("执行层") && rd.includes("判定层"));
+
+  const ov = join(HERE, "..", "..", "ORCA治理体系说明.md");
+  if (existsSync(ov)) {
+    const ovd = readFileSync(ov, "utf8");
+    check("E12 概览写清并行边界与旧口令别名",
+      ovd.includes("执行层") && ovd.includes("判定层") && ovd.includes("你是唯一开发者"));
+  }
+}
+
 console.log(`\nALL ${fail ? "FAIL" : "PASS"}  pass=${pass} fail=${fail}`);
 process.exit(fail ? 1 : 0);

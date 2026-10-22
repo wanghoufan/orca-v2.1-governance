@@ -345,12 +345,22 @@ check("DISPATCH-LOG.jsonl",
 {
   const tByKey = new Map();      // task\0role -> row
   const tByTask = new Map();     // task       -> Set(role)
+  // 更正行索引（2026-10-17）：铁律是「历史实绩禁重写」，所以旧账的漂移**不能靠改旧行解决**，
+  // 合法出路是**另起更正行**。没有这条出路，新门会把每个有旧漂移的老项目从今往后每次 commit
+  // 都拦一遍（043 实测：T18-041/supervisor dispatch=FAIL vs task=PASS，铺包后 exit 1）——
+  // 拦的是历史账、不是本轮新错，那就是新造的阻塞源。
+  // 因此：命中「更正/校正/以…为准」更正的 task，其漂移降为提示；**没有更正的照旧 FAIL**。
+  const corrected = new Set();
+  for (const d of [...readRows("TASK-MODEL-LOG.jsonl"), ...readRows("DISPATCH-LOG.jsonl")]) {
+    const note = String(d.note || "");
+    if (/更正|校正|以.{0,20}为准|supersedes/i.test(note)) corrected.add(d.task);
+  }
   for (const d of readRows("TASK-MODEL-LOG.jsonl")) {
     tByKey.set(`${d.task}\u0000${d.role}`, d);
     if (!tByTask.has(d.task)) tByTask.set(d.task, new Set());
     tByTask.get(d.task).add(d.role);
   }
-  let mismatch = 0, roleDiff = 0, orphan = 0, checked = 0;
+  let mismatch = 0, roleDiff = 0, orphan = 0, checked = 0, fixed = 0;
   const detail = [];
   for (const d of readRows("DISPATCH-LOG.jsonl")) {
     const t = tByKey.get(`${d.task}\u0000${d.role}`);
@@ -363,13 +373,23 @@ check("DISPATCH-LOG.jsonl",
     }
     checked++;
     if (d.result && t.result && d.result !== t.result) {
-      mismatch++;
-      if (detail.length < 5) detail.push(`${d.task}/${d.role}: dispatch=${d.result} vs task=${t.result}`);
+      if (corrected.has(d.task)) {
+        fixed++;
+        if (detail.length < 5) detail.push(`${d.task}/${d.role}: dispatch=${d.result} vs task=${t.result}（已有更正行，放行）`);
+      } else {
+        mismatch++;
+        if (detail.length < 5) detail.push(`${d.task}/${d.role}: dispatch=${d.result} vs task=${t.result}`);
+      }
     }
   }
   if (mismatch) {
     fails.push(`LEDGER-XREF: 同一任务在两本账的 result 不一致（${mismatch} 处）—— 两账手写必漂：`
-      + `${detail.join("；")}`);
+      + `${detail.join("；")}。`
+      + `**若是历史遗留**（禁重写实绩）：在任一账本为该 task 另起一行更正（note 写明「更正：以 X 为准」），`
+      + `本条即降为提示；本轮新写错的不许靠更正绕过`);
+  }
+  if (fixed) {
+    warns.push(`LEDGER-XREF: ${fixed} 处 result 漂移已由更正行覆盖（只报）`);
   }
   if (orphan) {
     const total = checked + orphan + roleDiff;

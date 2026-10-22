@@ -26,6 +26,11 @@ PKG="$ROOT/老项目迁移模板包"
 #   SKIP_LIST="a,b"    —— 显式跳过指定项目
 #   SKIP_DEV_TODAY=1   —— 自动跳过「今天(当天)有 commit」的项目（用户口径：今天有 commit 就算在开发，不动）
 SKIP_LIST="${SKIP_LIST:-}"
+# ONLY_LIST（2026-10-17 补）：**只处理列出的这几个项目**，其余一律不碰。
+# 起因：给单个项目（043）的编排者下指令时，只给了 SKIP_LIST 排除项，
+# 结果对方跑了批量铺包、把另外 39 个项目一起改了 —— 越权改动他人项目。
+# 单项目铺包必须用 ONLY_LIST，不要用「批量 + 排除清单」凑，那等于让一个项目去动别人的仓。
+ONLY_LIST="${ONLY_LIST:-}"
 # **默认 1（开）** —— 2026-10-12 用户口径：「有项目今天可能正在跑，先别动今天在跑的项目」。
 # 原默认 0（关）属「忘了开就出事」的不安全默认值。要铺今天在跑的项目需显式 SKIP_DEV_TODAY=0。
 SKIP_DEV_TODAY="${SKIP_DEV_TODAY:-1}"
@@ -114,7 +119,14 @@ nskip=0
 
 for dir in "$PROJECTS_ROOT"/*/; do
   d="${dir%/}"; name="$(basename "$d")"
-  case "$name" in 0-规则与索引|999-*|临时备份*|0-*) continue;; esac
+  case "$name" in 0-规则与索引|999-*|临时备份*|0-*) continue;;
+  esac
+  if [ -n "$ONLY_LIST" ]; then
+    case ",$ONLY_LIST," in
+      *",$name,"*) : ;;
+      *) continue ;;
+    esac
+  fi
   if [ -n "$SKIP_LIST" ]; then
     case ",$SKIP_LIST," in *",$name,"*) echo "SKIP(清单): $name"; continue;; esac
   fi
@@ -129,7 +141,7 @@ for dir in "$PROJECTS_ROOT"/*/; do
     # 判据必须用「源码扩展名白名单」而非「排除治理路径」的反向写法：
     # 反向写法实测把「经验一句话.md」「agents.md」误判成业务文件 ⇒ 36 个里 33 个被跳过。
     if [ "$SKIP_DIRTY" = "1" ]; then
-      dirtybiz="$(git -C "$d" status --porcelain 2>/dev/null | grep -E '\.(ts|tsx|js|jsx|mjs|py|java|kt|swift|go|rs|rb|php|css|scss|html|json|yaml|yml|sql|sh|gradle|xml)$' | grep -vE 'AGENTS|agents|README|经验一句话|编排者|外部开发者|归位表|Orca|GOVERNANCE|CHANGELOG|[Ss]cripts/model/|[Ss]cripts/_cb-|[Ss]cripts/codebuddy-auto|[Ss]cripts/(check|orca|restore|migration|detect|weekly|verify)[A-Za-z-]*\.[a-z]+|[Ss]cripts/_[a-z-]+\.(py|sh)|\.project\.yaml|\.arts/' | head -1)"
+      dirtybiz="$(git -C "$d" status --porcelain 2>/dev/null | grep -E '\.(ts|tsx|js|jsx|mjs|py|java|kt|swift|go|rs|rb|php|css|scss|html|json|yaml|yml|sql|sh|gradle|xml)$' | grep -vE 'AGENTS|agents|README|经验一句话|编排者|外部开发者|归位表|Orca|GOVERNANCE|CHANGELOG|[Ss]cripts/model/|[Ss]cripts/_cb-|[Ss]cripts/codebuddy-auto|[Ss]cripts/(check|orca|restore|migration|detect|weekly|verify|install|pre-commit|codebuddy)[A-Za-z-]*\.[a-z]+|[Ss]cripts/_[a-z-]+\.(py|sh)|\.project\.yaml|\.arts/' | head -1)"
       if [ -n "$dirtybiz" ]; then
         echo "SKIP(业务文件有未提交改动，可能正在写代码): $name → ${dirtybiz:0:44}"
         nskip=$((nskip+1)); continue

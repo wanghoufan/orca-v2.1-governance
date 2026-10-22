@@ -4,6 +4,7 @@
 // correct it repeatedly. A text rule that can silently drift back is the same failure it fixes.
 // It must be DEFAULT policy -- not something the user has to switch on with a magic phrase.
 import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -45,6 +46,16 @@ check("prompt: four non-deferrable classes propagated", prompt.includes("不得�
 
 for (const f of ["docs/roles/qa.md", "docs/roles/code-reviewer.md", "docs/roles/supervisor.md"]) {
   check(`${f}: states the granularity`, read(f).includes("交付单元"));
+}
+
+// 2026-10-17 铺包权限（因一次误伤 39 个项目而定）：批量铺包只有母版干，单项目必须用 ONLY_LIST。
+{
+  const sc = read("scripts/sync-old-projects.sh");
+  check("sync: ONLY_LIST exists and selects only listed projects", /ONLY_LIST/.test(sc));
+  check("sync: AGENTS states batch sync is mother-orchestrator only",
+    /批量铺包只有母版编排者能干/.test(agents));
+  check("AGENTS: single-project update must use ONLY_LIST, ban-exclude-list forbidden",
+    /ONLY_LIST="<项目名>"/.test(agents) && /禁用|禁止/.test(agents));
 }
 
 // 2026-10-17 second pass: the slow part was not only WHO reviews, but HOW MUCH evidence each

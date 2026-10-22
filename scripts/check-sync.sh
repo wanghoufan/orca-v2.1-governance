@@ -67,21 +67,21 @@ for pkg in "新项目模板包" "老项目迁移模板包"; do
   # 回归夹具整树比对（2026-10-09 修 P1-2）：原只验 proto-gate，nav-gate/tm-qual 漂移无卡点。
   # 夹具被改＝测试失去意义，故按整树卡。
   # evidence/ 只在母版（隔离证据含本机绝对路径与随机临时目录名，不随包分发，见 _sync-packages.py TREE_EXCLUDE）
-  if ! diff -rq scripts/model/fixtures "$pkg/scripts/model/fixtures" >/dev/null 2>&1; then
+  if ! diff -rq --exclude=.DS_Store scripts/model/fixtures "$pkg/scripts/model/fixtures" >/dev/null 2>&1; then
     echo "DIFFDIR: scripts/model/fixtures vs $pkg"; fail=1
   fi
   # scripts/model 其余文件整树比对（2026-10-14 洁癖补）：原先只逐个列了 check-ledger.mjs，
   # 其余**测试脚本**（solo-agent.test.mjs / ledger-fields.test.mjs / ui-leak.* 等）
   # 与 NEXT-TASKS.md / TASK-MANAGER-QUALIFICATION.md 都没进比对范围 ⇒ 包内漂移无卡点。
   # 这里按整树卡；幽灵（包有母版无）由下方 GHOST 检查兜住。
-  if ! diff -rq --exclude=fixtures scripts/model "$pkg/scripts/model" >/dev/null 2>&1; then
+  if ! diff -rq --exclude=fixtures --exclude=.DS_Store scripts/model "$pkg/scripts/model" >/dev/null 2>&1; then
     echo "DIFFDIR: scripts/model vs $pkg"
-    diff -rq --exclude=fixtures scripts/model "$pkg/scripts/model" | head -5
+    diff -rq --exclude=fixtures --exclude=.DS_Store scripts/model "$pkg/scripts/model" | head -5
     fail=1
   fi
   if [ "$pkg" = "老项目迁移模板包" ]; then check_norm "docs/prompts/迁移整理提示词.md" "$pkg/迁移整理提示词.md"; fi # 迁移提示词仅老包有（根平铺）
   for f in scripts/decision/orca-decide.mjs scripts/decision/run-shadow.mjs scripts/decision/test-filter.mjs scripts/decision/test-mock.mjs scripts/decision/test-slow.mjs scripts/decision/test-partition.mjs scripts/decision/partition-validate.mjs scripts/decision/test-secrets.mjs scripts/decision/build-index.mjs scripts/decision/partition-validate.mjs scripts/decision/test-slow.mjs scripts/decision/test-partition.mjs scripts/decision/partition-validate.mjs scripts/decision/test-secrets.mjs scripts/decision/build-index.mjs scripts/decision/test-slow.mjs scripts/decision/test-partition.mjs scripts/decision/partition-validate.mjs scripts/decision/policy.json scripts/decision/package.json scripts/decision/package-lock.json scripts/decision/README.md scripts/decision/evals/skill-manifest.json scripts/decision/evals/glm-exact-smoke.log scripts/decision/evals/slow-test.log scripts/model/check-ledger.mjs scripts/decision/fixtures/T01.json scripts/decision/fixtures/T02.json scripts/decision/fixtures/T03.json scripts/decision/fixtures/T04.json scripts/decision/fixtures/T05.json scripts/decision/fixtures/T06.json scripts/decision/fixtures/T07.json scripts/decision/fixtures/T08.json scripts/decision/fixtures/T09.json scripts/decision/fixtures/T10.json scripts/decision/fixtures/S01.json scripts/decision/fixtures/S02.json scripts/decision/fixtures/S03.json scripts/decision/fixtures/S04.json scripts/decision/fixtures/S05.json scripts/decision/fixtures/S06.json scripts/decision/fixtures/S07.json scripts/decision/fixtures/S08.json scripts/decision/fixtures/X01.json scripts/decision/fixtures/X02.json scripts/decision/fixtures/F01.json scripts/decision/fixtures/F02.json scripts/decision/fixtures/F03.json scripts/decision/fixtures/F04.json scripts/decision/fixtures/P01.json scripts/decision/fixtures/P02.json scripts/decision/fixtures/P03.json scripts/decision/fixtures/P04.json scripts/decision/fixtures/PX1.json scripts/decision/fixtures/PV_GOOD.json scripts/decision/fixtures/PV_BAD.json; do check "$f" "$pkg/$f"; done
-  if ! diff -rq --exclude=node_modules scripts/decision "$pkg/scripts/decision" >/dev/null 2>&1; then echo "DIFFDIR: scripts/decision vs $pkg"; diff -rq --exclude=node_modules scripts/decision "$pkg/scripts/decision" | head -5; fail=1; fi
+  if ! diff -rq --exclude=node_modules --exclude=.DS_Store scripts/decision "$pkg/scripts/decision" >/dev/null 2>&1; then echo "DIFFDIR: scripts/decision vs $pkg"; diff -rq --exclude=node_modules --exclude=.DS_Store scripts/decision "$pkg/scripts/decision" | head -5; fail=1; fi
   # 幽灵文件检测（2026-10-14 洁癖新增）：包里有、**母版没有**的文件 = 退役残留。
   # 背景：_sync-packages.py 长期「只增不减」，母版删掉的 ledger-evidence.mjs /
   # ledger-stock-scan.mjs 在包里活了下来；老项目同步脚本按包枚举 ⇒ 死文件被铺进
@@ -121,13 +121,13 @@ done
 # 维护约定——将来新增/改动影响体系对外表述的机制（Gate、完成口径、账本字段、通道、验收制度等）时，
 # 必须把该机制的对外必现关键词补进下方清单，并同步更新 ORCA治理体系说明.md；否则该机制漏检。
 # 母版 1 次即可（两包一致性已由上方白名单保证）。
-for kw in "产品验收" "关键 AC" "首次发布" "签收" "不问不报" "detect-client" "window_subagent" "channel_cli" "半套最差" "四类红线" "≤10 行" "Task Manager Qualification" "何时起" "CHANNEL-OK" "产品验收追踪矩阵" "产品审查" "APP 基础能力" "app-theme-i18n" "APP-BASELINE" "background-services" "品牌资产" "app-brand-assets" "app-navigation" "底部导航" "NavigationBar" "同一核心页面" "CHANGELOG" "app-ui-layers" "信息分层" "app-simplicity" "产品简化门槛" "DEPENDENCY-MISSING" "DEPENDENCY-STALE" "单智能体" "你是唯一开发者"; do
+for kw in "产品验收" "关键 AC" "首次发布" "签收" "不问不报" "detect-client" "window_subagent" "channel_cli" "半套最差" "四类红线" "≤10 行" "Task Manager Qualification" "何时起" "CHANNEL-OK" "产品验收追踪矩阵" "产品审查" "APP 基础能力" "app-theme-i18n" "APP-BASELINE" "background-services" "品牌资产" "app-brand-assets" "app-navigation" "底部导航" "NavigationBar" "同一核心页面" "CHANGELOG" "app-ui-layers" "信息分层" "app-simplicity" "产品简化门槛" "DEPENDENCY-MISSING" "DEPENDENCY-STALE" "你是主开发者" "你是唯一开发者"; do
   grep -q "$kw" ORCA治理体系说明.md || { echo "OVERVIEW-STALE: 概览缺 $kw"; fail=1; }
 done
 # 2026-10-14 体系自查补：上列关键词只覆盖旧机制，本轮新增的账本/证据/跨目录机制
 # **一个都不在清单里** ⇒ 概览漏更新也照样 OVERVIEW-OK 通过（这是个漏卡点）。
 # 措辞用「概览里的原文写法」做锚，避免同义词对不上造成永久误报。
-for kw in "一路推到底" "连续推进" "交付单元" "check-dispatch-output" "additive-only" "heartbeat" "心跳" "GOVERNANCE-SCRIPTS" "ROLE-COVERAGE" "LEDGER-XREF" "双阈值" "可并发" "免派工"  "codebuddy" "429" "自动切账号" "elapsed_sec" "model-perf" "ACCEPTED-MISSING" "SIGNOFF-MISSING" "pre-commit" "check-product-review" "编排者自做" "neat-freak"; do
+for kw in "一路推到底" "连续推进" "交付单元" "你是主开发者" "主开发者" "子代理" "执行层" "判定层" "check-dispatch-output" "additive-only" "heartbeat" "心跳" "GOVERNANCE-SCRIPTS" "ROLE-COVERAGE" "LEDGER-XREF" "双阈值" "可并发" "免派工"  "codebuddy" "429" "自动切账号" "elapsed_sec" "model-perf" "ACCEPTED-MISSING" "SIGNOFF-MISSING" "pre-commit" "check-product-review" "编排者自做" "neat-freak"; do
   grep -q -- "$kw" ORCA治理体系说明.md || { echo "OVERVIEW-STALE: 概览缺 $kw"; fail=1; }
 done
 for kw in "派工逐派不漏记" "supersedes" "有效拦截" "违规分级" "未测不按满分算" "响应速度只认时间戳" "原始输入留存" "--auto" "取消历史豁免" "升级触发机器校验"; do
