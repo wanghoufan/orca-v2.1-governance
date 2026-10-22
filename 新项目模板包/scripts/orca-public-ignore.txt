@@ -53,3 +53,21 @@
 /scripts/orchestration/
 /scripts/detect-client.sh
 /scripts/check-channel-preflight.sh
+# 2026-10-22 补：根级治理脚本**逐个列名**（此前只列了上面 5 条，漏了 11 个 ⇒
+# 新项目铺包后这些通用工具链会进公开仓，如实测 p053 远端 main 上有 12 个 scripts/ 文件）。
+# **不能用 `/scripts/` 整目录忽略**：项目自有的 scripts/（如 051 的 build-pwa.mjs、
+# serve-demo.mjs 等）必须保留 —— 整目录忽略会连项目自己的脚本一起藏掉。
+/scripts/_cb-active.py
+/scripts/_cb-count.py
+/scripts/_cb-rotate.py
+/scripts/_inject-agents-block.py
+/scripts/check-dispatch-output.sh
+/scripts/check-product-review.sh
+/scripts/codebuddy-auto.sh
+/scripts/install-governance-hooks.sh
+/scripts/migration-status.sh
+/scripts/orca-gitignore.sh
+/scripts/orca-public-guard.sh
+/scripts/orca-public-ignore.txt
+/scripts/pre-commit-guard.sh
+/scripts/restore-framework.sh

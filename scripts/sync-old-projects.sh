@@ -120,6 +120,12 @@ nskip=0
 for dir in "$PROJECTS_ROOT"/*/; do
   d="${dir%/}"; name="$(basename "$d")"
   case "$name" in 0-规则与索引|999-*|临时备份*|0-*) continue;;
+    # 2026-10-22 用户定：常驻管理工作区（000-alw-* 前缀）**永远不铺治理包**。
+    # 这些是常驻管理工作区（项目管家 / GitHub 档案 / 自动化任务 / 数据库管理专家 /
+    # 个人偏好与技能管理），**不是项目** —— 铺进去会把 ORCA 通用脚手架混进它们的
+    # 正常工作流，还会让「铺包」这个动作的意义变模糊（谁该被治理？谁不该？）。
+    # 即便用 ONLY_LIST 显式点名也跳过 —— 黑名单优先于白名单。
+    000-alw-*) echo "SKIP(常驻管理工作区，永不铺包): $name"; nskip=$((nskip+1)); continue;;
   esac
   if [ -n "$ONLY_LIST" ]; then
     case ",$ONLY_LIST," in

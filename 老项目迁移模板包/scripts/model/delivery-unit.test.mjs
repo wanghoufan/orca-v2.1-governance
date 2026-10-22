@@ -73,6 +73,54 @@ check("AGENTS: manual md5 ledger diffing is banned (machine check replaced it)",
 check("prompt: single-task action ceiling propagated",
   /单 task 阶段的动作上限/.test(prompt));
 
+// 2026-10-22 常驻管理工作区永不铺包（000-alw-* 是管理工作区，不是项目）。
+// 黑名单必须**优先于 ONLY_LIST**：显式点名也跳过，否则白名单可绕过黑名单。
+{
+  const sc = read("scripts/sync-old-projects.sh");
+  check("sync: 000-alw-* resident workspaces are blacklisted",
+    /000-alw-\*/.test(sc));
+  check("sync: blacklist is applied in the project loop (not just mentioned)",
+    /SKIP\(常驻管理工作区/.test(sc));
+  check("sync: blacklist precedes ONLY_LIST filter",
+    (() => {
+      // 行为判定（比读代码可靠）：真跑一次干跑，看**常驻工作区是否被点名跳过**。
+      // 用 ONLY_LIST 点名一个常驻工作区 —— 它必须仍被跳过（黑名单优先于白名单）。
+      const sh = join(ROOT, "scripts/sync-old-projects.sh");
+      let out = "";
+      try {
+        out = execFileSync("bash", [sh, "--dry-run"], {
+          env: { ...process.env, ONLY_LIST: "000-alw-数据库管理专家", SKIP_DEV_TODAY: "0" },
+          encoding: "utf8",
+        });
+      } catch (e) { out = String(e.stdout || ""); }
+      const skipped = out.includes("SKIP(常驻管理工作区");
+      const zeroProjects = /项目数:\s*0/.test(out);
+      return skipped && zeroProjects;
+    })());
+  check("AGENTS: resident workspaces never receive the governance package",
+    /常驻管理工作区永不铺包/.test(agents));
+  check("AGENTS: the 000-alw-* prefix is named explicitly",
+    /000-alw-\*/.test(agents));
+}
+
+// 2026-10-22 铺包铁律：绝不删除别人的文件（056 项目事故）。
+{
+  check("AGENTS: never delete files in project directories",
+    /不得删除、清空、覆盖/.test(agents) && /项目目录里的东西是别人的成果/.test(agents));
+  check("AGENTS: new-project setup has a safety gate + zero-loss self-check",
+    /拒绝铺包/.test(agents) && /零丢失/.test(agents));
+  check("setup script exists and never recursively deletes a project path",
+    (() => {
+      const s = read("scripts/new-project-setup.sh");
+      // 只看**代码行**（跳过注释）——注释里复盘事故时提到过那条命令，不该误判。
+      const code = s.split("\n").filter(l => !/^\s*#/.test(l)).join("\n");
+      // 拦的是**递归删除**（rm -rf / rm -r / rm --recursive）指向项目路径；
+      // 单文件 rm -f 是允许的（软链替换、实文件换软链都必需）。
+      return !/rm\s+(-[a-zA-Z]*[rR][a-zA-Z]*\s+)+"?\$\{?PROJ/.test(code)
+          && !/rm\s+--recursive[^\n]*\$\{?PROJ/.test(code);
+    })());
+}
+
 // must NOT have regressed into "every task gets the full chain"
 check("no per-task full-chain wording remains in the prompt",
   !/每个[ t]*task[\s\S]{0,40}Builder→Code Reviewer→QA→Supervisor/.test(prompt));

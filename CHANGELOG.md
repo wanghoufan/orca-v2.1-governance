@@ -1,4 +1,4 @@
-## 2026-10-22 (PENDING) feat(governance): app-navigation 补 §2.1／§2.2 底栏去冗余规则（与 7-Skill 更新配套）
+## 2026-10-22 (08970ba) feat(governance): app-navigation 补 §2.1／§2.2 底栏去冗余规则（与 7-Skill 更新配套）
 
 **为什么**：2026-10-22 中央 7 颗设计管线 Skill 更新（`design-freeze` / `interactive-product-prototype` /
 `ux-interaction-contract` / `orca-design-pipeline` 四个英文版 ＋ 四个中文阅读版 `1.0.0-zh.2`），
@@ -64,7 +64,7 @@
 ledger-fields 49/49｜solo-agent 15/15｜gates 21/21｜rotate 12/12｜continuous-push 9/9。
 **反向测试**：往脚本注入「递归删 docs/」缺陷 → 用例变红并自动还原；把黑名单挪到 ONLY_LIST 之后 → 行为用例变红。
 
-## 2026-10-17 (PENDING) fix(governance): 铺包权限收归母版 + ONLY_LIST；并为误伤的 39 个项目补通知
+## 2026-10-17 (08970ba) fix(governance): 铺包权限收归母版 + ONLY_LIST；并为误伤的 39 个项目补通知
 
 **起因（我自己的误伤）**：我给 043 的主开发者下指令时写的是
 `STAMP=... SKIP_DEV_TODAY=0 SKIP_LIST="051-..." bash scripts/sync-old-projects.sh`——
@@ -89,7 +89,7 @@ ledger-fields 49/49｜solo-agent 15/15｜gates 21/21｜rotate 12/12｜continuous
 gates 21｜tm 44｜proto 9｜ui-leak 2｜codebuddy-rotate 12｜continuous-push 9；
 另实测 `ONLY_LIST="043-ing-成片集-app"` 干跑输出 `项目数: 1`；39 个项目通知写入后逐个复核命中。
 
-## 2026-10-17 (PENDING) fix(governance): 补上「子代理用什么模型与强度」——规则缺口，不是执行者的错
+## 2026-10-17 (08970ba) fix(governance): 补上「子代理用什么模型与强度」——规则缺口，不是执行者的错
 
 **起因（043 实跑暴露）**：043 的主开发者派了两个执行子代理（服务端修版本＋AI 凭证、APK 构建核对），
 但**不知道该用什么模型和推理强度**。它最后如实报告「两次派遣都未传 model / reasoning_effort，
@@ -113,7 +113,7 @@ gates 21｜tm 44｜proto 9｜ui-leak 2｜codebuddy-rotate 12｜continuous-push 9
 **怎么验（全部实跑）**：`SYNC-OK`｜`CHANNEL-OK`｜solo-agent **16/16**（新增 E7b 锁死上述五条）
 ｜ledger-fields 49｜delivery-unit 19｜gates 21｜tm 44｜proto 9｜ui-leak 2｜codebuddy-rotate 12｜continuous-push 9。
 
-## 2026-10-17 (PENDING) fix(ledger): 给历史账本漂移一条合法出路（更正行），否则新门变成新阻塞源
+## 2026-10-17 (08970ba) fix(ledger): 给历史账本漂移一条合法出路（更正行），否则新门变成新阻塞源
 
 **起因（043 实跑暴露）**：043 铺包后新版 `check-ledger` 变 exit 1，报
 `LEDGER-XREF: 同一任务在两本账的 result 不一致 —— T18-041/supervisor: dispatch=FAIL vs task=PASS`。
@@ -136,7 +136,7 @@ gates 21｜tm 44｜proto 9｜ui-leak 2｜codebuddy-rotate 12｜continuous-push 9
 **怎么验（全部实跑）**：`SYNC-OK`｜`CHANNEL-OK`｜ledger-fields **49/49**（新增 case30／31 覆盖更正行双端）
 ｜tm 44｜proto 9｜ui-leak 2｜solo-agent 15｜gates 21｜codebuddy-rotate 12｜continuous-push 9｜delivery-unit 19。
 
-## 2026-10-17 (PENDING) fix(governance): 触发口令改名「你是主开发者」＋ 更正「单智能体＝只能一个人干活」的窄理解
+## 2026-10-17 (08970ba) fix(governance): 触发口令改名「你是主开发者」＋ 更正「单智能体＝只能一个人干活」的窄理解
 
 **为什么**：用户指出两处误解：
 1. **口令本身带歧义**：「你是唯一开发者」的「唯一」二字把**执行人数**锁死了，长期被理解成「只能一个人串行干活」，

@@ -77,6 +77,10 @@ const CASES = [
   // 否则两本手写账已漂 —— 现场由 supervisor 抓出过缺 chain_status/对不齐的情况。
   ["case28-xref-consistent", 0, []],
   ["case29-xref-result-drift", 1, ["LEDGER-XREF"]],
+  // 历史遗留漂移的合法出路（2026-10-17，因 043 实测铺包后 exit 1 而补）：
+  // 禁重写实绩 ⇒ 用「更正行」降级；但没有更正行仍必须 FAIL，防止被更正行滥用绕过。
+  ["case30-xref-corrected-note", 0, []],
+  ["case31-xref-drift-no-note", 1, ["LEDGER-XREF"]],
 ];
 for (const [fixture, wantExit, mustInclude] of CASES) {
   const r = withFixture(fixture, (d) => runLedger(d));
