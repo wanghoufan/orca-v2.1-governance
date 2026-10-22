@@ -22,9 +22,17 @@
   （**注意：不传目录参数会误报「缺 references/」**——脚本默认拿当前目录找，须传 skill 目录）。
 - 7-Skill 集合回归：`validate_skillset.py <skill仓库根> --master <母版根>` ⇒
   `VALID: 7-Skill simplified final-state regression PASS`。
-- **运行时项目校验暴露的真问题**：拿真实项目跑 `--runtime-project` 时，7 颗 Skill 全部报
+- **运行时项目校验暴露的真问题**：拿**老项目**跑 `--runtime-project` 时，7 颗 Skill 全部报
   `DEPENDENCY-STALE docs/sop/app-navigation.md`（项目副本是 10-18 的旧版，缺 §2.1/§2.2）。
-  **根因＝母版改了、老项目没同步**（不是 Skill 的问题）——本条只修母版真源；老项目是否铺包由用户定。
+  **根因＝母版改了、老项目没同步**（不是 Skill 的问题）——本条只修母版真源。
+  **用户 2026-10-22 定：老项目不铺、不管；只要新项目能用。**（已实测新项目链路全通，见下条）
+- **新项目链路端到端实测（本条验收口径）**：拿母版 `新项目模板包/` 当全新项目跑
+  `new-project-setup.sh` ⇒ 铺包成功、`docs/sop/app-navigation.md` 与母版逐字节一致（含 §2.1/§2.2）、
+  7-Skill 运行时校验 `--runtime-project` **零 STALE／零 MISSING** ⇒ `VALID: 7-Skill simplified
+  final-state regression PASS`；4 颗英文 Skill 逐个 `validate_contract.py` 全 VALID；
+  本窗口真实调用 `ux-interaction-contract` 成功加载（SOP 依赖表可读、四个 `docs/sop/app-*.md` 全部命中情形1/OK）；
+  新项目 `git add -A` 干跑 ⇒ 治理文件 **0 个**会入库（ORCA 忽略块生效）。
+  **结论：老项目保持陈旧不影响新项目；新项目从第一天起就是最新规则。**
 - 母版门禁：`SYNC-OK`｜`CHANNEL-OK`｜tm 44/44｜proto 9/9｜ui-leak 2/2｜delivery-unit 30/30｜
   ledger-fields 49/49｜solo-agent 15/15｜gates 21/21｜rotate 12/12｜continuous-push 9/9。
 
