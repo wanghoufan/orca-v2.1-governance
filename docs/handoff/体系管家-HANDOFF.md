@@ -55,7 +55,7 @@
 
 ## §5 三日流水
 
-- 2026-10-27：planner → `codex/gpt-6.1-terra`；真调回 `pong`，`CHANNEL-OK`，`GATES-OK（14 项）`；两包同步。
+- 2026-10-27：planner → `codex/gpt-6.1-terra`；概览流程图同步、执行方式细则补「体系管家」条；真调回 `pong`，`CHANNEL-OK`，`GATES-OK（14 项）`；两包同步。
 - 2026-10-27：口令「治理管家」→「体系管家」；`AGENTS.md` 入口路由补第 4 条；文件改名与全部指针、概览同步；`GATES-OK（14 项）`。
 - 2026-10-27：六维度自查（三路并行）＋第一批整改（绕门／缺件／采集／一键体检／矛盾修正）；`run-gates` → `GATES-OK（14 项）`；`codebuddy` CLI 按同版本重装恢复 `CHANNEL-OK`。
 - 更早条目见 `CHANGELOG.md` 与 `docs/handoff/HANDOFF-归档-2026-10-27.md`。

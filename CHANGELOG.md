@@ -7,6 +7,7 @@
 - 引用同一角色模型的位置同步：`docs/sop/governance-dispatch.md`、`docs/sop/governance-execution-modes.md`、`docs/roles/product-reviewer.md`、`docs/prompts/编排者提示词.md`、`ORCA治理体系说明.md`；`docs/roles/planner.md` 的「省 Sol 额度」改为「省 planner 额度」。
 - `scripts/model/check-ledger.mjs` 的 `KNOWN_MODELS` 增 `codex/gpt-6.1-terra`。
 - 两包对应用文件（含 `USER_MODEL_OVERRIDE.md`）同步；`senior-expert` 仍为 `codex/gpt-6.1-sol`，未动。
+- 概览补漏：运转流程图 `planner（Sol）/省 Sol 额度` → `planner（Terra）/省 planner 额度`；入口路由与「体系管家」段补「可与主开发者／多智能体叠加」；`governance-execution-modes.md` 增「体系管家」条（不是第三种执行方式）。
 
 **怎么验**
 - `codex debug models` 目录含 slug `gpt-6.1-terra`（显示名 `GPT-6.1 Terra`）。

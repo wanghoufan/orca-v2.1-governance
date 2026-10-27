@@ -4,7 +4,7 @@
 > 本文件是概览，不能替代真相源做合规审计（完整 Gate、精确派工、验证证据以 AGENTS.md、分工表、HANDOFF 为准）。版本真相以 Git 历史为准。
 >
 > **结构（2026-10-22）**：`AGENTS.md` 已瘦身为**一页红线与索引**（3.3 万字 → 6 千字），细则下沉到 `docs/sop/governance-scope.md`／`governance-execution-modes.md`／`governance-dispatch.md`／`governance-ledger.md`（按需读，不自动进上下文）。**规则一条没少，只是换了位置。**
-> **入口路由（2026-10-27）**：`AGENTS.md` 顶部是唯一入口路由——先判执行方式（主开发者／多智能体），再按触发条件加读，**不再全量读规则**。常驻位各设体积上限并由 `check-sync.sh` 机器卡（超限报 `HANDOFF-SIZE`／`LESSONS-SIZE`／`FACTS-SIZE`／`RISKS-SIZE`／`PITFALL-SIZE`；`agent.md` 上限 200 行／12,288 字节）：`HANDOFF.md` ≤100 行／≤8192 字节、`经验一句话.md` ≤8192 字节，架构事实与风险分居 `docs/architecture-facts.md`、`docs/risks.md`，踩坑进 `agent.md`；旧顺序表述出现即报 `ENTRY-DUP`，入口标记必须唯一。项目侧同类超限只报 WARN，不阻塞。
+> **入口路由（2026-10-27）**：`AGENTS.md` 顶部是唯一入口路由——先判执行方式（主开发者／多智能体）或体系管家口令，再按触发条件加读，**不再全量读规则**。常驻位各设体积上限并由 `check-sync.sh` 机器卡（超限报 `HANDOFF-SIZE`／`LESSONS-SIZE`／`FACTS-SIZE`／`RISKS-SIZE`／`PITFALL-SIZE`；`agent.md` 上限 200 行／12,288 字节）：`HANDOFF.md` ≤100 行／≤8192 字节、`经验一句话.md` ≤8192 字节，架构事实与风险分居 `docs/architecture-facts.md`、`docs/risks.md`，踩坑进 `agent.md`；旧顺序表述出现即报 `ENTRY-DUP`，入口标记必须唯一。项目侧同类超限只报 WARN，不阻塞。
 
 ## 一、体系是什么
 
@@ -35,13 +35,13 @@ Human Gate 必须用户亲口放行；模型怎么切，用户说了算，任何
 
 按阶段该读哪些规范见根 `README.md`「主开发者开发使用说明」。**触发口令`你是主开发者`写在 `AGENTS.md` 两种执行方式节首条**，规则与角色卡一致，用户不需另找入口。**两种方式共用同一套规范与模板包，体系内不存在主开发者专属 SOP／角色／Gate／模板包。**
 
-**体系管家（2026-10-27 用户定，原名「治理管家」）**：用户说 **`你是体系管家`** 时，智能体接管**整套 ORCA 治理体系**的内容管理与修改——`AGENTS.md`、`docs/sop/`、`docs/roles/`、`scripts/`、模板、两包同步、本概览与体系专线 HANDOFF（`docs/handoff/体系管家-HANDOFF.md`）都由它更新，不派治理角色链。它**不是第三种执行方式**：项目内的开发、验收、Gate 与红线照旧；红线仍禁止 commit／push、批量铺包、改质量门判定与账本 schema。
+**体系管家（2026-10-27 用户定，原名「治理管家」）**：用户说 **`你是体系管家`** 时，智能体接管**整套 ORCA 治理体系**的内容管理与修改——`AGENTS.md`、`docs/sop/`、`docs/roles/`、`scripts/`、模板、两包同步、本概览与体系专线 HANDOFF（`docs/handoff/体系管家-HANDOFF.md`）都由它更新，不派治理角色链。它**不是第三种执行方式**：项目内的开发、验收、Gate 与红线照旧；与主开发者／多智能体**可叠加**（体系内容归体系管家，项目执行方式仍由原口令决定）；红线仍禁止 commit／push、批量铺包、改质量门判定与账本 schema。
 
 ## 三、运转流程
 
 ```text
 用户说「第一阶段，计划」
-  → Phase1（PLAN）：builder（deepseek-flash）拟稿 → product-reviewer 审 → planner（Sol）把关打分＋列缺项 → 打回 builder 改稿（planner 不执笔，省 Sol 额度）
+  → Phase1（PLAN）：builder（deepseek-flash）拟稿 → product-reviewer 审 → planner（Terra）把关打分＋列缺项 → 打回 builder 改稿（planner 不执笔，省 planner 额度）
   → Readiness ≥90 且 P0=0 且 blocking P1=0 且关键事实已验证且核心假设已合理验证且视觉与交互验收标准非空且逐条可测 → WAITING_HUMAN_APPROVAL（停下找人一次）
 用户说「第二阶段，开发」
   → Phase2（DEVELOP，锁定计划基线）
