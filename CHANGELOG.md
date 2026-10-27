@@ -1,3 +1,196 @@
+## 2026-10-27 planner 换模型：`codex/gpt-6.1-sol` → `codex/gpt-6.1-terra`
+
+**为什么**：用户令，planner 改用 GPT-6.1 Terra。
+
+**改了什么**
+- `USER_MODEL_OVERRIDE.md`：planner 行模型与短名改 `codex/gpt-6.1-terra`；「产品审查双审派工约定」组织者行同步。
+- 引用同一角色模型的位置同步：`docs/sop/governance-dispatch.md`、`docs/sop/governance-execution-modes.md`、`docs/roles/product-reviewer.md`、`docs/prompts/编排者提示词.md`、`ORCA治理体系说明.md`；`docs/roles/planner.md` 的「省 Sol 额度」改为「省 planner 额度」。
+- `scripts/model/check-ledger.mjs` 的 `KNOWN_MODELS` 增 `codex/gpt-6.1-terra`。
+- 两包对应用文件（含 `USER_MODEL_OVERRIDE.md`）同步；`senior-expert` 仍为 `codex/gpt-6.1-sol`，未动。
+
+**怎么验**
+- `codex debug models` 目录含 slug `gpt-6.1-terra`（显示名 `GPT-6.1 Terra`）。
+- 真调：`codex exec -m "gpt-6.1-terra" -s danger-full-access --skip-git-repo-check "只回复 pong"` → 回 `pong`。
+- `bash scripts/check-channel-preflight.sh` → `CHANNEL-OK`；`bash scripts/run-gates.sh` → `GATES-OK（14 项）`。
+
+**Git 状态**：**未 commit、未 push**。
+
+---
+
+## 2026-10-27 口令改名：「治理管家」→「体系管家」（含文件与全部指针）
+
+**为什么**：用户定名。原「治理管家」只在 HANDOFF 标题与指针里出现，未进 `AGENTS.md`，新窗口读不到触发词与职责边界。
+
+**改了什么**
+- 触发词与职责写入 `AGENTS.md` 入口路由第 4 条：说「你是体系管家」⇒ 接管整套 ORCA 治理体系的内容管理与修改（规则／SOP／角色卡／脚本／模板／两包同步／概览／体系专线 HANDOFF），不派治理角色链；红线照旧。
+- `docs/handoff/治理管家-HANDOFF.md` → `docs/handoff/体系管家-HANDOFF.md`，标题与首段同步；补一句「含本文件的更新」。
+- 全部指针同步：`docs/handoff/HANDOFF.md`、`scripts/check-sync.sh`（两处路径）、`docs/history/体系自查-2026-10-27-六维度审计.md`（两处引用）。
+- `ORCA治理体系说明.md` 第二节新增「体系管家」段（明确它不是第三种执行方式）；`check-sync.sh` 概览关键词补 `体系管家`。
+- 两包 `AGENTS.md`、`ORCA治理体系说明.md` 同步复制。
+
+**怎么验**
+- `bash scripts/run-gates.sh` → 全绿；`grep -rn "治理管家"` 只剩本 CHANGELOG 历史条目与概览「原名」说明。
+- `check-sync.sh` 概览新鲜度含新关键词 `体系管家`，两包逐字节一致。
+
+**Git 状态**：**未 commit、未 push**。
+
+---
+
+## 2026-10-27 体系自查整改第一批：堵四个绕门点 + 补包缺件 + 一键体检
+
+**为什么**：用户令做全体系自查。三路只读扫描 + 逐条实测查出：最贵的四条红线（产品验收／首次签收／APP 三件套／原型交付）都能被四种改法绕开；两包缺 `agent.md`、`check-sync.sh`、HANDOFF 实例；11 个测试没有任何调用点。
+
+**改了什么**
+- **堵绕门（`check-ledger.mjs`）**：①计划改名不再跳过 APP 门（文件名不匹配时看内容，含 FR-/AC-/产品计划即算候选）；②无 `docs/pm/` 不再静默 return，改报 `APP-BASELINE-SKIPPED`；③`--allow-example` 不再跳过整组 APP 门；④矩阵状态词扩充 `TBD/待补/待测/未完成/部分通过`；⑤ OPEN 行可见化（`ACCEPTED-OPEN`）；⑥修死码：证据副本 `copy_verified` 原来失败后无条件置 true。
+- **补包缺件**：新增 `docs/agent.template.md`；`HANDOFF.template.md` 改成 §0–§6（与 `AGENTS.md` 入口路由对齐）；`new-project-setup.sh` 与 `restore-framework.sh` 实例化 `agent.md`／`HANDOFF.md`；`sync-old-projects.sh` 移除母版独占的 `check-sync.sh`（原来静默跳过）。
+- **B1 采集**：`governance-ledger.md` 增三条（db-admin 必须记、补 `elapsed_sec`/`tokens`/`cost_cny`、TM 行不得用「本窗口」代替模型 ID）；校验器对覆盖率 <10% 报 `MODEL-PERF-INCOMPLETE`（不拦截）。
+- **治理管家专线**：新增 `docs/handoff/治理管家-HANDOFF.md`（§0–§6，≤100 行/8KB，`STEWARD-SIZE` 卡口）＋审计附录 `docs/history/体系自查-2026-10-27-六维度审计.md`；主 HANDOFF 加一行指针。
+- **C1 一键体检**：新增 `scripts/run-gates.sh`（门禁＋11 项回归一次跑完，末行 `GATES-OK`／`GATES-FAIL`）；铺包时自动安装账本 pre-commit 钩子。
+- **顺手修矛盾**：`AGENTS.md` 跳步条与复核粒度互斥，改为「单 task 自审 / 交付单元边界必跑」；`governance-dispatch.md` 同步；产品审查「串行 vs 可并发」三处统一为「默认可并发，零产出退回串行」；概览修正产品验收落盘位、CHANGELOG 分发口径、11 行 ID 说明、`PITFALL-SIZE`、章节编号；README 修正 PRODUCT_PLAN 归属、口令数、check-sync 母版独占、sop 清单。
+
+**怎么验（全部实跑）**
+- `ledger-fields.test.mjs` **53/53**（新增 case32 改名、case33 无 docs/pm、case34 TBD、case35 豁免旗不绕过）。
+- 24 个真实项目复跑：14 PASS / 10 FAIL，**与改前同一批失败，无新增误伤**。
+- 隔离铺包实跑：生成 `agent.md`／HANDOFF §0–§6、装上 pre-commit 钩子、零丢失通过；`restore-framework --source` 补回被删三件。
+- `check-sync.sh` → `SYNC-OK`；`run-gates.sh` 13 项通过、1 项 `CHANNEL-FAIL`（**环境问题**：`codebuddy` CLI 模块丢失，非本次改动）。
+
+**Git 状态**：**未 commit、未 push**。
+
+## 2026-10-27 可读性整改：入口路由 + 常驻位体积闸 + 交接/经验/事实分层
+
+**为什么**：`AGENTS.md` 已瘦身，但开工必读仍在膨胀——`HANDOFF.md` 1,496 行 / 242,820 字节（占开工必读 85%）、
+`经验一句话.md` 39 条 / 16,238 字节，且四个入口文件各写一份「读盘顺序」，口径漂移、角色一开工就被灌满上下文。
+
+**改了什么**
+- **`AGENTS.md` 顶部改「入口路由（全体系唯一）」**：先判执行方式（主开发者／多智能体），再按触发条件加读，参考位不预读；6,103 → 6,652 字。
+- **四份重复顺序改指针**：`README.md`、`README.en.md`、`docs/prompts/编排者提示词.md`、`docs/handoff/HANDOFF.template.md`。
+- **`HANDOFF.md` 1,496 行 → 66 行 / 4,593 字节**，按 §0–§6 重组；原文整份留 `docs/handoff/HANDOFF-归档-2026-10-27.md`（只迁移，未删改）。
+- **事实/风险/踩坑分居**：新建 `docs/architecture-facts.md`、`docs/risks.md`（R1–R11）、两份根级模板；`agent.md` 追加本项目踩坑表。
+- **经验分层**：`经验一句话.md` 保留最近 10 条（7,708 字节），39 条全文进 `docs/history/经验-归档-2026-10-27.md`。
+- **机器闸（`check-sync.sh` 内，不新增检查器）**：`HANDOFF-SIZE`（100 行/8192 字节）、`LESSONS-SIZE`、`FACTS-SIZE`、`RISKS-SIZE`、`PITFALL-SIZE`；`ENTRY-DUP`（入口标记唯一＋旧表述归零＋文件缺失负例）；项目侧同类超限只报 `HANDOFF-SIZE-WARN`，不阻塞。
+- **分发与恢复**：`TEMPLATE_DIRS` 加 `docs`、`EXTRA` 加经验归档；`new-project-setup.sh` 与 `restore-framework.sh` 实例化常驻位；后者新增 `copy_tree_missing()` 逐文件补缺（旧实现整目录判断，目录内被删文件补不回）。
+- **忽略清单**：新增 `/docs/*.template.md` 与经验归档；`architecture-facts.md`／`risks.md` 是项目自有记录，**不隐**。
+
+**怎么验（全部实跑）**
+- `bash scripts/check-sync.sh` → **SYNC-OK**；`bash scripts/check-channel-preflight.sh` → **CHANNEL-OK**。
+- 回归 11 项全绿：tm 44｜proto 9｜ui-leak 2｜ledger-fields 49｜solo-agent 15｜gates 21｜delivery-unit 30｜continuous-push 9｜rotate 12｜governance-size 8｜7-Skill `VALID`。
+- 隔离铺包（`temp/…/proj-new`）实跑通过，实例文件生成；`restore-framework.sh --source` 实测补回 3 个被删文件，既有文件哈希不变。
+
+**Git 状态**：**未 commit、未 push**。
+
+## 2026-10-26 (PENDING) chore(model-table): 模型表只剩「现在怎么调」——备注列去历史、删档案段、并把它写成表规
+
+**为什么**：用户三轮追问，核心就一句——「这张表是给人照着调模型的，不是变更日志」。备注列里塞着
+「2026-10-17 用户令：由 A 切 B」「前一版备用是…」「此前 T28 记录已不成立」「限流 3 次不可用」等，
+新智能体读表得先在一堆过期说法里辨哪条还算数；而用户的账号是可切换的，**限流/不可用本来就是运行期噪声**，
+写进表反而误导。用户明确要求把这条写成表规。
+
+**改了什么**
+- **表头下新增「备注列规矩」引用块（本次用户立规）**：备注列（第 6 列 `调用方式`）只写**当前最新、已真调跑通**的命令与规矩；
+  **禁止**历史切换、日期与「用户令」、被取代的旧备用、限流/不可用/报错回放、旧经验与旧理由；
+  **换账号与限流属运行期处理、不进备注**（由 `scripts/codebuddy-auto.sh` 自动切号）；历史归 `CHANGELOG.md` 与 Git。
+- **11 行备注列全部按此重写**：只留①当前命令②当前硬规则（`--auto`／`-y`／`-s danger-full-access` 的适用范围与理由）③当前角色边界。
+- **删除表下 `分工表版本 T32…T25` 注释块**（纯版本流水）。**保留** `TM 资格测试候选`（待用户拍板的现役事项）。
+- **删除表尾 `## 模型调用档案` 整段（22 行历史模型表）**（用户 A2 拍板）：旧 ID、切链过程、真调证据不再留在表里。
+- **`scripts/check-channel-preflight.sh` 补取「备用模型」列（$5）**：此前 db-admin 备用 `radeon-mimo/MiMo-V2.6-Flash`
+  只是因为出现在档案段才被顺带校验；档案删了还只取 `$3` 就会**悄悄失去这道检查**。改后实测 role models 7 → **8 项**，含 radeon-mimo。
+- **三份同步**：母版根／`新项目模板包`／`老项目迁移模板包`，MD5 一致。
+
+**怎么验（全部实跑）**
+- `bash scripts/check-channel-preflight.sh` → **CHANNEL-OK**，8 个角色/备用模型全 `OK`，codex 0.159.2 满足表内最低版本；`archive models checked: 0`（档案段已无）。
+- `bash scripts/check-sync.sh` → **SYNC-OK**。
+- 分工表内 grep `2026-|用户令|曾切|前一版|T2x` → 仅命中新写的规矩条款本身，无历史残留。
+
+**Git 状态**：**未 commit、未 push**。
+
+---
+
+## 2026-10-22 (PENDING) fix(distribution): 母版自己的文件不再分发到项目（CHANGELOG 134 KB 不再进每个项目根）
+
+**为什么**：用户当场质问——「你肯定这个新项目都不需要，为什么要把这个分发下去？」
+指 `CHANGELOG.md`：它是**母版自己的变更说明正典**（134 KB），记录的是母版怎么改的，**对项目毫无用处**；
+却随 `PAIRS` 分发给每个新项目，躺在项目根里，还会随母版每次更新变脏。**分发 ≠ 铺一份给谁都能用，
+分发的是「这一层的东西」，母版层的东西不该进项目层。**
+
+**改了什么**
+- **`_sync-packages.py` 的 `PAIRS` 去掉 `CHANGELOG.md`** ⇒ 两包不再携带；`check-sync` 同步去掉该比对；两包内的副本已删除。**母版仍是唯一正典**（`CHANGELOG.md` 留在母版根，每次改动母版照旧在此追加）。
+- **`new-project-setup.sh` 排除母版专属文件**：铺包时跳过 `README.en.md`（母版的英文导航——项目的 `README.md` 是项目自己的，英文导航同理该项目自己写）与 `CHANGELOG.md`。**项目根只剩对项目有用的东西。**
+- **母版 `README.md` 澄清**：`CHANGELOG.md` 标注为「**母版的**变更说明正典」，并写明 2026-10-22 起不随包分发。
+- **P057 已清理**：删掉 `CHANGELOG.md`／`README.en.md`／`USER_MODEL_OVERRIDE.md.旧版-2026-10-22`（均是我铺包时拷进去的母版副本，母版与包内仍各有一份，**无数据丢失**）；项目自有的 `README.md`／`.project.yaml`／`docs/handoff/HANDOFF.md` 未动。
+
+**影响谁**：所有新项目（少 134 KB + 一份英文导航）；老项目按「老项目不铺」保持现状。
+
+**怎么验（全部实跑）**：`SYNC-OK`｜`CHANNEL-OK`｜9 套回归全绿（tm 44／proto 9／ui-leak 2／ledger-fields 49／solo-agent 15／gates 21／delivery-unit 30／continuous-push 9／rotate 12）；P057 `check-ledger` → **LEDGER-OK (含 WARN)**，项目根已无 `CHANGELOG.md`／`README.en.md`。
+
+**Git 状态**：**未 commit、未 push**。
+
+---
+
+## 2026-10-22 (PENDING) perf(governance): `AGENTS.md` 瘦身 3.3 万字 → 6 千字（细则下沉 `docs/sop/governance-*.md`）＋ 新增体积闸
+
+**为什么**：用户实测发现——`AGENTS.md` 会被**每个会话自动加载**（客户端把它当系统规则读）。
+母版 `AGENTS.md` 实测 **32,990 字 / 66 KB ≈ 2 万 tokens**，而且 `老项目迁移模板包/AGENTS.md` 同量级
+⇒ **30+ 个老项目每个会话都在烧这 2 万 tokens，治理细则把干活的上下文挤掉了**。
+最占地的六段（合计 ≈ 55,000 字，占 2/3）几乎全是编排者/治理专用（两种执行方式、两阶段治理、
+派工顺序、何时起、任务账本、TM 资格），**业务开发者根本用不到**。
+
+**改了什么**
+- **`AGENTS.md` 只留「红线 + 索引」**：32,990 → **6,103 字（−81.5%）**，66 KB → 11.4 KB。保留：红线／何时起（判定表）／两种执行方式（口令与分界）／阶段与派工（复核粒度与四类不得延后）／角色与写哪／账本与模型口径／汇报与自决／细则索引。**规则一条没少，只是换了位置。**
+- **细则下沉 4 个新文件**（原文搬运、**无删改**）：`docs/sop/governance-scope.md`（何时起这套体系＋APP 默认继承＋铺包铁律）／`governance-execution-modes.md`（两种执行方式＋连续推进＋子代理模型口径）／`governance-dispatch.md`（两阶段治理＋派工顺序＋升级）／`governance-ledger.md`（两本账 schema＋chain_status＋Episode 记账＋TM 资格测试）。每份文件头写明**触发条件**（不需要就别读）。
+- **新增体积闸**（`check-sync.sh`）：`AGENTS-SIZE` 超 **12,000 字**即 `SYNC-FAIL` ⇒ **旧问题不会复发**（有人再把细则塞回总纲，当场被拦）。
+- **三个文本门测试改为按「治理文本集合」判定**（`AGENTS.md` ＋ `docs/sop/governance-*.md` 合并）：`solo-agent`／`delivery-unit`／`continuous-push` —— 守住断言意图（规则必须在现行真源里），又不因下沉而误报；**负面断言也纳入全集**（旧的禁并行窄表述不得复活）。
+- **引用改向**：六张角色卡（builder／code-reviewer／qa／supervisor／task-manager／senior-expert）里指向 `AGENTS.md 账本节／升级节／派工顺序节／Task Manager Qualification` 的引用，全部改指新文件；`编排者提示词` 读盘顺序补治理细则指针；`迁移整理提示词` 的 sop 取包清单补 4 份新文件、Episode 记账条改指 `governance-ledger.md`。
+- **概览与 README**：`ORCA治理体系说明.md` 顶部加结构说明、「八、规范在哪」补 4 行细则表；`README.md`／`README.en.md` docs 地图补新文件；`check-sync` 概览新鲜度关键词加 `governance-dispatch`／`细则下沉`。
+- **两包同步**：新文件在 `docs/sop/` 下 ⇒ `_sync-packages.py` 的 `DIRS` 自动随包分发；`check-sync` 的 `docs/sop/*.md` 比对改为**归一化后比对**（下沉文本含 `docs/prompts/` 路径引用，包内是裸名，与 AGENTS/README 同口径）。
+
+**影响谁**：所有项目的**每一个会话**（自动加载的文件瘦了 81.5%）。**新项目立即生效**（P057 已同步并实测）；
+**老项目按 2026-10-22 既定结论「老项目不铺、不管」保持旧版**，下次母版统一铺开时自动变瘦。
+
+**怎么验（全部实跑）**
+- 母版：`SYNC-OK`｜`CHANNEL-OK`｜tm-qualification 44/44｜prototype-gate 9/9｜ui-leak 2/2｜ledger-fields 49/49｜
+  solo-agent 15/15｜gates 21/21｜delivery-unit 30/30｜continuous-push 9/9｜codebuddy-rotate 12/12｜7-Skill `VALID`。
+- 体积实测：`AGENTS.md` 6,103 字（上限 12,000）｜四份细则合计 28,807 字（按需读，不自动进上下文）。
+- **新项目落地实测**：P057 已换成瘦身后 `AGENTS.md`（6,103 字）＋ 4 份细则就位；项目自有 `README.md`／`.project.yaml`／`docs/handoff/HANDOFF.md` 未被动；`check-ledger` → **LEDGER-OK (含 WARN)**。
+- **反向验证**：把一条细则塞回 `AGENTS.md` ⇒ `AGENTS-SIZE` 立即报超限（闸门有效，测试后已还原）。
+
+**Git 状态**：**未 commit、未 push**（commit/push 需用户明确授权）。
+
+---
+
+## 2026-10-22 (PENDING) docs(handoff): 补母版交接断层 —— §90–§97 ＋ 新的唯一恢复入口【大交接 3】
+
+**为什么**：本轮开工前实测发现——`docs/handoff/HANDOFF.md` 的恢复入口停在 §89／【大交接 2】（2026-10-10），
+而母版此后有 **30+ 笔实质提交**（账本校验与 TM 资格链硬化、铺包链路修复、分工表换模型链、
+执行方式与推进成本、体系全面自查与独立审查整改、铺包两条铁律、app-navigation §2.1／§2.2），
+当时**只写进了本文件，没写进 HANDOFF** ⇒ **交接文档落后于代码**。下一个智能体按 HANDOFF 恢复，
+会拿到一份停在 12 天前的现役答案。
+
+**改了什么**
+- `docs/handoff/HANDOFF.md` 在【大交接 2】之后补写 **§90–§97**（按**主题**归并，不逐 commit 流水）：
+  §90 账本校验与 TM 资格链硬化｜§91 铺包链路修复与三处机器卡点｜§92 分工表换模型链与「换模型快多少」可测｜
+  §93 执行方式、推进成本与角色减负｜§94 体系全面自查与独立审查整改｜§95 铺包两条铁律｜
+  §96 `app-navigation` §2.1／§2.2 ＋ 新项目链路端到端实测｜§97 本轮说明。
+- 新增 **【大交接 3】** 作为**新的唯一恢复入口**（【大交接 2】降级为历史段、勿再照它干活）：
+  含母版当前状态实测表、8 条下一步任务（含优先级）、硬规矩、本项目特有的坑（新增「铺包铁律／
+  常驻工作区永不铺包／批量铺包只有母版编排者能干」三条）、既定结论、恢复开发的最小动作命令清单。
+- **顺手回填两处滞留的 `PENDING`**（洁癖自做，编排者本人）：10-22「两条铁律」条 → `f9190a3`；
+  10-10「A 项留痕缺口」条 → `1391857`。两条对应的提交**早已存在**，PENDING 是遗留标注。
+- **只改文档**：未动任何规则文本、脚本、模板、两包治理内容 ⇒ 不改变任何执行口径。
+
+**影响谁**：所有从 HANDOFF 恢复的智能体（母版维护者、审查者、交接接手人）。
+**不影响**：任何项目的执行行为、门禁判定、两包内容（`docs/handoff` 只同步 `*.template.md`，
+实例文档 `HANDOFF.md` 不随包分发 ⇒ 本次改动**不会**造成包内漂移；`CHANGELOG.md` 随包分发，已同步两包）。
+
+**怎么验（全部实跑）**
+- `bash scripts/check-sync.sh` → **SYNC-OK**（exit 0）｜`bash scripts/check-channel-preflight.sh` → **CHANNEL-OK**（exit 0）。
+- 全套回归实跑：tm-qualification｜prototype-gate｜ui-leak｜ledger-fields｜solo-agent｜gates｜
+  delivery-unit｜continuous-push｜codebuddy-rotate ＋ 7-Skill validator（pass 数以脚本实际输出为准）。
+- **事实核对**：§90–§96 的每条事实均取自本文件（CHANGELOG）全文 ＋ `git log --since=2026-10-11` 实读
+  ＋ `USER_MODEL_OVERRIDE.md` 现役表，**未凭记忆**；另派独立审查逐条核（该派工本轮被用户中止，**未完成**，审查报告未产出 —— 已在 HANDOFF §97 如实标注）。
+
+**Git 状态**：**未 commit、未 push**（commit/push 需用户明确授权）。
+
+---
 ## 2026-10-22 (08970ba) feat(governance): app-navigation 补 §2.1／§2.2 底栏去冗余规则（与 7-Skill 更新配套）
 
 **为什么**：2026-10-22 中央 7 颗设计管线 Skill 更新（`design-freeze` / `interactive-product-prototype` /
@@ -36,7 +229,8 @@
 - 母版门禁：`SYNC-OK`｜`CHANNEL-OK`｜tm 44/44｜proto 9/9｜ui-leak 2/2｜delivery-unit 30/30｜
   ledger-fields 49/49｜solo-agent 15/15｜gates 21/21｜rotate 12/12｜continuous-push 9/9。
 
-## 2026-10-22 (PENDING) fix(governance): 两条铁律落成机器闸门 —— 铺包不删别人的文件 ＋ 常驻工作区永不铺包
+
+## 2026-10-22 (f9190a3) fix(governance): 两条铁律落成机器闸门 —— 铺包不删别人的文件 ＋ 常驻工作区永不铺包
 
 **起因（同一晚两个真事故）**
 ① **我删了 056 项目正在开发的文档**：给新项目写铺包脚本时，为修「重复铺包」在拷贝前加了「按顶层名递归删除」，
@@ -1018,7 +1212,7 @@ APP-TRUEOUT 门、产品验收矩阵覆盖率 3%、母版未搬迁），并纳�
 
 **未做（等审批）**：结果语义草案（**已确认会破坏 `supervisor+FAIL` 升级计数，上一版撤回**）、Episode 去重（实测评分器无去重）、未测维度标注、GATE_VIOLATION 分类核验、F 组原始输入留存。
 
-## 2026-10-10 (PENDING) fix(governance): A 项留痕缺口 + 触发口令补进老项目注入区块
+## 2026-10-10 (1391857) fix(governance): A 项留痕缺口 + 触发口令补进老项目注入区块
 
 **为什么**：①A 项——外部独立会话两次复现「铺了包却按小活免留痕」；②老项目迁移——注入区块不含触发口令，老项目 `AGENTS.md` 拿不到这个入口，规则到不了已治理的老仓。
 

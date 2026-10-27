@@ -111,7 +111,10 @@ fi
 if [ -z "$DRY" ]; then
   ( cd "$PKG" && find . -maxdepth 1 -mindepth 1 -type f -print ) | while read -r rel; do
     name="${rel#./}"
-    case "$name" in README.md|.project.yaml) continue ;; esac   # 项目自有，第 3 步还原
+    # README.md/.project.yaml＝项目自有（第 3 步还原）；
+    # README.en.md＝**母版的英文导航**、CHANGELOG.md＝**母版的变更说明正典**（2026-10-22 起不再随包分发）
+    # —— 这两个是母版自己的东西，躺进项目根既没用又会让项目根越来越脏（母版 CHANGELOG 有 134 KB）。
+    case "$name" in README.md|.project.yaml|README.en.md|CHANGELOG.md) continue ;; esac
     if [ -L "$PROJ/$name" ]; then rm -f "$PROJ/$name"; fi
   done
   cp -R "$PKG/." "$PROJ/" 2>/dev/null || fail "整包拷失败"
@@ -137,6 +140,21 @@ if [ -z "$DRY" ]; then
   done
 fi
 step "账本 _example 空壳已清（docs/model/*.jsonl）" "账"
+
+# ── 5.1) 实例化常驻位（架构事实 / 风险）──────────────────────
+# 包里只有 *.template.md；项目要的是可填的实例文件。已存在就跳过（不覆盖用户内容）。
+if [ -z "$DRY" ]; then
+  for pair in "docs/architecture-facts.template.md:docs/architecture-facts.md" \
+              "docs/risks.template.md:docs/risks.md" \
+              "docs/agent.template.md:agent.md" \
+              "docs/handoff/HANDOFF.template.md:docs/handoff/HANDOFF.md"; do
+    tpl="${pair%%:*}"; dst="${pair##*:}"
+    [ -f "$PROJ/$tpl" ] || continue
+    [ -e "$PROJ/$dst" ] && continue
+    cp "$PROJ/$tpl" "$PROJ/$dst" || fail "实例化失败：$dst"
+  done
+fi
+step "常驻位已实例化（architecture-facts / risks / agent.md / HANDOFF.md；已存在则不覆盖）" "例"
 
 # ── 5) 分工表建软链指母版（包里是实文件；不建就静默分叉）────────
 # 只在「目标是实文件」时改成软链；**先备份**（用 .旧版-日期 命名，不覆盖既有备份）。
@@ -168,11 +186,25 @@ if [ -z "$DRY" ]; then
 fi
 step "ORCA 忽略块已注入并自检通过（治理文件不会上传 GitHub）" "护"
 
+# ── 6.1) 装账本 pre-commit 钩子（2026-10-27 C1）：脚本一直随包分发但没人调用，等于摆设 ──
+if [ -z "$DRY" ]; then
+  if [ -d "$PROJ/.git" ] && [ -f "$PROJ/scripts/install-governance-hooks.sh" ]; then
+    if bash "$PROJ/scripts/install-governance-hooks.sh" "$PROJ" >/dev/null 2>&1; then
+      step "账本 pre-commit 钩子已装入 .git/hooks" "钩"
+    else
+      echo "  [提醒] pre-commit 钩子未装上（不影响铺包；可稍后手动跑 scripts/install-governance-hooks.sh）"
+    fi
+  else
+    echo "  [提醒] 项目尚未 git init，跳过 pre-commit 钩子安装"
+  fi
+fi
+
 # ── 7) 校验 ───────────────────────────────────────────────────
 if [ -z "$DRY" ]; then
   for f in AGENTS.md 编排者提示词.md 经验一句话.md docs/roles/task-manager.md \
            docs/pm/PRODUCT_PLAN.template.md docs/qa/产品验收追踪矩阵.template.md \
            docs/handoff/HANDOFF.template.md docs/model/TASK-MODEL-LOG.jsonl \
+           docs/architecture-facts.md docs/risks.md agent.md docs/handoff/HANDOFF.md \
            scripts/detect-client.sh scripts/model/check-ledger.mjs; do
     [ -e "$PROJ/$f" ] || fail "关键治理文件缺失：$f"
   done

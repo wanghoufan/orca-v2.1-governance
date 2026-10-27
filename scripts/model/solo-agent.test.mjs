@@ -97,6 +97,25 @@ function grepHit(file, pattern) {
 // 处置：**母版专属断言在非母版自动跳过并显式报出**，不算 PASS 也不算 FAIL；
 // 角色卡/AGENTS/README 这些**项目也有的**文件仍然照常校验。
 const IS_MASTER = existsSync(join(HERE, "..", "..", "新项目模板包", "AGENTS.md"));
+
+// ── 治理规则文本聚合（2026-10-22 瘦身新增）────────────────────────────
+// AGENTS.md 自 2026-10-22 起只留「红线 + 索引」，细则下沉到 docs/sop/governance-*.md。
+// 因此「规则文本是否存在」一律按**治理文本集合**判定，而不是只看 AGENTS.md。
+// 这样既守住断言意图（规则必须在现行真源里），又不因下沉而误报。
+const GOV_REL = [
+  "AGENTS.md",
+  join("docs", "sop", "governance-scope.md"),
+  join("docs", "sop", "governance-execution-modes.md"),
+  join("docs", "sop", "governance-dispatch.md"),
+  join("docs", "sop", "governance-ledger.md"),
+];
+const govText = (root) => GOV_REL.map((f) => {
+  try { return readFileSync(join(root, f), "utf8"); } catch { return ""; }
+}).join("\n");
+const govHit = (root, phrase) => GOV_REL.some((f) => {
+  try { return grepHit(join(root, f), phrase); } catch { return false; }
+});
+
 const skipIfNotMaster = (name) => {
   if (!IS_MASTER) {
     console.log(`SKIP  ${name}（母版专属断言：非母版仓库无两包/概览结构，已跳过而非伪装 PASS）`);
@@ -142,7 +161,6 @@ const skipIfNotMaster = (name) => {
 {
   const ROOT = join(HERE, "..", "..");
   // 用户只发这一句就够：口令必须写在规则里，且写明「不再询问／不自动派工／自行找规范」
-  const ag = join(ROOT, "AGENTS.md");
   const phrase = "你是主开发者";
   const parts = [
     [phrase, "触发口令原文（2026-10-17 改名）"],
@@ -153,8 +171,8 @@ const skipIfNotMaster = (name) => {
     ["用户不负责逐项指定规范", "用户不指定规范"],
     ["不代表跳过产品方案确认", "不跳过 Human Gate 与授权"],
   ];
-  const miss = parts.filter(([kw]) => !grepHit(ag, kw)).map(([, label]) => label);
-  check("C3 触发口令与配套条款在 AGENTS.md 齐备", miss.length === 0, miss.join(", "));
+  const miss = parts.filter(([kw]) => !govHit(ROOT, kw)).map(([, label]) => label);
+  check("C3 触发口令与配套条款在治理规则文本齐备（AGENTS + governance-*.md）", miss.length === 0, miss.join(", "));
 
   const rd = join(ROOT, "README.md");
   const rdOk = grepHit(rd, phrase) && grepHit(rd, "自行读取") && grepHit(rd, "只决定执行模式");
@@ -203,8 +221,8 @@ const skipIfNotMaster = (name) => {
 // ── C'' 组｜不得擅自切换模式 ────────────────────────────────────────
 {
   const ROOT = join(HERE, "..", "..");
-  const ok = grepHit(join(ROOT, "AGENTS.md"), "不得擅自改变既定执行方式")
-    && grepHit(join(ROOT, "AGENTS.md"), "多智能体（默认）");
+  const ok = govHit(ROOT, "不得擅自改变既定执行方式")
+    && govHit(ROOT, "多智能体（默认）");
   check("C6 多智能体仍为默认，且无要求时不得擅自改模式", ok);
 }
 
@@ -232,8 +250,7 @@ const fail = results.length - pass;
 // 「唯一开发者」这个口令又把人数锁死 —— 于是子代理并行被长期误禁用。
 // 这组用例保证「可并行执行」这条永远不会被重新删掉。
 {
-  const ag = join(HERE, "..", "..", "AGENTS.md");
-  const md = readFileSync(ag, "utf8");
+  const md = govText(join(HERE, "..", ".."));
   check("E1 明确「不派治理角色链」而不是「不派智能体」",
     md.includes("不得自动派遣其他治理角色") || md.includes("不派治理角色链"));
   check("E2 明确允许并鼓励派子代理并行推进",
@@ -270,14 +287,14 @@ const fail = results.length - pass;
     && /不许声称/.test(md));
   check("E8 该模式下你不是编排者",
     md.includes("你不是编排者"));
-  check("E9 旧的禁并行窄表述已删除（AGENTS）",
+  check("E9 旧的禁并行窄表述已删除（治理规则文本全集）",
     !/不得因为当前客户端支持子智能体就自动派工/.test(md));
 
   // 同一句窄表述当初也出现在 README（两包都带着），只改 AGENTS 等于没改 ——
   // 这次实测就是把 README 里那句漏掉才被发现。README 与概览一起纳入。
   const rd = readFileSync(join(HERE, "..", "..", "README.md"), "utf8");
   check("E10 README 里的禁并行窄表述已删除", !/不会因为当前客户端支持子智能体就自动派工/.test(rd));
-  check("E10 README 章节名与 AGENTS/概览指向一致（链接不得是死的）",
+  check("E10 README 章节名与治理规则文本/概览指向一致（链接不得是死的）",
     rd.includes("主开发者开发使用说明") && md.includes("主开发者开发使用说明"));
   check("E11 README 写明「不是只能一个人干活」并给出执行层/判定层",
     rd.includes("只能一个人干活") && rd.includes("执行层") && rd.includes("判定层"));

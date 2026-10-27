@@ -4,7 +4,7 @@
 
 > The template name is frozen; the source of truth for versions is this repository's Git history (the version marker file is only a pointer).
 
-Single canonical read order at the start of work: `AGENTS.md` → `docs/roles/` (the role cards for this run) → root `USER_MODEL_OVERRIDE.md` (the model table; use it if present) → `docs/handoff/` (current handover state) → root `经验一句话.md` → and the task goal last.
+Single source of truth for the entry routing: the "入口路由（全体系唯一）" block at the top of `AGENTS.md`. Follow it to pick the execution mode and read only what it triggers; this file does not repeat it.
 
 ## The system at a glance
 

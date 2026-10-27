@@ -59,6 +59,17 @@ copy_if_missing() {
   copied=$((copied+1))
 }
 
+# copy_tree_missing <relative-dir>
+# 逐文件补缺（2026-10-27）：旧实现按目录判断「存在即跳过」，目录里被删掉的文件永远补不回来。
+copy_tree_missing() {
+  local rel="$1" src_root="$PKG/$1" f relf
+  [ -d "$src_root" ] || return 0
+  while IFS= read -r -d '' f; do
+    relf="${f#$PKG/}"
+    copy_if_missing "$relf"
+  done < <(find "$src_root" -type f -print0)
+}
+
 echo "RESTORE: source(母版) = $SRC"
 echo "RESTORE: project     = $PROJ_ROOT"
 echo "RESTORE: package     = $PKG"
@@ -75,7 +86,7 @@ fi
 
 # ── directories that are pure framework ────────────
 for d in docs/roles docs/sop docs/templates docs/prompts scripts/model scripts/decision scripts/orchestration; do
-  copy_if_missing "$d"
+  copy_tree_missing "$d"
 done
 
 # ── individual framework files under docs/ + scripts/ ──
@@ -91,8 +102,21 @@ for f in docs/pm/PLAN.template.md docs/pm/PRODUCT_PLAN.template.md \
          docs/qa/BUGS.template.md docs/qa/产品验收追踪矩阵.template.md \
          docs/review/CODE_REVIEW.template.md docs/review/RESEARCH_REVIEW.template.md \
          docs/review/PRODUCT_BACKLOG.template.md \
-         docs/handoff/HANDOFF.template.md docs/handoff/EXT-WORKLOG.template.md; do
+         docs/handoff/HANDOFF.template.md docs/handoff/EXT-WORKLOG.template.md \
+         docs/architecture-facts.template.md docs/risks.template.md docs/agent.template.md; do
   copy_if_missing "$f"
+done
+
+# ── 常驻位实例化（2026-10-27）：模板在、实例缺失时才生成，绝不覆盖 ──
+for pair in "docs/architecture-facts.template.md:docs/architecture-facts.md" \
+            "docs/risks.template.md:docs/risks.md" \
+            "docs/agent.template.md:agent.md" \
+            "docs/handoff/HANDOFF.template.md:docs/handoff/HANDOFF.md"; do
+  tpl="${pair%%:*}"; dst="${pair##*:}"
+  if [ -e "$PROJ_ROOT/$tpl" ] && [ ! -e "$PROJ_ROOT/$dst" ]; then
+    cp "$PROJ_ROOT/$tpl" "$PROJ_ROOT/$dst"
+    echo "RESTORE: instantiated $dst"
+  fi
 done
 
 # ── ledgers: create ONLY if missing (empty shells); never touch existing real ledgers ──

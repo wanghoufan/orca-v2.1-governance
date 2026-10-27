@@ -43,7 +43,9 @@ echo "  opencode:  $(printf '%s\n' "$OPENCODE_LIST"  | grep -c .) models"
 [ -n "$CODEBUDDY_LIST" ] || echo "  ! cannot read codebuddy catalog"
 [ -n "$OPENCODE_LIST" ]  || echo "  ! cannot read opencode catalog"
 
-role_models=$(awk -F'|' '/^\| *(task-manager|supervisor|planner|builder|code-reviewer|qa|product-reviewer|experience-recorder|neat-freak|senior-expert|db-admin) *\|/ {print $3}' "$TBL" \
+# 2026-10-26：同取「备用模型」列($5)。此前备用模型的可用性只靠在表尾档案里出现才被顺带覆盖；
+# 档案段已删（表内不留历史），若仍只取 $3，db-admin 的 radeon-mimo 备用会失去这道检查。
+role_models=$(awk -F'|' '/^\| *(task-manager|supervisor|planner|builder|code-reviewer|qa|product-reviewer|experience-recorder|neat-freak|senior-expert|db-admin) *\|/ {print $3; print $5}' "$TBL" \
   | grep -oE '(codex|codebuddy|opencode|opencode-go|volcengine-plan|radeon-mimo)/[A-Za-z0-9._-]+' | sort -u)
 # 2026-10-17 G12 修：双审表的行首是「组织者/汇总」「独立审查A/B」，既不是角色名也不是编号，
 # 原先两处正则都不命中 ⇒ 审查 B 的 codebuddy/deepseek-v4-pro 只以archive 条目出现，

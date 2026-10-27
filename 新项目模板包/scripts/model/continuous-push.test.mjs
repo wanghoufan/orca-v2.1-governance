@@ -21,7 +21,12 @@ const readPrompt = () => {
   }
   throw new Error("orchestrator prompt not found");
 };
-const agents = readFileSync(join(ROOT, "AGENTS.md"), "utf8");
+// AGENTS.md 自 2026-10-22 只留「红线 + 索引」，细则下沉到 docs/sop/governance-*.md。
+const GOV_REL = ["AGENTS.md", "docs/sop/governance-scope.md", "docs/sop/governance-execution-modes.md",
+  "docs/sop/governance-dispatch.md", "docs/sop/governance-ledger.md"];
+const agents = GOV_REL.map((f) => {
+  try { return readFileSync(join(ROOT, f), "utf8"); } catch { return ""; }
+}).join("\n");
 const prompt = readPrompt();
 
 check("AGENTS: continuous-push clause exists", agents.includes("一路推到底"));

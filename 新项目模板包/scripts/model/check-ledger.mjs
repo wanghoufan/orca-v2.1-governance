@@ -37,7 +37,7 @@ const MODEL_PROVIDERS = [
 const KNOWN_MODELS = [
   "codebuddy/deepseek-v4.1-flash", "codebuddy/glm-5.3-flash",
   "codebuddy/deepseek-v4-pro", // 2026-10-07 产品审查双审链审查 B（约定节，非主表行）
-  "codex/gpt-6-sol", "codex/gpt-6.1-sol", "codex/gpt-6-luna", "codex/gpt-5.6-luna",
+  "codex/gpt-6-sol", "codex/gpt-6.1-sol", "codex/gpt-6.1-terra", "codex/gpt-6-luna", "codex/gpt-5.6-luna",
   "codex/gpt-5.6-terra", "codex/gpt-5.6-sol",
   "opencode/muse-spark-1.3-contributor-free", "opencode/muse-spark-1.3-contributor",
   "opencode/mimo-v2.5-free",
@@ -428,6 +428,11 @@ check("DISPATCH-LOG.jsonl",
     try { soloMode = String((JSON.parse(readFileSync(gs, "utf8")) || {}).execution_mode) === "solo"; }
     catch { /* 坏 JSON 不豁免 */ }
   }
+  const openRows = rows.filter((d) => d.chain_status === "OPEN");
+  if (openRows.length) {
+    warns.push(`ACCEPTED-OPEN（不拦截）— 有 ${openRows.length} 行 chain_status=OPEN（角色已交付但未验收）。`
+      + `收工前应落到 ACCEPTED；长期停留 OPEN 表示该交付单元始终未闭环。`);
+  }
   if (!soloMode && qaRows.length && !closed.length) {
     fails.push(`ACCEPTED-MISSING: 账本有 ${qaRows.length} 行 qa/senior 交付，但没有任何收尾行`
       + `（chain_status=ACCEPTED 已验收 / OPEN 未完）—— 角色交付 ≠ 已验收。`
@@ -467,14 +472,30 @@ check("DISPATCH-LOG.jsonl",
         // （实测反例：`| AC01 | 未测 |` 与「整份无编号」都 exit 0）。
         // 现在：带编号的行按编号判定；**不含任何编号的行**，只要出现未测信号也照样拦。
         const hasAc = /\bAC[\s_-]?\d+\b/i.test(ln);
-        if (!hasAc && !/未测|(^|[^A-Z])OPEN([^A-Z]|$)|FAIL|BLOCKED/.test(ln)) return;
-        if (/未测|(^|[^A-Z])OPEN([^A-Z]|$)|FAIL|BLOCKED/.test(ln)) bad.push(`#${i + 1}`);
+        if (!hasAc && !/未测|未完成|未通过|待补|待测|待验证|部分通过|(^|[^A-Za-z])TBD([^A-Za-z]|$)|(^|[^A-Z])OPEN([^A-Z]|$)|FAIL|BLOCKED/.test(ln)) return;
+        if (/未测|未完成|未通过|待补|待测|待验证|部分通过|(^|[^A-Za-z])TBD([^A-Za-z]|$)|(^|[^A-Z])OPEN([^A-Z]|$)|FAIL|BLOCKED/.test(ln)) bad.push(`#${i + 1}`);
       });
       if (bad.length) {
         fails.push(`ACCEPTED-BLOCK: 账本判已验收（chain_status=ACCEPTED），但验收矩阵仍有关键条目未闭环：`
           + `${bad.slice(0, 5).join("、")}${bad.length > 5 ? ` 等 ${bad.length} 处` : ""}。`
-          + `未测/OPEN/FAIL/BLOCKED 均属未闭环，报完工前提不成立`);
+          + `未测/未完成/待补/待测/TBD/OPEN/FAIL/BLOCKED 均属未闭环，报完工前提不成立`);
       }
+    }
+  }
+}
+
+// 采集完整度（2026-10-27 自查 B1，**只报不拦**）
+// 背景：九角色里 db-admin 零记录、supervisor/senior 仅单一模型，且 elapsed/tokens/cost 覆盖率 <4%
+// ⇒ 账本能回答「成没成」，回答不了「换哪个模型更快更便宜」。此处只提示补采集，不回填历史。
+{
+  const rows = readRows("TASK-MODEL-LOG.jsonl").filter((d) => !d._example);
+  if (rows.length >= 20) {
+    const el = rows.filter((d) => typeof d.elapsed_sec === "number").length;
+    const tk = rows.filter((d) => typeof d.tokens === "number").length;
+    const cost = rows.filter((d) => typeof d.cost_cny === "number").length;
+    if (el / rows.length < 0.1 || tk / rows.length < 0.1) {
+      warns.push(`MODEL-PERF-INCOMPLETE（不拦截）— ${rows.length} 行任务账里 elapsed_sec ${el} 行、tokens ${tk} 行、cost_cny ${cost} 行。`
+        + `换模型决策需要速度/成本维度；派工收尾时建议补填，历史行不回填。`);
     }
   }
 }
@@ -566,8 +587,13 @@ function criticalAcLines(text) {
 
 function checkAppBaseline(root) {
   const pmDir = join(root, "docs/pm");
-  // 本项目根本没有 Product Plan（纯后端仓/未立项仓）⇒ 本检查不适用，直接跳过
-  if (!existsSync(pmDir)) return;
+  // 本项目根本没有 Product Plan（纯后端仓/未立项仓）⇒ 本检查不适用，但必须**可见**：
+  // 2026-10-27 修：原实现静默 return，实测「不建 docs/pm/」即可让整组 APP 门消失且零提示。
+  if (!existsSync(pmDir)) {
+    warns.push(`APP-BASELINE-SKIPPED（未拦截）— 本项目没有 docs/pm/ 目录，APP 基础能力门未执行。`
+      + `面向用户的 APP 项目请把 Product Plan 放进 docs/pm/；纯后端/未立项仓可忽略本条。`);
+    return;
+  }
   const ts = trueSource(root);
   const src = ts.src;
   const cands = [];
@@ -575,9 +601,18 @@ function checkAppBaseline(root) {
     let files = [];
     try { files = readdirSync(pmDir).filter((f) => f.endsWith(".md") && !f.includes("template")); } catch { files = []; }
     for (const f of files) {
-      if (!/^PRODUCT[_-]?PLAN/i.test(f) && !/Product\s*Plan/i.test(f)) continue;
-      // 精确匹配真源路径；不再用 basename 包含判断（改名即可绕过＝漏洞）
+      // 2026-10-27 修：原实现只认文件名 ^PRODUCT_PLAN，实测把计划改名成「主计划.md」即可
+      // 让整组 APP 门静默降级。现在文件名不匹配时再看内容，像产品计划（FR-/AC-/产品计划）就算候选。
       const label = `docs/pm/${f}`;
+      let looksPlan = /^PRODUCT[_-]?PLAN/i.test(f) || /Product\s*Plan/i.test(f);
+      if (!looksPlan) {
+        try {
+          const head = readFileSync(join(pmDir, f), "utf8").slice(0, 20000);
+          looksPlan = /\bFR-\d+|\bAC-\d+|产品计划|需求真源/.test(head);
+        } catch { looksPlan = false; }
+      }
+      if (!looksPlan) continue;
+      // 精确匹配真源路径；不再用 basename 包含判断（改名即可绕过＝漏洞）
       const same = (p) => p === label || p === f || normalizePath(p) === normalizePath(label);
       cands.push({ label, isSrc: same(src) });
     }
@@ -743,7 +778,10 @@ const projectRoot = basename(dir) === "model" ? join(dir, "..", "..") : dir;
 // 母版/分发包自检（--allow-example）跳过 APP 门（2026-10-09 修 P1-5）：
 // 母版是**分发源**、不是受治理的真实项目——没有产品计划真源、没有 Phase2 APP 项目，
 // 跑 APP 门必然报 TRUEUT-UNRESOLVED 等，属噪声。真项目的 APP 门照常生效。
-if (existsSync(dir) && !ALLOW_EXAMPLE) checkAppBaseline(projectRoot);
+// 2026-10-27 修：原实现在 --allow-example 下**整组跳过** APP 门，而 pre-commit-guard 又把
+// 「4.Templates（PC）」路径下所有项目视为母版 ⇒ 该目录里任何真实项目都自动获得豁免（实测）。
+// 现在 APP 门一律执行；母版无 docs/pm 时只出 WARN，不误报失败。
+if (existsSync(dir)) checkAppBaseline(projectRoot);
 
 // ── 原始输入留存（2026-10-11，仅在显式 --evidence <dir> 时写）────────────────
 if (EVIDENCE_DIR) writeEvidence();
@@ -816,6 +854,8 @@ function writeEvidence() {
     writeFileSync(join(out, i.copy_path), readFileSync(join(dir, f), "utf8"), "utf8");
   }
   // 自检：证据卡声明的每个副本必须真实存在且哈希相符 —— 指向不存在的文件等于没留证
+  // 2026-10-27 修死码：原实现失败时置 false、随后无条件置 true，副本损坏仍报「已验证」。
+  let copiesOk = true;
   for (const f of ["TASK-MODEL-LOG.jsonl", "DISPATCH-LOG.jsonl"]) {
     const i = inputs[f];
     if (!i || !i.present) continue;
@@ -823,10 +863,10 @@ function writeEvidence() {
     const h = existsSync(fp) ? createHash("sha256").update(readFileSync(fp)).digest("hex") : null;
     if (h !== i.sha256) {
       console.log(`[evidence] 警告：副本校验失败 ${f}（期望 ${i.sha256}，实得 ${h}）`);
-      meta.copy_verified = false;
+      copiesOk = false;
     }
   }
-  meta.copy_verified = true;
+  meta.copy_verified = copiesOk;
   writeFileSync(`${out}/证据-${ts}.json`, JSON.stringify(meta, null, 2), "utf8");
   console.log(`[evidence] 已留存原始输入 → ${out}（证据-${ts}.json ＋ 两份逐字节副本；副本禁入仓）`);
 }

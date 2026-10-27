@@ -20,8 +20,8 @@ const LEDGER = join(HERE, "check-ledger.mjs");
 const FIX = join(HERE, "fixtures", "ledger-fields");
 
 // 用 spawnSync：exit 0 时也要拿到 stdout（WARN 文案只在 stdout，execFileSync 成功路径不返回输出）
-function runLedger(projectDir, env) {
-  const r = spawnSync("node", [LEDGER, join(projectDir, "docs", "model")],
+function runLedger(projectDir, env, extraArgs = []) {
+  const r = spawnSync("node", [LEDGER, join(projectDir, "docs", "model"), ...extraArgs],
     { encoding: "utf8", env: { ...process.env, ...(env || {}) } });
   return { code: r.status ?? 1, out: `${r.stdout ?? ""}${r.stderr ?? ""}` };
 }
@@ -81,9 +81,14 @@ const CASES = [
   // 禁重写实绩 ⇒ 用「更正行」降级；但没有更正行仍必须 FAIL，防止被更正行滥用绕过。
   ["case30-xref-corrected-note", 0, []],
   ["case31-xref-drift-no-note", 1, ["LEDGER-XREF"]],
+  // 2026-10-27 自查 P0：四种「绕门」实测反例
+  ["case32-plan-renamed", 1, ["APP-CRITICAL-AC-EMPTY"]],        // 计划改名不再跳过 APP 门
+  ["case33-no-pm-dir", 0, ["APP-BASELINE-SKIPPED"]],            // 无 docs/pm 不再静默
+  ["case34-ac-tbd", 1, ["ACCEPTED-BLOCK"]],                     // 状态写 TBD 也算未闭环
+  ["case35-allow-example-no-bypass", 1, ["APP-CRITICAL-AC-EMPTY"], ["--allow-example"]], // 豁免旗不再跳过 APP 门
 ];
-for (const [fixture, wantExit, mustInclude] of CASES) {
-  const r = withFixture(fixture, (d) => runLedger(d));
+for (const [fixture, wantExit, mustInclude, extraArgs] of CASES) {
+  const r = withFixture(fixture, (d) => runLedger(d, undefined, extraArgs));
   const missing = mustInclude.filter((s) => !r.out.includes(s));
   check(`${fixture} → exit ${wantExit}`,
     r.code === wantExit && missing.length === 0,

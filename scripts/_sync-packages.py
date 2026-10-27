@@ -13,7 +13,8 @@ PAIRS = [
     ("USER_MODEL_OVERRIDE.md", "USER_MODEL_OVERRIDE.md"),
     ("ORCA治理体系说明.md", "ORCA治理体系说明.md"),
     ("GOVERNANCE_VERSION", "GOVERNANCE_VERSION"),
-    ("CHANGELOG.md", "CHANGELOG.md"),  # 2026-10-09：变更说明正典随包分发
+    # 2026-10-22：CHANGELOG.md **不再随包分发** —— 它是**母版自己的**变更说明正典（134 KB），
+    # 对项目毫无用处，却会让每个项目根躺一份会随母版更新反复变脏的治理文件。母版保留为唯一正典。
     ("经验一句话.md", "经验一句话.md"),
     ("docs/prompts/编排者提示词.md", "编排者提示词.md"),
     ("docs/prompts/外部开发者提示词.md", "外部开发者提示词.md"),
@@ -32,8 +33,12 @@ TREE_EXCLUDE = ["/evidence/", "/.git/", "/node_modules/"]  # 2026-10-17：gates 
 # 不排除会把 .git 的二进制对象同步进包并让读文件的代码抛 UnicodeDecodeError
 # 只同步 *.template.md 的（这几个目录里混有母版自己的实例记录：BUGS-*.md / CODE_REVIEW-*.md /
 #   GOVERNANCE_REVIEW-*.md / RESEARCH_REVIEW-*.md / PLAN-*.md / HANDOFF.md 等，**模板包不该带实例记录**）
-TEMPLATE_DIRS = ["docs/pm", "docs/plan", "docs/qa", "docs/review", "docs/handoff"]
+TEMPLATE_DIRS = ["docs/pm", "docs/plan", "docs/qa", "docs/review", "docs/handoff", "docs"]
 EXTRA = ["scripts/detect-client.sh", "scripts/model/check-ledger.mjs",
+         # 2026-10-27：一键体检入口（C1）随包分发，项目侧也能一条命令自证。
+         "scripts/run-gates.sh",
+         # 2026-10-27：经验全量归档随包分发，避免精简后的 `经验一句话.md` 指针悬空。
+         "docs/history/经验-归档-2026-10-27.md",
          # 2026-10-17 补：AGENTS.md 与概览硬引用、但此前只存在于母版的治理脚本。
          # 缺它们的后果＝新项目照 AGENTS 执行「公开仓自动注入／摘除」「提交前拦证据副本」
          # 「恢复框架」「迁移状态」「两包同步」必然 no such file —— 规则写得到、落不了地。

@@ -20,7 +20,11 @@ const readPrompt = () => {
   }
   throw new Error("orchestrator prompt not found");
 };
-const agents = read("AGENTS.md");
+// AGENTS.md 自 2026-10-22 只留「红线 + 索引」，细则下沉到 docs/sop/governance-*.md；
+// 断言按治理文本集合判定（守住意图，不因下沉误报）。
+const GOV_REL = ["AGENTS.md", "docs/sop/governance-scope.md", "docs/sop/governance-execution-modes.md",
+  "docs/sop/governance-dispatch.md", "docs/sop/governance-ledger.md"];
+const agents = GOV_REL.map((f) => { try { return read(f); } catch { return ""; } }).join("\n");
 const prompt = readPrompt();
 
 check("AGENTS: delivery-unit rule exists", agents.includes("交付单元"));

@@ -7,6 +7,66 @@
 #   现做法：先把母版侧的 docs/prompts/ 归一化成裸名，再逐字节比对；任何内容差都会 DIFF 并 fail。
 # 预期差白名单：无（归一化后应为零差异）。
 set -u
+# ============ 体积闸 / 入口闸（2026-10-27）============
+# 背景：AGENTS.md 被客户端每会话自动加载，HANDOFF 与经验条目是开工必读。
+# 三者一旦无限增长，等于把「读全量规则」的成本又加回来。
+# 做法：给常驻位设硬上限；事实/风险/踩坑各自独立位，超限先迁移再精简。
+# 项目侧只报 WARN，不阻塞（存量项目口径由各项目自决）。
+HANDOFF_MAX_LINES=100
+HANDOFF_MAX_BYTES=8192
+LESSONS_MAX_BYTES=8192
+FACTS_MAX_LINES=150
+FACTS_MAX_BYTES=10240
+RISKS_MAX_LINES=100
+RISKS_MAX_BYTES=8192
+PITFALL_MAX_LINES=200
+PITFALL_MAX_BYTES=12288
+ROUTE_MARKER='入口路由（全体系唯一）'
+LEGACY_RE='读盘顺序|读取顺序|开工读盘|恢复读盘|read order|reading order'
+ROUTE_FILES="AGENTS.md README.md README.en.md ORCA治理体系说明.md 经验一句话.md docs/prompts/编排者提示词.md docs/handoff/HANDOFF.md docs/handoff/HANDOFF.template.md"
+gate_rc=0
+gate_bad() { if [ "${1:-fail}" = "warn" ]; then :; else gate_rc=1; fi; }
+size_one() { # root label rel maxlines|- maxbytes mode
+  local root="$1" label="$2" rel="$3" maxl="$4" maxb="$5" mode="${6:-fail}"
+  local f="$root/$rel" l b
+  if [ ! -f "$f" ]; then echo "${label}-MISSING: $rel"; gate_bad "$mode"; return 0; fi
+  l=$(awk 'END{print NR}' "$f")
+  b=$(wc -c < "$f" | tr -d ' ')
+  if [ "$maxl" != "-" ] && [ "$l" -gt "$maxl" ]; then
+    echo "${label}: $rel ${l} 行 > 上限 ${maxl}（先迁移再精简）"; gate_bad "$mode"
+  fi
+  if [ "$b" -gt "$maxb" ]; then
+    echo "${label}: $rel ${b} 字节 > 上限 ${maxb}（先迁移再精简）"; gate_bad "$mode"
+  fi
+}
+entry_gate() { # root mode
+  local root="$1" mode="${2:-fail}" m c f
+  if [ ! -f "$root/AGENTS.md" ]; then echo "ENTRY-DUP-MISSING: AGENTS.md"; gate_bad "$mode"; return 0; fi
+  m=$(grep -cF "$ROUTE_MARKER" "$root/AGENTS.md" 2>/dev/null || true)
+  if [ "$m" != "1" ]; then echo "ENTRY-DUP: AGENTS.md 标记「${ROUTE_MARKER}」出现 ${m} 次（应为 1）"; gate_bad "$mode"; fi
+  for f in $ROUTE_FILES; do
+    # 提示词在母版是 docs/prompts/、在项目/包里是根级裸名 ⇒ 两种布局都认
+    if [ "$f" = "docs/prompts/编排者提示词.md" ] && [ ! -f "$root/$f" ] && [ -f "$root/编排者提示词.md" ]; then f="编排者提示词.md"; fi
+    if [ ! -f "$root/$f" ]; then echo "ENTRY-DUP-MISSING: $f"; gate_bad "$mode"; continue; fi
+    c=$(grep -Ec "$LEGACY_RE" "$root/$f" 2>/dev/null || true)
+    if [ "${c:-0}" != "0" ]; then echo "ENTRY-LEGACY: $f 仍有旧读盘顺序表述 ${c} 行（唯一真源应为 AGENTS.md 入口路由）"; gate_bad "$mode"; fi
+  done
+}
+self_test_size() { # dir：对给定目录跑一遍与母版相同的体积闸/入口闸
+  local d="$1"
+  gate_rc=0
+  size_one "$d" "HANDOFF-SIZE" "docs/handoff/HANDOFF.md" "$HANDOFF_MAX_LINES" "$HANDOFF_MAX_BYTES" fail
+  size_one "$d" "LESSONS-SIZE" "经验一句话.md" - "$LESSONS_MAX_BYTES" fail
+  size_one "$d" "FACTS-SIZE" "docs/architecture-facts.md" "$FACTS_MAX_LINES" "$FACTS_MAX_BYTES" fail
+  size_one "$d" "RISKS-SIZE" "docs/risks.md" "$RISKS_MAX_LINES" "$RISKS_MAX_BYTES" fail
+  size_one "$d" "PITFALL-SIZE" "agent.md" "$PITFALL_MAX_LINES" "$PITFALL_MAX_BYTES" fail
+  entry_gate "$d" fail
+  return "$gate_rc"
+}
+if [ "${1:-}" = "--self-test-size" ]; then
+  self_test_size "${2:-.}"
+  exit $?
+fi
 fail=0
 # 布局裸名归一化：把母版侧的 docs/prompts/xxx 归一成包内裸名 xxx，之后逐字节比对
 norm_md() { sed 's#docs/prompts/编排者提示词#编排者提示词#g; s#docs/prompts/Orca 编排治理监督者提示词#Orca 编排治理监督者提示词#g; s#docs/prompts/Orca 通用编排者持续推进协议#Orca 通用编排者持续推进协议#g; s#docs/prompts/迁移整理提示词#迁移整理提示词#g; s#docs/templates/归位表.template#归位表.template#g' "$1"; }
@@ -19,6 +79,29 @@ check_norm() { # 母版含 docs/prompts/ 裸名引用、需归一化后比对的
 check() { # $1=母版文件 $2=包文件
   if ! diff -q "$1" "$2" >/dev/null 2>&1; then echo "DIFF: $1 vs $2"; fail=1; fi
 }
+# AGENTS.md 体积闸（2026-10-22 新增）：
+# 背景：AGENTS.md 会被**每个会话自动加载**（客户端把它当系统规则读）。2026-10-22 实测
+# 母版 AGENTS.md 3.3 万字 ≈ 2 万 tokens —— 治理细则把干活的上下文挤掉了。
+# 处置：AGENTS.md 只留「红线 + 索引」（现 6 千字），细则下沉到 docs/sop/governance-*.md。
+# 体积回涨 ⇒ 细则又被塞回总纲 ⇒ 直接判失败，防止旧问题复发。
+AGENTS_MAX_CHARS=12000
+agents_chars=$(wc -m < AGENTS.md | tr -d ' ')
+if [ "$agents_chars" -gt "$AGENTS_MAX_CHARS" ]; then
+  echo "AGENTS-SIZE: ${agents_chars} 字 > 上限 ${AGENTS_MAX_CHARS}（细则请下沉到 docs/sop/governance-*.md，勿塞回总纲）"; fail=1
+fi
+echo "AGENTS-SIZE: ${agents_chars} 字（上限 ${AGENTS_MAX_CHARS}）"
+# 常驻位体积闸 + 入口路由唯一性（2026-10-27）
+gate_rc=0
+size_one "." "HANDOFF-SIZE-LINES" "docs/handoff/HANDOFF.md" "$HANDOFF_MAX_LINES" "$HANDOFF_MAX_BYTES" fail
+size_one "." "LESSONS-SIZE" "经验一句话.md" - "$LESSONS_MAX_BYTES" fail
+size_one "." "FACTS-SIZE" "docs/architecture-facts.md" "$FACTS_MAX_LINES" "$FACTS_MAX_BYTES" fail
+size_one "." "RISKS-SIZE" "docs/risks.md" "$RISKS_MAX_LINES" "$RISKS_MAX_BYTES" fail
+size_one "." "PITFALL-SIZE" "agent.md" "$PITFALL_MAX_LINES" "$PITFALL_MAX_BYTES" fail
+if [ -f "docs/handoff/体系管家-HANDOFF.md" ]; then
+  size_one "." "STEWARD-SIZE" "docs/handoff/体系管家-HANDOFF.md" "$HANDOFF_MAX_LINES" "$HANDOFF_MAX_BYTES" fail
+fi
+entry_gate "." fail
+[ "$gate_rc" = "0" ] || fail=1
 for pkg in "新项目模板包" "老项目迁移模板包"; do
   # AGENTS.md：归一化 docs/prompts/ 裸名后逐字节比对（不接受"只数行数"的白名单）
   norm_a=$(mktemp); norm_md AGENTS.md > "$norm_a"
@@ -27,13 +110,18 @@ for pkg in "新项目模板包" "老项目迁移模板包"; do
   fi
   rm -f "$norm_a"
   check USER_MODEL_OVERRIDE.md "$pkg/USER_MODEL_OVERRIDE.md"
-  for f in docs/roles/*.md docs/sop/*.md docs/assets/*; do check "$f" "$pkg/$f"; done
+  # 2026-10-22：AGENTS 瘦身下沉后，docs/sop/governance-*.md 内含 docs/prompts/ 路径引用，
+  # 包内是裸名 ⇒ 需归一化后比对（与 AGENTS/README 同口径）。docs/assets 是二进制，走逐字节 check。
+  for f in docs/roles/*.md docs/sop/*.md; do check_norm "$f" "$pkg/$f"; done
+  for f in docs/assets/*; do check "$f" "$pkg/$f"; done
   for f in docs/pm/PLAN.template.md docs/pm/PRODUCT_PLAN.template.md \
            docs/plan/后续开发计划.template.md \
            docs/qa/BUGS.template.md docs/qa/产品验收追踪矩阵.template.md \
            docs/review/CODE_REVIEW.template.md \
            docs/review/RESEARCH_REVIEW.template.md docs/review/PRODUCT_BACKLOG.template.md \
            docs/handoff/HANDOFF.template.md docs/handoff/EXT-WORKLOG.template.md \
+           docs/architecture-facts.template.md docs/risks.template.md \
+           docs/history/经验-归档-2026-10-27.md \
            docs/model/TASK-MODEL-LOG.jsonl docs/model/DISPATCH-LOG.jsonl \
            docs/model/TASK-MANAGER-QUALIFICATION.md docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl \
            docs/model/JEV-DECISION-LOG.jsonl \
@@ -49,7 +137,7 @@ for pkg in "新项目模板包" "老项目迁移模板包"; do
   check "scripts/detect-client.sh" "$pkg/scripts/detect-client.sh"
   check "scripts/check-channel-preflight.sh" "$pkg/scripts/check-channel-preflight.sh"  # 2026-10-08 补纳管
   for f in scripts/check-product-review.sh scripts/check-dispatch-output.sh scripts/install-governance-hooks.sh scripts/pre-commit-guard.sh scripts/orca-gitignore.sh \
-           scripts/orca-public-guard.sh scripts/orca-public-ignore.txt scripts/restore-framework.sh \
+           scripts/orca-public-guard.sh scripts/orca-public-ignore.txt scripts/restore-framework.sh scripts/run-gates.sh \
            scripts/migration-status.sh scripts/_inject-agents-block.py; do
     check "$f" "$pkg/$f"   # 2026-10-17：AGENTS/概览硬引用却只在母版 ⇒ 新项目必然 no such file
   done
@@ -59,7 +147,6 @@ for pkg in "新项目模板包" "老项目迁移模板包"; do
   check_norm "docs/prompts/Orca 编排治理监督者提示词.md" "$pkg/Orca 编排治理监督者提示词.md"
   check_norm "docs/prompts/Orca 通用编排者持续推进协议.md" "$pkg/Orca 通用编排者持续推进协议.md"
   check GOVERNANCE_VERSION "$pkg/GOVERNANCE_VERSION"
-  check_norm "CHANGELOG.md" "$pkg/CHANGELOG.md"  # 2026-10-09：变更说明必须随包同步；2026-10-17 改 check_norm（CHANGELOG 正文引用提示词用 docs/prompts/ 路径、包内是裸名，属**布局裸名差**，此前用逐字节 check 恒报 SYNC-FAIL）
   # scripts/orchestration/README.md 同样是布局裸名差，归一化后比对
   norm_o=$(mktemp); norm_md scripts/orchestration/README.md > "$norm_o"
   if ! cmp -s "$norm_o" "$pkg/scripts/orchestration/README.md"; then echo "DIFF: scripts/orchestration/README.md vs $pkg"; diff "$norm_o" "$pkg/scripts/orchestration/README.md" | grep "^[<>]" | head -3; fail=1; fi
@@ -121,13 +208,13 @@ done
 # 维护约定——将来新增/改动影响体系对外表述的机制（Gate、完成口径、账本字段、通道、验收制度等）时，
 # 必须把该机制的对外必现关键词补进下方清单，并同步更新 ORCA治理体系说明.md；否则该机制漏检。
 # 母版 1 次即可（两包一致性已由上方白名单保证）。
-for kw in "产品验收" "关键 AC" "首次发布" "签收" "不问不报" "detect-client" "window_subagent" "channel_cli" "半套最差" "四类红线" "≤10 行" "Task Manager Qualification" "何时起" "CHANNEL-OK" "产品验收追踪矩阵" "产品审查" "APP 基础能力" "app-theme-i18n" "APP-BASELINE" "background-services" "品牌资产" "app-brand-assets" "app-navigation" "底部导航" "NavigationBar" "同一核心页面" "CHANGELOG" "app-ui-layers" "信息分层" "app-simplicity" "产品简化门槛" "DEPENDENCY-MISSING" "DEPENDENCY-STALE" "你是主开发者" "你是唯一开发者"; do
+for kw in "产品验收" "关键 AC" "首次发布" "签收" "不问不报" "detect-client" "window_subagent" "channel_cli" "半套最差" "四类红线" "≤10 行" "Task Manager Qualification" "何时起" "CHANNEL-OK" "产品验收追踪矩阵" "产品审查" "APP 基础能力" "app-theme-i18n" "APP-BASELINE" "background-services" "品牌资产" "app-brand-assets" "app-navigation" "底部导航" "NavigationBar" "同一核心页面" "CHANGELOG" "app-ui-layers" "信息分层" "app-simplicity" "产品简化门槛" "DEPENDENCY-MISSING" "DEPENDENCY-STALE" "你是主开发者" "你是唯一开发者" "体系管家"; do
   grep -q "$kw" ORCA治理体系说明.md || { echo "OVERVIEW-STALE: 概览缺 $kw"; fail=1; }
 done
 # 2026-10-14 体系自查补：上列关键词只覆盖旧机制，本轮新增的账本/证据/跨目录机制
 # **一个都不在清单里** ⇒ 概览漏更新也照样 OVERVIEW-OK 通过（这是个漏卡点）。
 # 措辞用「概览里的原文写法」做锚，避免同义词对不上造成永久误报。
-for kw in "一路推到底" "连续推进" "交付单元" "你是主开发者" "主开发者" "子代理" "执行层" "判定层" "check-dispatch-output" "additive-only" "heartbeat" "心跳" "GOVERNANCE-SCRIPTS" "ROLE-COVERAGE" "LEDGER-XREF" "双阈值" "可并发" "免派工"  "codebuddy" "429" "自动切账号" "elapsed_sec" "model-perf" "ACCEPTED-MISSING" "SIGNOFF-MISSING" "pre-commit" "check-product-review" "编排者自做" "neat-freak"; do
+for kw in "一路推到底" "连续推进" "交付单元" "你是主开发者" "主开发者" "子代理" "执行层" "判定层" "check-dispatch-output" "additive-only" "heartbeat" "心跳" "GOVERNANCE-SCRIPTS" "ROLE-COVERAGE" "LEDGER-XREF" "双阈值" "可并发" "免派工"  "codebuddy" "429" "自动切账号" "elapsed_sec" "model-perf" "ACCEPTED-MISSING" "SIGNOFF-MISSING" "pre-commit" "check-product-review" "编排者自做" "neat-freak" "governance-dispatch" "细则下沉" "入口路由" "HANDOFF-SIZE" "ENTRY-DUP" "architecture-facts" "docs/risks.md" "8192"; do
   grep -q -- "$kw" ORCA治理体系说明.md || { echo "OVERVIEW-STALE: 概览缺 $kw"; fail=1; }
 done
 for kw in "派工逐派不漏记" "supersedes" "有效拦截" "违规分级" "未测不按满分算" "响应速度只认时间戳" "原始输入留存" "--auto" "取消历史豁免" "升级触发机器校验"; do
@@ -154,6 +241,26 @@ for d in "$ACROOT"/*/; do
   fi
 done
 echo "AC-MATRIX: $((ac_total-ac_missing))/$ac_total 有落盘；缺失 $ac_missing"
+# 项目侧常驻位体积巡检（2026-10-27；**只报不阻塞**）
+# 存量项目 HB 可能很大；这里只提示「该迁移了」，判定与处置由各项目自决。
+hb_warn=0
+for d in "$ACROOT"/*/; do
+  [ -d "$d" ] || continue
+  [ -f "$d/docs/model/TASK-MODEL-LOG.jsonl" ] || continue
+  h="$d/docs/handoff/HANDOFF.md"
+  [ -f "$h" ] || continue
+  hl=$(awk 'END{print NR}' "$h"); hb=$(wc -c < "$h" | tr -d ' ')
+  if [ "$hl" -gt "$HANDOFF_MAX_LINES" ] || [ "$hb" -gt "$HANDOFF_MAX_BYTES" ]; then
+    echo "HANDOFF-SIZE-WARN: $d ${hl} 行 / ${hb} 字节（建议 ≤${HANDOFF_MAX_LINES} 行 / ≤${HANDOFF_MAX_BYTES} 字节，先迁移再精简）"
+    hb_warn=$((hb_warn+1))
+  fi
+  ls="$d/经验一句话.md"
+  if [ -f "$ls" ]; then
+    lb=$(wc -c < "$ls" | tr -d ' ')
+    if [ "$lb" -gt "$LESSONS_MAX_BYTES" ]; then echo "LESSONS-SIZE-WARN: $d ${lb} 字节（建议 ≤${LESSONS_MAX_BYTES}，先归档再精简）"; hb_warn=$((hb_warn+1)); fi
+  fi
+done
+echo "HANDOFF-SIZE-WARN 计数: ${hb_warn}（只报，不影响 SYNC 主结论）"
 
 # 角色覆盖巡检（2026-10-17 G11 补；**只报不阻塞**）：
 # 背景：schema 对 11 个角色全开放，但**没有任何门保证都真被记** —— db-admin 至今零记录，

@@ -4,7 +4,7 @@
 
 > 模板名冻结，版本真相以本仓库 Git 提交历史为准（版本标记文件仅为指针）。
 
-开工读盘顺序（全体系唯一）：`AGENTS.md` → `docs/roles/`（本次角色卡）→ 根 `USER_MODEL_OVERRIDE.md`（模型表，有就用它）→ `docs/handoff/`（交接现状）→ 根 `经验一句话.md` → 任务目标放最后。
+入口与开工路由唯一真源：`AGENTS.md` 顶部「入口路由（全体系唯一）」。按该处判定执行方式与按需加读，本文件不重复。
 
 ## 一图看懂（体系全景）
 
@@ -75,7 +75,8 @@ node <项目目录>/scripts/model/check-ledger.mjs                       # 期�
 **非空目录的「规则层」清单**（只覆盖这几份，其余一律不碰）：
 **权威清单以 `scripts/_sync-packages.py` 的 `PAIRS`＋`DIRS`＋`EXTRA` 为单一真源**，下表只是人读副本（2026-10-17 G6 补齐，此前漏了 AGENTS/概览硬引用的脚本）：
 `AGENTS.md`｜`USER_MODEL_OVERRIDE.md`｜`ORCA治理体系说明.md`｜`经验一句话.md`｜
-`scripts/model/check-ledger.mjs`｜`scripts/model/model-perf.mjs`｜`scripts/detect-client.sh`｜`scripts/check-sync.sh`｜`scripts/check-channel-preflight.sh`｜
+`scripts/model/check-ledger.mjs`｜`scripts/model/model-perf.mjs`｜`scripts/detect-client.sh`｜`scripts/check-channel-preflight.sh`｜
+（**母版独占、不下发**：`scripts/check-sync.sh`、`scripts/_sync-packages.py`、`scripts/sync-old-projects.sh`——包里没有这些文件，别按清单去项目里找）｜
 **AGENTS 与概览硬引用、漏了会 `no such file` 的**：`scripts/pre-commit-guard.sh`｜`scripts/check-product-review.sh`｜`scripts/check-dispatch-output.sh`（通用零产出守卫）｜`scripts/install-governance-hooks.sh`（把账本门真正装进项目仓的 hook）｜`scripts/codebuddy-auto.sh`＋`_cb-rotate.py`/`_cb-active.py`/`_cb-count.py`｜`scripts/orca-gitignore.sh`｜`scripts/orca-public-guard.sh`＋`orca-public-ignore.txt`｜`scripts/restore-framework.sh`｜`scripts/migration-status.sh`｜`scripts/_inject-agents-block.py`
 ＋ **补新增**（不存在才放，已存在不覆盖）：`docs/qa/产品验收追踪矩阵.template.md`｜`docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`｜`docs/model/JEV-DECISION-LOG.jsonl`
 
@@ -154,9 +155,9 @@ bash "<母版路径>/scripts/restore-framework.sh" <项目根>
 
 > 本节只说明**如何使用现有规范**，各规范正文一律在 `docs/sop/` 与 `docs/roles/`，不在此复述。多智能体是默认，两种方式**共用同一套规范与模板包**，本体系不存在「主开发者专属 SOP／模板包」。
 
-## 用户只需记住三个口令
+## 用户只需记住三个主口令（另有「第三阶段产品审查」「一路推到底」两个补充口令）
 
-- `第一阶段，计划`：进 Phase1（PLAN），Planner＋Research Reviewer 出 PRODUCT_PLAN，≥90 且模板 Gate 全条件满足（P0=0＋blocking P1=0＋事实/假设验证）才找你。
+- `第一阶段，计划`：进 Phase1（PLAN），builder 拟制 PRODUCT_PLAN、planner 只核 Readiness（不改正文），≥90 且模板 Gate 全条件满足（P0=0＋blocking P1=0＋事实/假设验证）才找你。
 - `第二阶段，开发`：Human Gate 批准后进 Phase2（DEVELOP，锁定 DEV_BASELINE），默认主链开发（模型以override表为准）。
 - `变更请求：……`：开发中反馈统一入口，TM 按 A（小改留 DEVELOP）/ B（局部功能改留 DEVELOP 不召 Sol）/ C（产品架构变 Controlled Reopen）分类。
 
@@ -172,9 +173,9 @@ bash "<母版路径>/scripts/restore-framework.sh" <项目根>
 - `ORCA治理体系说明.md`：**对外概览**（体系更新四件套第 2 步必须同步它）
 - `USER_MODEL_OVERRIDE.md`：模型表（角色/模型/执行通道/调用方式，**唯一口径**，改表即生效，精确ID照抄执行）
 - `GOVERNANCE_VERSION`：版本指针文件（内容：以Git历史为准）
-- `CHANGELOG.md`：**变更说明正典**——每次改动并 push 必须在此追加一条（改了什么/为什么/影响谁/怎么验）；只写 commit message 或 HANDOFF 章节不算交差
+- `CHANGELOG.md`：**母版的变更说明正典**——每次改动母版并 push 必须在此追加一条（改了什么/为什么/影响谁/怎么验）；只写 commit message 或 HANDOFF 章节不算交差。**2026-10-22 起不随包分发**：它记录的是母版自己的变更史，对项目无意义（134 KB），项目根不该躺这份
 - `经验一句话.md`：收工一句经验（只追加）
-- `agent.md`：**审查交付约定**（审查者须一次性交付完整结论，不分批问；**临时材料，随交接更新，不受 check-sync 门禁**）。接续开工快照在 `temp/agent.md`，两者不是同一份
+- `agent.md`：**项目踩坑与审查交付约定**（审查者须一次性交付完整结论，不分批问；踩过一条记一条）。受 `check-sync` 的 `PITFALL-SIZE` 上限约束（200 行 / 12,288 字节）
 
 **脚本（`scripts/`）**
 - `detect-client.sh`：自动认当前客户端并选派工口（`window_subagent`／`channel_cli`）；每轮开工先跑它
@@ -183,6 +184,7 @@ bash "<母版路径>/scripts/restore-framework.sh" <项目根>
 - `model/check-ledger.mjs`：**两本**账校验（`TASK-MODEL-LOG`／`DISPATCH-LOG`；`TASK-MANAGER-QUALIFICATION-EVENTS` 由 `tm-qualification.mjs` 校验）；另含 **APP 基线硬门**（`APP-BASELINE-MISSING`／`APP-CRITICAL-AC-EMPTY`／`APP-CRITICAL-AC-INCOMPLETE`，2026-10-08 起为 FAIL 不再是 WARN）。母版/分发包自检用 `--allow-example`（**真实项目禁用**，否则等于放过「示例行未删」）
 - `decision/orca-decide.mjs`：决策侧车；`orchestration/`：L3 watchdog（仅外部/终端编排时部署）
 - `check-sync.sh`：母版↔两包一致性门禁（归一化裸名后逐字节比对），须 `SYNC-OK`
+- `run-gates.sh`：**一键体检**——`check-sync`＋`check-channel-preflight`＋账本＋11 项回归一次跑完，最后一行 `GATES-OK` 或 `GATES-FAIL`。改完体系文件先跑它，别靠记忆逐条敲
 - `orca-gitignore.sh` ＋ `orca-public-ignore.txt` ＋ `restore-framework.sh`：**公开仓不带 ORCA** 三件套（注入忽略块＋摘除已跟踪 ORCA / 忽略清单单一真源 / clone 回来补回框架）。仅作品对外公开时用，详见上方「公开仓怎么不带 ORCA」
 - `orca-public-guard.sh`：**自动**按可见性补齐——扫全部项目，公开仓缺忽略块就自动注入并摘除，私有仓跳过；开工跑一次即可，无需逐仓交代
 
@@ -192,12 +194,12 @@ bash "<母版路径>/scripts/restore-framework.sh" <项目根>
 ## docs/ 地图
 
 - `roles/`：11张角色卡（只看本次派的角色）
-- `prompts/`：编排者/外部开发者/迁移整理三份提示词（迁移整理含自举取包＋冲突处理，可当老项目唯一入口）＋《Orca 通用编排者持续推进协议》（防停摆三层监督收编版；其动态角色论与十卡制冲突，不采用）＋《Orca 编排治理监督者提示词》（总监督wake-only收编版，平时只喊编排者）
+- `prompts/`：编排者/外部开发者/迁移整理三份提示词（迁移整理含自举取包＋冲突处理，可当老项目唯一入口）＋《Orca 通用编排者持续推进协议》（防停摆三层监督收编版；其动态角色论与 11 卡制冲突，不采用）＋《Orca 编排治理监督者提示词》（总监督wake-only收编版，平时只喊编排者）
 - `history/`：重塑说明、更新说明、ORCA 模型与双阶段治理整改方案（历史，看现行先看根）
 - `templates/`：归位表模板
 - `pm/` `plan/` `qa/` `review/`：计划/测试/评审落盘（各照 template）。`pm/` 是**本轮**计划（Phase1 产品计划、Phase2 Stage/Task），`plan/` 是**后续开发计划**（V2/V3 路线图，版本序列/排序/取舍/暂不排期候选），两者分开不混
 - `handoff/`：交接（含模板）；`model/`：模型账本（TASK 首个真实任务前、DISPATCH 首个真实派工前删示例行）＋ TM 资格测试（`TASK-MANAGER-QUALIFICATION.md` 规范/报告、`TASK-MANAGER-QUALIFICATION-EVENTS.jsonl` 事件，评分 `scripts/model/tm-qualification.mjs`）
-- `sop/`：基础设施规范（docker.md、supabase.md、sqlite.md、android.md、android-machine-profile.md、webqa.md、decision-router.md、**app-theme-i18n.md**（APP 基础能力：主题三态＋中英双语）、**app-brand-assets.md**（APP 品牌资产：中文名／英文名／安卓图标／启动画面，面向用户 APP 默认继承）、**background-services.md**，去版本号引用），新项目自建
+- `sop/`（治理细则：`governance-scope.md`／`governance-execution-modes.md`／`governance-dispatch.md`／`governance-ledger.md`）：基础设施规范（docker.md、supabase.md、sqlite.md、android.md、android-machine-profile.md、webqa.md、decision-router.md、**app-theme-i18n.md**（APP 基础能力：主题三态＋中英双语）、**app-brand-assets.md**（APP 品牌资产：中文名／英文名／安卓图标／启动画面，面向用户 APP 默认继承）、**background-services.md**、**app-navigation.md**、**app-ui-layers.md**、**app-simplicity.md**，去版本号引用），**随包分发**
 - `scripts/decision/`：Decision Sidecar orca-decide（用法见其 README 与 docs/sop/decision-router.md）
 
 ## 已删除（用户令，结论均已落实）

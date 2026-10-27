@@ -40,6 +40,11 @@
 # ── TM 资格测试规范（通用；各项目自己的 docs/model/*.jsonl 账本不在此列，保留）──
 /docs/model/TASK-MANAGER-QUALIFICATION.md
 
+# ── 根级 docs/ 常驻模板与归档（2026-10-27；实例文件保留，只隐通用件）──
+# architecture-facts.md 与 risks.md 是**项目自己的记录**，必须留在公开仓做备份，不在此列。
+/docs/*.template.md
+/docs/history/经验-归档-2026-10-27.md
+
 # ── 各目录下的 .template.md 模板（通用；同目录实例文档保留）──
 /docs/pm/*.template.md
 /docs/plan/*.template.md

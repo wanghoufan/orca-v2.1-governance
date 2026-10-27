@@ -82,13 +82,16 @@ docs/review/PRODUCT_BACKLOG.template.md
 docs/review/RESEARCH_REVIEW.template.md
 docs/handoff/HANDOFF.template.md
 docs/handoff/EXT-WORKLOG.template.md
+docs/architecture-facts.template.md
+docs/risks.template.md
+docs/agent.template.md
 scripts/model/check-ledger.mjs
 scripts/codebuddy-auto.sh
 scripts/check-product-review.sh
 scripts/check-dispatch-output.sh
 scripts/install-governance-hooks.sh
+# scripts/check-sync.sh 是母版独占（两包不带它）；列进来只会被静默跳过，故移除。
 scripts/pre-commit-guard.sh
-scripts/check-sync.sh
 scripts/migration-status.sh
 scripts/orca-gitignore.sh
 scripts/orca-public-guard.sh

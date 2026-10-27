@@ -2,6 +2,9 @@
 
 > 一页纸讲清：这套体系是什么、怎么运转、模型怎么分工、规范都在哪。
 > 本文件是概览，不能替代真相源做合规审计（完整 Gate、精确派工、验证证据以 AGENTS.md、分工表、HANDOFF 为准）。版本真相以 Git 历史为准。
+>
+> **结构（2026-10-22）**：`AGENTS.md` 已瘦身为**一页红线与索引**（3.3 万字 → 6 千字），细则下沉到 `docs/sop/governance-scope.md`／`governance-execution-modes.md`／`governance-dispatch.md`／`governance-ledger.md`（按需读，不自动进上下文）。**规则一条没少，只是换了位置。**
+> **入口路由（2026-10-27）**：`AGENTS.md` 顶部是唯一入口路由——先判执行方式（主开发者／多智能体），再按触发条件加读，**不再全量读规则**。常驻位各设体积上限并由 `check-sync.sh` 机器卡（超限报 `HANDOFF-SIZE`／`LESSONS-SIZE`／`FACTS-SIZE`／`RISKS-SIZE`／`PITFALL-SIZE`；`agent.md` 上限 200 行／12,288 字节）：`HANDOFF.md` ≤100 行／≤8192 字节、`经验一句话.md` ≤8192 字节，架构事实与风险分居 `docs/architecture-facts.md`、`docs/risks.md`，踩坑进 `agent.md`；旧顺序表述出现即报 `ENTRY-DUP`，入口标记必须唯一。项目侧同类超限只报 WARN，不阻塞。
 
 ## 一、体系是什么
 
@@ -31,6 +34,8 @@ Human Gate 必须用户亲口放行；模型怎么切，用户说了算，任何
 **执行方式与治理强度分开判断**：减的是管理成本（不造派工记录、不逐个模拟角色、普通局部修改不重走完整规划、计划批准后可连续开发→自审→测试→修复），**不是质量成本**——产品简化、APP 基础能力（主题／中英双语／品牌资产／导航／信息分层）、安全、隐私、异常恢复、数据正确性、真机验收、首次发布用户签收、产品验收追踪矩阵**一条不减**；QA 必须真实运行应用并操作关键功能，没有实际验证不得直接标 `PASS`。
 
 按阶段该读哪些规范见根 `README.md`「主开发者开发使用说明」。**触发口令`你是主开发者`写在 `AGENTS.md` 两种执行方式节首条**，规则与角色卡一致，用户不需另找入口。**两种方式共用同一套规范与模板包，体系内不存在主开发者专属 SOP／角色／Gate／模板包。**
+
+**体系管家（2026-10-27 用户定，原名「治理管家」）**：用户说 **`你是体系管家`** 时，智能体接管**整套 ORCA 治理体系**的内容管理与修改——`AGENTS.md`、`docs/sop/`、`docs/roles/`、`scripts/`、模板、两包同步、本概览与体系专线 HANDOFF（`docs/handoff/体系管家-HANDOFF.md`）都由它更新，不派治理角色链。它**不是第三种执行方式**：项目内的开发、验收、Gate 与红线照旧；红线仍禁止 commit／push、批量铺包、改质量门判定与账本 schema。
 
 ## 三、运转流程
 
@@ -109,18 +114,18 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 ## 七、Task Manager Qualification｜Task Manager 资格测试（增量，2026-09-26）
 
 把 TM（编排者）正式纳入模型资格测试；**不新增第 12 角色**，不重做两阶段治理。
-- **Phase1 拟稿分工（2026-10-08 用户定）**：**plan 正文由 builder（`codebuddy/deepseek-v4.1-flash`）拟制与修改，planner（`codex/gpt-6.1-sol`）改为把关者/审查者**——对照 Readiness 清单逐项核、给分、一次列全缺项，**不合格打回 builder 改稿，planner 不亲手写**。目的是把反复重写 plan 的 Sol 调用降下来（省额度）。builder 在 Phase1 **仅开 plan 正文一个口子**，禁碰业务代码；禁自行提分或改 `PLAN_GATE`。
+- **Phase1 拟稿分工（2026-10-08 用户定）**：**plan 正文由 builder（`codebuddy/deepseek-v4.1-flash`）拟制与修改，planner（`codex/gpt-6.1-terra`）改为把关者/审查者**——对照 Readiness 清单逐项核、给分、一次列全缺项，**不合格打回 builder 改稿，planner 不亲手写**。目的是把反复重写 plan 的 planner 调用降下来（省额度）。builder 在 Phase1 **仅开 plan 正文一个口子**，禁碰业务代码；禁自行提分或改 `PLAN_GATE`。
 - 最小评价单位＝**Orchestration Episode**（TM 接有效状态→判下一步→派对 Worker→收结果→推进到下一合法态；聊天轮数不计）。
 - 监督：supervisor 兼 **Task Manager Observer**（只标记异常、按现有机制提醒/唤醒/替喊一次；不评分/不接管/不改表/不跨 Gate）；评分汇总由 **Governance Steward**（治理管理层，非 9+1+1 角色，周期审计）做，只出主备**建议**；**主备由用户最终决定**，Steward 不自动改表。
 - 五维评分 100：派工/下一步 30＋持续推进 25＋治理遵守 20＋响应 15＋资源 10；响应阈值据 watchdog（`CONSUME_STALE_SEC=300`/`COOLDOWN_SEC=900`）分 NORMAL/SLOW/STALL；`infra_error` 不计入能力分。
 - Gate：`Score≥90 且 P0 治理违规=0 且 Human Gate 违规=0 → QUALIFIED`；**采样门槛**（有效 Episode <30 或项目 <3 保持 CANDIDATE，不得凭少量样本判通过）。
-- **产品审查链（2026-10-07 用户定）**：口令「第三阶段产品审查」触发（**「第三阶段」仅为口令字面，不代表新增 Phase**），位置在 Phase1 末尾、Develop Approval Gate 之前，**不新增角色/Phase/Gate**。planner（`codex/gpt-6.1-sol`）任组织者并冻结 Plan 版本→**可并发**派两份互不可见的独立审查（2026-10-07 曾因 codebuddy 双实例并发互相干扰、失败是静默 exit 0 而要求串行；**2026-10-17 改为可并发＋产出非空校验兜底，零产出则该通道退回串行**；planner 已带 `-s danger-full-access` 可直接写盘（解禁失效时才退回 stdout））（`product-reviewer` × `codebuddy/glm-5.3-flash` 与 `codebuddy/deepseek-v4-pro`，只读）→交回 planner 参考/比较/汇总/裁决→产出 `docs/review/PRODUCT_REVIEW_<plan版本>_<日期>.md`（一致项／分歧＋裁决／仅A／仅B／体验改进／交互顺序／功能候选／**明确不采纳项**）→用户 Human Gate → 说「第二阶段，开发」才进 DEVELOP。审查维度限**用户使用体验／交互逻辑与流程顺序／新增或优化功能**，非代码层面；代码类意见判 `WRONG_ROUTE`。
-- **APP 基础能力前置（2026-10-08 用户定）**：面向用户的 APP **自动继承**主题三态（`LIGHT`/`DARK`/`SYSTEM`，默认 SYSTEM）＋初始中英双语（默认跟随系统，不支持语言回退 `zh-CN`）＋设置持久化＋切换不丢状态；单一真源 `docs/sop/app-theme-i18n.md`。用户不提也会在 Product Plan／三方向／原型／SDD／QA 全链覆盖；**只有用户对某项目明确提特殊要求才允许在 Plan 记覆盖**，Planner/Builder 不得自行取消。沉浸式页面禁擅自强制另一态；可扩展架构（加 ru/ko/th 只增资源不重写核心）是硬性 AC；优先复用官方成熟主题与 i18n 组件。**`-s danger-full-access` 解禁口径以 `AGENTS.md` 为准**（2026-10-07 用户令已放宽到 QA＋planner＋senior-expert，模型表行内旧「仅限 QA」表述以此为准）。**Episode 记账三条**（AGENTS「Task Manager Qualification」节）：①编排者每轮收工必自记一行，构成 Episode 才记，**非 Episode 不记、禁凑数硬记**；②写后必跑 `tm-qualification.mjs` 校验，**不得改写历史行**；③**母版与两包账本只留 `_example` 空壳**，真实 Episode 落各项目自己账本。**APP 主题/多语言与品牌资产的机器门差异**：两者的**阶段级拦截都依赖七颗 Design Pipeline Skill**（不随本模板包分发）；只用本模板包时机器强制点仅 `PRODUCT_PLAN` 声明字段＋`check-ledger` 的 APP/品牌各码，装了七颗 Skill 才额外有各阶段 `BLOCKED`。**APP 品牌资产同样前置必选**（单一真源 `docs/sop/app-brand-assets.md`）：中文名／英文名／安卓图标／启动画面——Product Plan 写方向 → A/B/C 每方向附四类候选 → 原型须体现启动页与命名/图标候选 → **Human 2/Design Freeze 前拍板最终四项**；**未拍板开发阶段不得自行决定**（`check-ledger` 报 `APP-BRAND-ASSETS-MISSING`，Freeze 无 BRAND Freeze 即不成立）。**不新增 Skill/角色/状态/Human Gate**，强制点落在既有 Gate。
+- **产品审查链（2026-10-07 用户定）**：口令「第三阶段产品审查」触发（**「第三阶段」仅为口令字面，不代表新增 Phase**），位置在 Phase1 末尾、Develop Approval Gate 之前，**不新增角色/Phase/Gate**。planner（`codex/gpt-6.1-terra`）任组织者并冻结 Plan 版本→**可并发**派两份互不可见的独立审查（2026-10-07 曾因 codebuddy 双实例并发互相干扰、失败是静默 exit 0 而要求串行；**2026-10-17 改为可并发＋产出非空校验兜底，零产出则该通道退回串行**；planner 已带 `-s danger-full-access` 可直接写盘（解禁失效时才退回 stdout））（`product-reviewer` × `codebuddy/glm-5.3-flash` 与 `codebuddy/deepseek-v4-pro`，只读）→交回 planner 参考/比较/汇总/裁决→产出 `docs/review/PRODUCT_REVIEW_<plan版本>_<日期>.md`（一致项／分歧＋裁决／仅A／仅B／体验改进／交互顺序／功能候选／**明确不采纳项**）→用户 Human Gate → 说「第二阶段，开发」才进 DEVELOP。审查维度限**用户使用体验／交互逻辑与流程顺序／新增或优化功能**，非代码层面；代码类意见判 `WRONG_ROUTE`。
+- **APP 基础能力前置（2026-10-08 用户定）**：面向用户的 APP **自动继承**主题三态（`LIGHT`/`DARK`/`SYSTEM`，默认 SYSTEM）＋初始中英双语（默认跟随系统，不支持语言回退 `zh-CN`）＋设置持久化＋切换不丢状态；单一真源 `docs/sop/app-theme-i18n.md`。用户不提也会在 Product Plan／三方向／原型／SDD／QA 全链覆盖；**只有用户对某项目明确提特殊要求才允许在 Plan 记覆盖**，Planner/Builder 不得自行取消。沉浸式页面禁擅自强制另一态；可扩展架构（加 ru/ko/th 只增资源不重写核心）是硬性 AC；优先复用官方成熟主题与 i18n 组件。**`-s danger-full-access` 解禁口径以 `AGENTS.md` 为准**（2026-10-07 用户令已放宽到 QA＋planner＋senior-expert，模型表行内旧「仅限 QA」表述以此为准）。**Episode 记账三条**（`docs/sop/governance-ledger.md`，原 AGENTS「Task Manager Qualification」节）：①编排者每轮收工必自记一行，构成 Episode 才记，**非 Episode 不记、禁凑数硬记**；②写后必跑 `tm-qualification.mjs` 校验，**不得改写历史行**；③**母版与两包账本只留 `_example` 空壳**，真实 Episode 落各项目自己账本。**APP 主题/多语言与品牌资产的机器门差异**：两者的**阶段级拦截都依赖七颗 Design Pipeline Skill**（不随本模板包分发）；只用本模板包时机器强制点仅 `PRODUCT_PLAN` 声明字段＋`check-ledger` 的 APP/品牌各码，装了七颗 Skill 才额外有各阶段 `BLOCKED`。**APP 品牌资产同样前置必选**（单一真源 `docs/sop/app-brand-assets.md`）：中文名／英文名／安卓图标／启动画面——Product Plan 写方向 → A/B/C 每方向附四类候选 → 原型须体现启动页与命名/图标候选 → **Human 2/Design Freeze 前拍板最终四项**；**未拍板开发阶段不得自行决定**（`check-ledger` 报 `APP-BRAND-ASSETS-MISSING`，Freeze 无 BRAND Freeze 即不成立）。**不新增 Skill/角色/状态/Human Gate**，强制点落在既有 Gate。
 - 证据（**不改现有账本 schema**）：事件日志 `docs/model/TASK-MANAGER-QUALIFICATION-EVENTS.jsonl`；评分 `scripts/model/tm-qualification.mjs`；测试 `scripts/model/tm-qualification.test.mjs`；规范 `docs/model/TASK-MANAGER-QUALIFICATION.md`。
 - **Episode 记账（2026-10-07 定）**：编排者**每轮收工必自记一行**，一 Episode 一行；非 Episode 的轮次不记也不硬凑。写后必跑 `scripts/model/tm-qualification.mjs` 校验；无计时证据的 `decision_latency_ms` 填 `null` 不许编；历史行不得改写。**母版与两包的 `docs/model/*.jsonl` 永远只留 `_example` 空壳**（母版是分发源，写真实行会致 check-sync `SYNC-FAIL`），真实 Episode 记到各项目自己的账本。**supervisor 抽查对账**（拿 DISPATCH-LOG 真实派工逐条核是否漏记，漏记/对不上打回，补记由编排者执行）。Episode 层证据不替代 DISPATCH-LOG/TASK-MODEL-LOG 派工账。
 - 候选（真调已过）：`opencode-go/deepseek-v4.1-flash`、`opencode-go/mimo-v2.6-flash`（Runtime=opencode）；真实多项目 A/B 数据由用户后续在真实项目跑。
 
-## 七之三、2026-10-16／17 新增机制（五件，都是「把文字变成机器」）
+## 七之二、2026-10-16／17 新增机制（五件，都是「把文字变成机器」）
 
 - **连续推进模式（一路推到底）**：用户说`一路推到底`／「不要中途找我」＝对**当次目标**的连续推进授权，
   PLAN 完成后自动进 DEVELOP、产品审查后自动继续、复核环间不问、收工只报一次。
@@ -167,7 +172,7 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
   属**负载敏感的偶发失败**，每咬一次白烧一轮复核。口径＝**双阈值（比值＋绝对耗时）** 或
   **连跑 3 次取中位数**；未实测稳定性的耗时断言不得当门禁。
 
-## 七之二、账本与证据的现役机制（2026-10-14 体系自查后补齐）
+## 七之三、账本与证据的现役机制（2026-10-14 体系自查后补齐）
 
 概览此前滞后于本轮改造，以下为**现役口径**（细节见 `docs/model/TASK-MANAGER-QUALIFICATION.md` 与 `AGENTS.md`）：
 
@@ -187,11 +192,15 @@ codex 派工带 `-s danger-full-access` 关闭沙箱（历史“沙箱禁端口/
 ## 八、规范在哪
 
 | 规范 | 位置 | 说明 |
-| 变更说明 | `CHANGELOG.md` | **变更说明正典**——每次改动并 push 必在顶部追加一条（改了什么／为什么改／影响谁／怎么验）；只写 commit message 或 HANDOFF 章节不算交差；随 `PAIRS` 分发到两包，`check-sync.sh` 纳管漂移 |
 |---|---|---|
-| 总纲 | `AGENTS.md` | 两阶段、派工顺序、升级、账本、红线（全员遵守一页） |
-| 产品验收 | `docs/qa/BUGS.template.md`（产品验收追踪矩阵节）＋`docs/roles/qa.md`（第八查/不可放行情形/视觉验收最小覆盖）＋`docs/pm/PRODUCT_PLAN.template.md`（验收标准与关键 AC 集合） | 用户可见要求的验收标准写在计划，证据落矩阵，QA 与 Supervisor 同源判放行 |
-| 模型分工真相源 | `USER_MODEL_OVERRIDE.md` | 11 行精确ID；改表必真调；现势以本表内容为准（历史快照在 `temp/`，回退由用户口头指定编号、按改表规则执行） |
+| 变更说明 | `CHANGELOG.md` | **变更说明正典**——每次改动并 push 必在顶部追加一条（改了什么／为什么改／影响谁／怎么验）；只写 commit message 或 HANDOFF 章节不算交差；**母版独占，不随包分发** |
+| 总纲 | `AGENTS.md` | **一页红线与索引**（红线／何时起／执行方式／阶段派工／角色写哪／账本口径／汇报纪律／细则索引） |
+| 细则（按需读） | `docs/sop/governance-scope.md` | 何时走体系＋APP 默认继承＋铺包铁律 |
+| 细则（按需读） | `docs/sop/governance-execution-modes.md` | 两种执行方式（含「你是主开发者」口令、连续推进、子代理模型口径） |
+| 细则（按需读） | `docs/sop/governance-dispatch.md` | 两阶段治理／Phase-aware 派工链／升级规则 |
+| 细则（按需读） | `docs/sop/governance-ledger.md` | 两本账 schema／chain_status／Episode 记账／TM 资格测试 |
+| 产品验收 | `docs/qa/产品验收追踪矩阵.md`（AC 级结论唯一落盘位；`BUGS.template.md` 只记操作过程证据）＋`docs/roles/qa.md`（第八查/不可放行情形/视觉验收最小覆盖）＋`docs/pm/PRODUCT_PLAN.template.md`（验收标准与关键 AC 集合） | 用户可见要求的验收标准写在计划，证据落矩阵，QA 与 Supervisor 同源判放行 |
+| 模型分工真相源 | `USER_MODEL_OVERRIDE.md` | 11 行（其中 experience-recorder／neat-freak 已改编排者自做，ID 列填「—」，实际可派 9 行）；改表必真调；现势以本表内容为准（历史快照在 `temp/`，回退由用户口头指定编号、按改表规则执行） |
 | 角色卡×11 | `docs/roles/` | 每角色职责＋写入位置；适用角色附输出模板 |
 | 开工提示词 | `编排者提示词.md` | 一句话开工全文 |
 | 基础设施规范 | `docs/sop/` | docker/supabase/sqlite/android（＋android-machine-profile）/webqa/decision-router/**app-theme-i18n（APP 主题三态＋中英双语基线）**/**app-brand-assets（APP 品牌资产：中文名／英文名／图标／启动画面）**/background-services（去版本号引用） |
