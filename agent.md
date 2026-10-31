@@ -36,3 +36,6 @@
 | 目录级 `copy_if_missing` 补不回单文件 | 判断粒度是整目录，目录在就跳过；恢复脚本必须逐文件枚举 |
 | `restore-framework.sh` 默认源是自身 | 被拷进项目后 `SRC` 指向项目根，跨仓补缺必须显式 `--source <母版根>` |
 | 统计字节别用「条数×平均」 | 经验条目长短差很大，必须逐条累计实测 |
+| 预演也可能删文件 | `sync-old-projects.sh --dry-run` 曾把项目 `USER_MODEL_OVERRIDE.md` 真删（`mv`/`rm` 写在 `DRY_RUN` 守卫外）；预演后必须比哈希确认文件未动 |
+| 改脚本前先看测试形态断言 | `gates.test` 要求 `pre-commit-guard.sh` 保留 `case "$(git rev-parse --show-toplevel…)"` 形态；换判定口径要换匹配串，不改结构 |
+| 项目目录可能是外盘软链 | `1.Active/<项目>` 指向外盘卷（归档镜像需挂载），`find` 默认不跟软链 ⇒ 整批漏扫；核对前先 `realpath` |

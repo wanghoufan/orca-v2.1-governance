@@ -1,3 +1,60 @@
+## 2026-10-31 母版整体迁入治理仓《体系管家》；AGENTS.md 瘦回体积闸；android.md 两包归位
+
+**为什么**：母版从 `~/Developer/coding/4.Templates（PC）/` 整体迁入治理仓 `1.Active/000-alw-个人偏好-电脑治理仓库-skill管理/体系管家/`，与各管家集中管理。迁后有两笔既有账未平：① `AGENTS.md` 13,091 字 > 12,000 体积闸；② `docs/sop/android.md`（2026-10-30 补 13 条）只在母版工作区、两包未同步。两项都让 `check-sync.sh` 报 `SYNC-FAIL`。
+
+**改了什么**
+- 目录：母版整目录（含自带 git 仓）迁入 `体系管家/`；快照 zip 与 2026-09-05 编排提示词归档同目录；旧 `4.Templates（PC）` 清空删除。
+- `AGENTS.md` 6 处压缩（细则均已在下沉文档内，只删重复表述）：入口路由第 4 条、小活豁免、APP 默认继承、主开发者子代理、复核粒度、跳步；角色阵容行改为指向 `docs/roles/`。13,091 → **11,901 字**。
+- `scripts/pre-commit-guard.sh`（母版 + 两包）与各项目副本：母版豁免判定由 `*"/4.Templates（PC）"*` 改为 `*"ORCA V2.1 治理模板 丨 分发版-2026-09-11"*`，仍走 `git rev-parse --show-toplevel`（不写死机器路径，且保持 `gates.test` 的形态断言）。
+- `docs/sop/android.md` 同步到 `新项目模板包/` 与 `老项目迁移模板包/`；`AGENTS.md` 同步两包。
+
+**怎么验**
+- `bash scripts/check-sync.sh` → `SYNC-OK`；`AGENTS-SIZE: 11901 字（上限 12000）`。
+- `node scripts/model/gates.test.mjs` → `ALL PASS pass=21 fail=0`；`bash scripts/run-gates.sh` → `GATES-FAIL（失败 1 项 / 通过 13 项）`，唯一失败为既有 `CHANNEL-FAIL`（角色表模型 ID 不在通道目录；换模型属用户决策）。
+- 豁免实测：母版 `EXEMPT`、普通项目 `NOT-EXEMPT`。
+
+**Git 状态**：**未 commit、未 push**。
+
+---
+
+## 2026-10-30 安卓专项规范补 13 条：编译环境、签名产物、真机验证细则
+
+**为什么**：用户级规则候选审查后，安卓类 8 条（R12–R20）判定降为专项，落点即 `docs/sop/android.md`（`~/.agents/rules/android.md` 软链至此）。原文件覆盖工具链与发布检查，但缺装包拉起、点击坐标与文本输入、logcat、系统设置复原、产物哈希等真机验证口径，导致同类踩坑在多个项目重复出现。
+
+**改了什么**
+- §2 SDK 与 Java 环境 +3 条：`JAVA_HOME` 指向真实 JDK Home 而非 symlink 根；终端不继承 JDK/SDK 时先 source 环境脚本；受限沙箱内确认 `~/.gradle` 可写或改 `GRADLE_USER_HOME`。
+- §7 签名与发布 +4 条：版本号以 `aapt2 dump badging` 读产物为准；`optimizeReleaseResources` 与 unsigned 产物改用 `assembleDebug` 验证；调试/正式包用 `applicationIdSuffix` 区分；蒲公英上传前 mipmap PNG 规格与 webp 清理。
+- §8 真机、验证与高风险操作 +7 条：装包后 `am start` 加截图确认；adb 坐标 = CSS × `devicePixelRatio`；中文与长文本改 CDP `Input.insertText`；logcat 流式写入与掉线重解析；`wm density`/`wm size`/`user_rotation` 记录并复原；`adb reverse` 端口对应与 `--remove-all`；APK 与 Web 产物 sha256 比对并检查 `server.url`。
+- 体积：169 行 / 9,065 B → 197 行 / 11,345 B。
+
+**怎么验**
+- `wc -l -c docs/sop/android.md` → 197 行 / 11,345 B；`readlink ~/.agents/rules/android.md` 指向本文件，首行标题可读。
+- 新增关键词计数：`adb reverse`／`logcat`／`aapt2`／`devicePixelRatio` 共 4 处命中；全文复查无与 §3、§8 第 165 行重复的条文。
+
+**Git 状态**：**未 commit、未 push**；改前快照 `~/.agents/versions/android-sop-pre-2026-10-30.md`。
+
+---
+
+## 2026-10-27 体系自查 P1 整改：验收红线进收工门＋巡检分组＋版本比较修正
+
+**为什么**：自查报告（`docs/review/GOVERNANCE-REVIEW-2026-10-27-体系自查.md`）P1——① 产品验收矩阵 10/24 落盘仍 `SYNC-OK`，红线无卡点；② 签收校验只挂可选 pre-commit；③ `ACROOT` 写死个人路径，换机静默失效；④ ROLE-COVERAGE 不分执行方式，8 条报警多为合规噪音；⑤ `check-channel-preflight.sh` 版本比较逻辑反转（0.164.0 被判低于 0.159.2）。
+
+**改了什么**
+- `scripts/model/check-ledger.mjs` 新增 `checkAcceptanceMatrix`：DEVELOP 且非 solo、无矩阵或无 AC 条目 ⇒ FAIL；solo/PLAN/ABSENT/未知阶段 ⇒ WARN；无真实任务行 ⇒ SKIP。挂在项目侧收工必跑命令上（红线「记账后与收工前必跑 check-ledger」已存在），存量项目无需改脚本。
+- `scripts/model/fixtures/ledger-fields/` 新增 case36–39（DEVELOP 缺矩阵 FAIL / 有矩阵放行 / solo 豁免 / PLAN 豁免）；`ledger-fields.test.mjs` CASE 表同步 4 条。
+- `scripts/check-sync.sh`：`ACROOT` 按 `AC_SCAN_ROOT` → 母版根相对 `../../1.Active` → 本机惯例逐级探测，取不到输出 `AC-SKIP` 而非 `0/0`；ROLE-COVERAGE 按 `execution_mode`/`project_phase_field` 分组（solo 豁免；PLAN 系只要求 planner/product-reviewer/task-manager），报警从 8 条降到 6 条且均为真缺口。
+- `scripts/check-channel-preflight.sh`：版本比较 `low==minreq` → `low==cv`（原条件反转，达标也被 WARN）。
+- 两包（`新项目模板包`／`老项目迁移模板包`）同步上述 4 文件＋4 夹具。
+
+**怎么验**
+- `node scripts/model/ledger-fields.test.mjs` → `ALL PASS pass=57 fail=0`（case36–39 全部符合预期码）。
+- `bash scripts/check-channel-preflight.sh` → `OK codex 0.164.0 meets requirement 0.159.2`（误报消除）。
+- `bash scripts/check-sync.sh` → `SYNC-OK`；`bash scripts/run-gates.sh` → `GATES-OK（14 项）`。
+
+**Git 状态**：**已 commit、已 push（d3afe72、81b9a6b）**——本文件此前三条（planner 换模型／口令改名／第一批整改）所写的「未 commit、未 push」已过期，以本条为准。
+
+---
+
 ## 2026-10-27 planner 换模型：`codex/gpt-6.1-sol` → `codex/gpt-6.1-terra`
 
 **为什么**：用户令，planner 改用 GPT-6.1 Terra。

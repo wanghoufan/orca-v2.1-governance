@@ -256,11 +256,19 @@ for dir in "$PROJECTS_ROOT"/*/; do
         skipped=$((skipped+1)); continue
       fi
       # 已存在但不是指向母版的软链（多为早年的实文件拷贝）→ 备份后改成软链，禁静默删
+      # 2026-10-31 修：原 `mv` / `rm` 写在 DRY_RUN 守卫之外，`--dry-run` 会真删项目文件
+      # （实测：064 的 USER_MODEL_OVERRIDE.md 被预演删除）。预演只报告，不动盘。
       if [ -e "$dst" ] || [ -L "$dst" ]; then
-        if [ ! -e "$dst.旧版-$STAMP" ]; then mv "$dst" "$dst.旧版-$STAMP"; backed=$((backed+1)); fi
-        rm -f "$dst"
+        if [ -n "$DRY_RUN" ]; then
+          echo "  [dry-run] 将备份并换成母版软链: $(basename "$dst")"
+        else
+          if [ ! -e "$dst.旧版-$STAMP" ]; then mv "$dst" "$dst.旧版-$STAMP"; backed=$((backed+1)); fi
+          rm -f "$dst"
+          ln -s "$tgt" "$dst"
+        fi
+      else
+        if [ -z "$DRY_RUN" ]; then ln -s "$tgt" "$dst"; fi
       fi
-      if [ -z "$DRY_RUN" ]; then ln -s "$tgt" "$dst"; fi
       copied=$((copied+1)); continue
     fi
     if [ -f "$dst" ] && diff -q "$src" "$dst" >/dev/null 2>&1; then

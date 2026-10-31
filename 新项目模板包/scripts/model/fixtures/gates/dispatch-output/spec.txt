@@ -1,2 +1,2 @@
-builder	/Users/zzymima0000/Developer/coding/4.Templates（PC）/2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11/scripts/model/fixtures/gates/dispatch-output/present.md
-qa	/Users/zzymima0000/Developer/coding/4.Templates（PC）/2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11/scripts/model/fixtures/gates/dispatch-output/gone.md
+builder	/Users/zzymima0000/Developer/coding/1.Active/000-alw-个人偏好-电脑治理仓库-skill管理/体系管家/2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11/scripts/model/fixtures/gates/dispatch-output/present.md
+qa	/Users/zzymima0000/Developer/coding/1.Active/000-alw-个人偏好-电脑治理仓库-skill管理/体系管家/2026-09-09 丨 MAC 丨 ORCA V2.1 治理模板 丨 分发版-2026-09-11/scripts/model/fixtures/gates/dispatch-output/gone.md

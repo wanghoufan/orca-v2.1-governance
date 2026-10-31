@@ -224,8 +224,16 @@ done
 # AGENTS.md 红线要求「产品验收未落盘或关键 AC 未测不得报完工」，但此前无任何机器校验点，
 # 实测 31 个项目仅 1 个建了矩阵 ⇒ 覆盖率 3%。此处补一个只读巡检口径。
 # 识别真实项目：有 docs/model/TASK-MODEL-LOG.jsonl 且不在母版/两包内。
-echo "--- 产品验收落盘巡检（只报，不影响 SYNC 主结论） ---"
-ACROOT="${AC_SCAN_ROOT:-$HOME/Developer/coding/1.Active}"
+# ACROOT 探测（2026-10-27 体系自查 P1 修）：原写法写死 $HOME/.../1.Active，
+# 换机后目录不存在时 ac_total=0，输出「0/0 有落盘」看似健康、实为静默失效。
+# 现按 环境变量 → 母版根相对位置 → 本机惯例 逐级探测，取不到时四项巡检整体跳过并明示。
+if [ -n "${AC_SCAN_ROOT:-}" ]; then ACROOT="$AC_SCAN_ROOT"
+elif [ -d "../../1.Active" ]; then ACROOT="$(cd ../../1.Active && pwd)"
+elif [ -d "$HOME/Developer/coding/1.Active" ]; then ACROOT="$HOME/Developer/coding/1.Active"
+else ACROOT=""; fi
+if [ -d "${ACROOT:-/nonexistent-orca-acroot}" ]; then
+echo "AC-ROOT: $ACROOT"
+echo "--- 产品验收落盘巡检（只报，不影响 SYNC 主结论；强制卡点在项目侧 check-ledger） ---"
 ac_missing=0; ac_total=0
 for d in "$ACROOT"/*/; do
   [ -d "$d" ] || continue
@@ -313,13 +321,29 @@ for d in "$ACROOT"/*/; do
   [ -n "$lg" ] || continue
   roles="$(grep -o '"role"[[:space:]]*:[[:space:]]*"[^"]*"' "$lg" 2>/dev/null | sed 's/.*: *"//; s/"//' | sort -u | tr '\n' ' ')"
   [ -n "$roles" ] || continue
+  # 分组判定（2026-10-27 体系自查 P1 修）：原实现不分执行方式，主开发者模式的
+  # 合规项目（010/011 等）被批量报 missing，噪音掩盖真问题；角色清单也与 8 角色口径不一致。
+  gsf="$d/docs/model/GOVERNANCE-STATE.json"
+  _mode=""; _phase=""
+  if [ -f "$gsf" ]; then
+    _mode=$(grep -o '"execution_mode"[[:space:]]*:[[:space:]]*"[^"]*"' "$gsf" 2>/dev/null | head -1 | sed 's/.*: *"//; s/"//')
+    _phase=$(grep -o '"project_phase_field"[[:space:]]*:[[:space:]]*"[^"]*"' "$gsf" 2>/dev/null | head -1 | sed 's/.*: *"//; s/"//')
+  fi
+  if [ "$_mode" = "solo" ]; then continue; fi   # 主开发者模式：不派角色链，合规
+  need="builder code-reviewer qa supervisor"
+  case "$_phase" in
+    PLAN|WAITING_HUMAN_APPROVAL|PLAN_REOPEN_REQUIRED|ABSENT) need="planner product-reviewer task-manager" ;;
+  esac
   miss=""
-  for need in builder code-reviewer qa supervisor; do
-    case " $roles " in *" $need "*) ;; *) miss="$miss $need";; esac
+  for req in $need; do
+    case " $roles " in *" $req "*) ;; *) miss="$miss $req";; esac
   done
   if [ -n "$miss" ]; then
     echo "ROLE-COVERAGE: $(basename "$d") missing:${miss} (has:${roles})"
   fi
 done
+else
+  echo "AC-SKIP: 未找到活跃项目根（设置 AC_SCAN_ROOT 后重跑）；产品验收/体积/脚本/角色四项巡检未执行"
+fi
 [ "$fail" -eq 0 ] && echo "SYNC-OK" || echo "SYNC-FAIL"
 exit "$fail"

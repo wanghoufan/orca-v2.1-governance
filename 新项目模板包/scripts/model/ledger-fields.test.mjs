@@ -86,6 +86,11 @@ const CASES = [
   ["case33-no-pm-dir", 0, ["APP-BASELINE-SKIPPED"]],            // 无 docs/pm 不再静默
   ["case34-ac-tbd", 1, ["ACCEPTED-BLOCK"]],                     // 状态写 TBD 也算未闭环
   ["case35-allow-example-no-bypass", 1, ["APP-CRITICAL-AC-EMPTY"], ["--allow-example"]], // 豁免旗不再跳过 APP 门
+  // 2026-10-27 体系自查 P1：产品验收红线从「只报」升级为「项目侧收工门」
+  ["case36-ac-missing-develop", 1, ["AC-MATRIX-MISSING"]],   // DEVELOP + 非 solo ⇒ 强制
+  ["case37-ac-present-develop", 0, []],                        // 有矩阵 + AC 行 ⇒ 放行
+  ["case38-solo-ac-missing", 0, ["AC-MATRIX-WARN"]],           // 主开发者模式 ⇒ 只警告
+  ["case39-plan-ac-missing", 0, ["未拦截·PLAN"]],              // PLAN 阶段 ⇒ 只警告
 ];
 for (const [fixture, wantExit, mustInclude, extraArgs] of CASES) {
   const r = withFixture(fixture, (d) => runLedger(d, undefined, extraArgs));

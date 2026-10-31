@@ -100,7 +100,9 @@ echo "=== [5] minimum client version required by the table ==="
 minreq=$(grep -oE '0\.[0-9]{2,}\.[0-9]+' "$TBL" | head -1)
 if [ -n "$minreq" ] && [ -n "$cv" ]; then
   low=$(printf '%s\n%s\n' "$cv" "$minreq" | sort -V | head -1)
-  if [ "$low" = "$minreq" ] && [ "$cv" != "$minreq" ]; then
+  # 2026-10-27 修：原条件 low==minreq 时告警，逻辑反了——low 是两者最小值，
+  # low==minreq 说明 minreq<=cv 即已达标。告警应是 low==cv（cv 更小）且不等。
+  if [ "$low" = "$cv" ] && [ "$cv" != "$minreq" ]; then
     echo "  WARN  codex $cv is below the table requirement $minreq"
   else
     echo "  OK    codex $cv meets requirement $minreq"

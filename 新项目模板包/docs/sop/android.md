@@ -34,6 +34,12 @@ ANDROID_HOME 是 Android SDK 目录的推荐环境变量。ANDROID_SDK_ROOT 已�
 
 未经用户明确批准，不修改 ~/.zshrc、~/.zprofile 或 IDE 设置。
 
+macOS 上 `JAVA_HOME` 必须指向真实 JDK Home（如 `.../libexec/openjdk.jdk/Contents/Home`），不得指向 symlink 根目录；以 `$JAVA_HOME/bin/java -version` 可执行为准。
+
+终端不继承 JDK/SDK 时，先 source 用户级环境脚本再执行 Gradle，不得假定新开终端已生效。
+
+受限文件沙箱内跑 Gradle 前先确认 `~/.gradle` 可写；不可写时把 `GRADLE_USER_HOME` 指向可写目录，不得据此判定构建失败。
+
 ## 3. 构建前检查
 
 先识别项目类型和真实入口，再读取项目实际要求：JDK、Gradle、AGP、compileSdk、targetSdk、minSdk、Build Tools、NDK 和 CMake。不得因为本机已有某版本而强制项目升级。
@@ -135,6 +141,14 @@ NDK 和 CMake 可在同一 SDK 下并存多个版本。缺少组件时先报告�
 
 release 构建不等于正式发布包。发布前必须检查 release 签名、包名、版本号、keystore 安全和是否误用 signingConfigs.debug。keystore、密码和 Token 不得进入 Git。
 
+版本号以构建产物为准：用 `aapt2 dump badging <apk>` 读取 `versionName`／`versionCode`，不看 Git tag、README 或落地页文案；读取不到时明确说明，不得编造。
+
+启用 `optimizeReleaseResources` 会重命名资源，无 release keystore 时 release 产物可能 unsigned；此类工程验证阶段改用 `assembleDebug`，不得把 unsigned 产物当可发布包。
+
+调试包与正式包必须使用不同包名或 `applicationIdSuffix`，便于同机共存与一眼区分。
+
+上传蒲公英前确保 `res/mipmap-*dpi/` 存在 48/72/96/144/192 的 `ic_launcher.png`，并删除同目录同名 webp；`--force-icon` 仅作应急。
+
 ## 7.5 底部导航（采用时）
 
 采用底部导航的 Android APP，**优先官方 Material 3 组件** `NavigationBar` / `NavigationBarItem` / `Scaffold(bottomBar = …)`，**不自造导航框架**；既有 Reuse Audit 仍按既定顺序确认版本／License／维护情况。
@@ -163,6 +177,20 @@ release 构建不等于正式发布包。发布前必须检查 release 签名、
 - Git commit 或 Git push。
 
 构建后必须确认工具链、Gradle 任务和产物真实存在，不能只报告 BUILD SUCCESSFUL。交付报告至少包含项目类型、工具链版本、执行命令、构建变体、产物路径和大小、签名类型、新增下载、风险及后续建议。CI 云端打包仅为备用，默认本地出包（`android/app/build/outputs/`），未附本地产物路径+大小+签名类型视为未交付，supervisor 打回。
+
+装包：`adb install` 成功后必须 `am start -n <pkg>/<launcher>` 拉起，并以截图确认前台是目标应用，才能报“装好可用”。
+
+点击坐标：adb 坐标 = CSS 坐标 × `devicePixelRatio`；坐标对不上优先改用 CDP `Input.dispatchTouchEvent`；点击前先 dump bounds，`0×0` 只表示当前不可见，不等于元素不存在。
+
+文本输入：长 URL 或中文用 CDP `Input.insertText` 或剪贴板粘贴，不用 `adb shell input text`；灌入后逐字核对。
+
+logcat：不用 `adb logcat -d`（会卡死），改流式写入文件；一台设备只起一个 logcat；USB 掉线后重新 `resolve`，不复用旧序列号。
+
+系统设置：`wm density`／`wm size`／`user_rotation` 修改前记录原值，验证结束立即 reset 复原。
+
+USB 隧道：`adb reverse` 端口必须与主机服务端口一一对应，收尾 `--remove-all`，执行前确认没有他人的映射。
+
+产物核对：交付 APK 与 Web 产物时，比对 `dist/index.html` 与 `unzip -p <apk> assets/public/index.html` 的 sha256，并检查 `assets/capacitor.config.json` 不含 `server.url`；只看版本号不够。
 
 ## 9. 机器档案边界
 

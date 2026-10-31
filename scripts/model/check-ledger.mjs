@@ -774,14 +774,62 @@ function checkPrototypeDelivery(root, planLabel, planText) {
   }
 }
 
+
+// ── 产品验收矩阵门（2026-10-27 体系自查 P1）────────────────────────────
+// 背景：AGENTS.md 红线「产品验收未落盘或关键 AC 未测不得报完工」此前**只有文字**，
+// check-sync 的 AC 巡检也只报不拦（实测 10/24 落盘仍 SYNC-OK）。这里把红线挂到
+// 项目侧收工必跑的命令上（AGENTS.md 已要求「记账后与收工前必跑 check-ledger」）。
+// 分级：主开发者模式 / PLAN 及未开工 → WARN（不误伤）；DEVELOP 且非 solo → FAIL。
+const AC_MATRIX = "docs/qa/产品验收追踪矩阵.md";
+function checkAcceptanceMatrix(root) {
+  // 母版/分发包只有 _example 空壳，readRows 已过滤 → 走「未开工」WARN，不会误红。
+  const rows = readRows("TASK-MODEL-LOG.jsonl");
+  if (!rows.length) {
+    warns.push(`AC-MATRIX-SKIPPED（未拦截）— TASK-MODEL-LOG 无真实任务行，项目未开工，验收矩阵门不适用。`);
+    return;
+  }
+  const f = join(root, AC_MATRIX);
+  const text = readIfExists(f);
+  if (/^\|\s*AC-\d+/m.test(text)) return;
+  const detail = text ? `${AC_MATRIX} 文件在但无 AC 条目` : `${AC_MATRIX} 缺失`;
+
+  let mode = "", phase = "";
+  try {
+    const st = JSON.parse(readIfExists(join(root, "docs/model/GOVERNANCE-STATE.json")) || "{}");
+    mode = String(st.execution_mode || "");
+    phase = String(st.project_phase_field || "");
+  } catch { /* 坏 JSON 按未知处理 */ }
+  if (!phase) {
+    const m = /PROJECT_PHASE\s*[:：]\s*`?([A-Z_]+)/.exec(readIfExists(join(root, "docs/handoff/HANDOFF.md")));
+    if (m) phase = m[1];
+  }
+
+  if (mode === "solo") {
+    warns.push(`AC-MATRIX-WARN（未拦截·主开发者模式）— ${detail}；主开发者自测须在 TASK 账本 note/chain_status 留痕，首次发布签收前必须补矩阵。`);
+    return;
+  }
+  if (!phase || /^(PLAN|WAITING_HUMAN_APPROVAL|PLAN_REOPEN_REQUIRED|ABSENT)$/.test(phase)) {
+    warns.push(`AC-MATRIX-WARN（未拦截·${phase || "阶段未知"}）— ${detail}；进入 DEVELOP 后本项自动转为 FAIL。`);
+    return;
+  }
+  if (phase === "DEVELOP") {
+    fails.push(`AC-MATRIX-MISSING — 项目处于 DEVELOP 且非主开发者模式，但 ${detail}。`
+      + `红线「产品验收未落盘或关键 AC 未测不得报完工」自本版起为机器强制：`
+      + `补 ${AC_MATRIX}（每条 AC 含状态与证据）后重跑。`);
+    return;
+  }
+  warns.push(`AC-MATRIX-WARN（未拦截·未知阶段 ${phase}）— ${detail}`);
+}
+
 const projectRoot = basename(dir) === "model" ? join(dir, "..", "..") : dir;
 // 母版/分发包自检（--allow-example）跳过 APP 门（2026-10-09 修 P1-5）：
 // 母版是**分发源**、不是受治理的真实项目——没有产品计划真源、没有 Phase2 APP 项目，
 // 跑 APP 门必然报 TRUEUT-UNRESOLVED 等，属噪声。真项目的 APP 门照常生效。
 // 2026-10-27 修：原实现在 --allow-example 下**整组跳过** APP 门，而 pre-commit-guard 又把
-// 「4.Templates（PC）」路径下所有项目视为母版 ⇒ 该目录里任何真实项目都自动获得豁免（实测）。
+// 母版仓（目录名含 ORCA…治理模板）视为母版 ⇒ 原按「4.Templates（PC）」路径的判定自 2026-10-31 改用仓根目录名。
 // 现在 APP 门一律执行；母版无 docs/pm 时只出 WARN，不误报失败。
 if (existsSync(dir)) checkAppBaseline(projectRoot);
+if (existsSync(dir)) checkAcceptanceMatrix(projectRoot);
 
 // ── 原始输入留存（2026-10-11，仅在显式 --evidence <dir> 时写）────────────────
 if (EVIDENCE_DIR) writeEvidence();

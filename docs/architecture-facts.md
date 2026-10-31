@@ -8,6 +8,7 @@
 - 本仓是 **ORCA 治理母版（分发源）**，不是业务项目：`AGENTS.md`、规则、角色卡、脚本、模板在这里维护，再分发到各项目。
 - 三个出口：`新项目模板包/`（空项目铺设）、`老项目迁移模板包/`（存量项目迁移）、`scripts/_sync-packages.py`（把母版正文同步进两个包）。
 - 母版路径含空格与中文，**所有脚本必须加引号**。
+- 2026-10-31 起母版位于治理仓 `1.Active/000-alw-个人偏好-电脑治理仓库-skill管理/体系管家/`；`~/.agents/rules/{android,android-machine-profile,docker,sqlite,supabase,webqa}.md` 与各项目根 `USER_MODEL_OVERRIDE.md` 均为指向本仓的**绝对软链**，母版再搬家必须同批重建，否则规则静默失效。
 
 ## 2. 目录职责
 
